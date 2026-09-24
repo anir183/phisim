@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -128,3 +130,41 @@ def test_terminal_mfa_response_completes_shared_session(
     assert session_response.status_code == 200
     assert session_response.json()["status"] == "completed"
     assert session_response.json()["completed_at"].endswith("Z")
+
+
+def test_simulation_broadcast_and_analysis_expose_indicators(
+    client: TestClient,
+) -> None:
+    opened = client.get("/inbox/email-phish-001")
+    session_id = opened.cookies.get("phisim_session")
+    assert session_id
+
+    with client.websocket_connect("/api/events/ws") as websocket:
+        followed = client.get("/inbox/email-phish-001/link")
+        assert followed.status_code == 200
+        payload = websocket.receive_json()
+
+    assert payload["event_type"] == "link_clicked"
+    assert payload["session_id"] == session_id
+    assert payload["scenario_id"] == "email-phish-001"
+    assert payload["indicators"]
+    assert {
+        "credential_request",
+        "authority_impersonation",
+        "urgent_language",
+    } <= {item["code"] for item in payload["indicators"]}
+    assert "hunter2" not in json.dumps(payload)
+
+    analysis = client.get(f"/api/analysis/sessions/{session_id}")
+    assert analysis.status_code == 200
+    body = analysis.json()
+    assert {item["code"] for item in body["indicators"]} >= {
+        "credential_request",
+        "authority_impersonation",
+    }
+    assert [entry["event_type"] for entry in body["timeline"]] == [
+        "message_opened",
+        "link_clicked",
+        "scenario_opened",
+    ]
+    assert all(entry["timestamp"].endswith("Z") for entry in body["timeline"])

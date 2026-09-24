@@ -37,7 +37,10 @@ def test_sms_view_emits_message_open(
     events = _list_events(test_engine, session_id)
     assert [event.event_type for event in events] == ["message_opened"]
     assert events[0].scenario_id == THREAD_ID
-    assert events[0].metadata_ == {"channel": "sms"}
+    assert events[0].metadata_["channel"] == "sms"
+    assert events[0].metadata_["subject"] == "Techno Main Parcel"
+    assert events[0].metadata_["content"]
+    assert events[0].metadata_["requests_credentials"] is True
 
 
 def test_sms_link_redirects_locally_and_emits_click(
@@ -64,10 +67,9 @@ def test_sms_link_redirects_locally_and_emits_click(
         "link_clicked",
         "scenario_opened",
     ]
-    assert events[1].metadata_ == {
-        "channel": "sms",
-        "target_url": "/scenario/credential-basic-001",
-    }
+    assert events[1].metadata_["channel"] == "sms"
+    assert events[1].metadata_["target_url"] == "/scenario/credential-basic-001"
+    assert events[1].metadata_["subject"] == "Techno Main Parcel"
     assert events[-1].scenario_id == "credential-basic-001"
     assert all(event.session_id == session_id for event in events)
 

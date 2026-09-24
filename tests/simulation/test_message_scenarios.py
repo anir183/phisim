@@ -52,7 +52,9 @@ def test_every_message_artifact_opens_link_and_stays_local(
     events = _list_events(test_engine, session_id)
     assert [event.event_type for event in events] == ["message_opened"]
     assert events[0].scenario_id == artifact_id
-    assert events[0].metadata_ == {"channel": channel}
+    assert events[0].metadata_["channel"] == channel
+    assert events[0].metadata_["content"]
+    assert events[0].metadata_["subject"]
     assert events[0].source == "browser"
 
     following_path = (
@@ -76,9 +78,8 @@ def test_every_message_artifact_opens_link_and_stays_local(
         "scenario_opened",
     ]
     assert events[1].scenario_id == artifact_id
-    assert events[1].metadata_ == {
-        "channel": channel,
-        "target_url": "/scenario/credential-basic-001",
-    }
+    assert events[1].metadata_["channel"] == channel
+    assert events[1].metadata_["target_url"] == "/scenario/credential-basic-001"
+    assert events[1].metadata_["content"]
     assert events[-1].scenario_id == "credential-basic-001"
     assert all(event.session_id == session_id for event in events)

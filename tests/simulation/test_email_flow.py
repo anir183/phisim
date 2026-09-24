@@ -41,7 +41,13 @@ def test_email_view_assigns_session_and_emits_open(
     assert [event.event_type for event in events] == ["message_opened"]
     assert events[0].scenario_id == MESSAGE_ID
     assert events[0].source == "browser"
-    assert events[0].metadata_ == {"channel": "email"}
+    assert events[0].metadata_["channel"] == "email"
+    assert (
+        events[0].metadata_["subject"]
+        == "Action required: verify your mailbox"
+    )
+    assert events[0].metadata_["content"]
+    assert events[0].metadata_["requests_credentials"] is True
 
 
 def test_email_link_redirects_locally_and_emits_click(
@@ -69,10 +75,13 @@ def test_email_link_redirects_locally_and_emits_click(
     ]
     link_clicked = events[1]
     assert link_clicked.scenario_id == MESSAGE_ID
-    assert link_clicked.metadata_ == {
-        "channel": "email",
-        "target_url": "/scenario/credential-basic-001",
-    }
+    assert link_clicked.metadata_["channel"] == "email"
+    assert (
+        link_clicked.metadata_["target_url"]
+        == "/scenario/credential-basic-001"
+    )
+    assert link_clicked.metadata_["content"]
+    assert link_clicked.metadata_["requests_credentials"] is True
     assert events[-1].scenario_id == "credential-basic-001"
     assert all(event.session_id == session_id for event in events)
 
@@ -116,10 +125,13 @@ def test_attachment_open_is_inert_and_emits_event(
     ]
     attachment = events[1]
     assert attachment.scenario_id == ATTACHMENT_MESSAGE_ID
-    assert attachment.metadata_ == {
-        "channel": "email",
-        "attachment_name": "Expense_Reimbursement_Form.pdf",
-    }
+    assert attachment.metadata_["channel"] == "email"
+    assert (
+        attachment.metadata_["attachment_name"]
+        == "Expense_Reimbursement_Form.pdf"
+    )
+    assert attachment.metadata_["attachment_lure"] is True
+    assert attachment.metadata_["content"]
 
 
 def test_link_spoofing_displays_distinct_destination(

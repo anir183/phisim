@@ -32,7 +32,10 @@ def test_qr_page_renders_local_code_and_emits_view(
     events = _list_events(test_engine, session_id)
     assert [event.event_type for event in events] == ["qr_viewed"]
     assert events[0].scenario_id == SCENARIO_ID
-    assert events[0].metadata_ == {"channel": "qr"}
+    assert events[0].metadata_["channel"] == "qr"
+    assert events[0].metadata_["subject"] == "Verification Required"
+    assert events[0].metadata_["requests_credentials"] is True
+    assert events[0].metadata_["incident_fear"] is True
 
 
 def test_qr_scan_redirects_locally_and_emits_click(
@@ -59,10 +62,9 @@ def test_qr_scan_redirects_locally_and_emits_click(
         "scenario_opened",
     ]
     assert events[1].scenario_id == SCENARIO_ID
-    assert events[1].metadata_ == {
-        "channel": "qr",
-        "target_url": "/scenario/credential-basic-001",
-    }
+    assert events[1].metadata_["channel"] == "qr"
+    assert events[1].metadata_["target_url"] == "/scenario/credential-basic-001"
+    assert events[1].metadata_["content"]
     assert events[-1].scenario_id == "credential-basic-001"
 
 

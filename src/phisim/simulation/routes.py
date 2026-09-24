@@ -2,6 +2,7 @@
 
 import base64
 from io import BytesIO
+from typing import Any
 
 import qrcode
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -22,6 +23,16 @@ from phisim.simulation.catalog import (
     get_sms_thread,
 )
 from phisim.simulation.emit import emit_event
+from phisim.simulation.evidence import (
+    email_attachment_evidence,
+    email_evidence,
+    email_link_evidence,
+    mfa_evidence,
+    qr_evidence,
+    scenario_evidence,
+    sms_evidence,
+    sms_link_evidence,
+)
 from phisim.simulation.lifecycle import (
     complete_simulation_session,
     ensure_simulation_session,
@@ -68,7 +79,7 @@ async def _emit(
     *,
     scenario_id: str,
     event_type: str,
-    metadata: dict[str, object],
+    metadata: dict[str, Any],
 ) -> None:
     try:
         await emit_event(
@@ -135,7 +146,7 @@ async def scenario_login(
         session_id=session_id,
         scenario_id=scenario.scenario_id,
         event_type="scenario_opened",
-        metadata={"channel": scenario.channel},
+        metadata=scenario_evidence(scenario),
     )
 
     return response
@@ -237,7 +248,7 @@ async def email_view(
         session_id=session_id,
         scenario_id=message.message_id,
         event_type="message_opened",
-        metadata={"channel": "email"},
+        metadata=email_evidence(message),
     )
 
     return response
@@ -267,10 +278,7 @@ async def email_link(
         session_id=session_id,
         scenario_id=message.message_id,
         event_type="link_clicked",
-        metadata={
-            "channel": "email",
-            "target_url": CREDENTIAL_SITE_PATH,
-        },
+        metadata=email_link_evidence(message),
     )
 
     return response
@@ -306,10 +314,7 @@ async def email_attachment(
         session_id=session_id,
         scenario_id=message.message_id,
         event_type="attachment_opened",
-        metadata={
-            "channel": "email",
-            "attachment_name": message.attachment_name,
-        },
+        metadata=email_attachment_evidence(message),
     )
 
     return response
@@ -355,7 +360,7 @@ async def sms_view(
         session_id=session_id,
         scenario_id=thread.thread_id,
         event_type="message_opened",
-        metadata={"channel": "sms"},
+        metadata=sms_evidence(thread),
     )
 
     return response
@@ -385,10 +390,7 @@ async def sms_link(
         session_id=session_id,
         scenario_id=thread.thread_id,
         event_type="link_clicked",
-        metadata={
-            "channel": "sms",
-            "target_url": CREDENTIAL_SITE_PATH,
-        },
+        metadata=sms_link_evidence(thread),
     )
 
     return response
@@ -438,7 +440,7 @@ async def qr_view(
         session_id=session_id,
         scenario_id=scenario.scenario_id,
         event_type="qr_viewed",
-        metadata={"channel": "qr"},
+        metadata=qr_evidence(scenario),
     )
 
     return response
@@ -468,10 +470,7 @@ async def qr_scan(
         session_id=session_id,
         scenario_id=scenario.scenario_id,
         event_type="link_clicked",
-        metadata={
-            "channel": "qr",
-            "target_url": CREDENTIAL_SITE_PATH,
-        },
+        metadata=qr_evidence(scenario) | {"target_url": CREDENTIAL_SITE_PATH},
     )
 
     return response
@@ -526,11 +525,7 @@ async def mfa_prompt(
         session_id=session_id,
         scenario_id=scenario.scenario_id,
         event_type="mfa_prompt_displayed",
-        metadata={
-            "channel": "website",
-            "step": current_step,
-            "total_steps": scenario.prompt_count,
-        },
+        metadata=mfa_evidence(scenario, current_step),
     )
 
     return response
@@ -554,9 +549,13 @@ async def mfa_respond(
     current_step = _parse_mfa_step(step, scenario.prompt_count)
 
     form = await request.form()
-    action = form.get("action", "")
-    if action not in ("approve", "deny"):
+    action_value = form.get("action", "")
+    if not isinstance(action_value, str) or action_value not in (
+        "approve",
+        "deny",
+    ):
         raise HTTPException(status_code=400, detail="Invalid action.")
+    action = action_value
 
     fatigued = action == "approve" and current_step == scenario.prompt_count
     denied = action == "deny"
@@ -583,11 +582,11 @@ async def mfa_respond(
             session_id=session_id,
             scenario_id=scenario.scenario_id,
             event_type="mfa_prompt_responded",
-            metadata={
-                "channel": "website",
-                "step": current_step,
-                "action": action,
-            },
+            metadata=mfa_evidence(
+                scenario,
+                current_step,
+                action=action,
+            ),
         )
 
         return response
@@ -616,11 +615,11 @@ async def mfa_respond(
         session_id=session_id,
         scenario_id=scenario.scenario_id,
         event_type="mfa_prompt_responded",
-        metadata={
-            "channel": "website",
-            "step": current_step,
-            "action": action,
-        },
+        metadata=mfa_evidence(
+            scenario,
+            current_step,
+            action=action,
+        ),
     )
     complete_simulation_session(session, session_id)
 
