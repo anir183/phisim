@@ -7,7 +7,7 @@ from phisim.infra.sqlite.repos.scenario import ScenarioRepository
 from phisim.infra.sqlite.repos.session import SessionRepository
 from phisim.scenarios.schemas import ScenarioCreate
 from phisim.scenarios.service import DuplicateScenarioError, ScenarioService
-from phisim.sessions.schemas import SessionCreate
+from phisim.sessions.schemas import SessionCreate, SessionStatus
 from phisim.sessions.service import DuplicateSessionError, SessionService
 
 SESSION_COOKIE = "phisim_session"
@@ -57,13 +57,23 @@ def ensure_simulation_session(
         except DuplicateScenarioError:
             pass
 
+    session_repository = SessionRepository(database_session)
     session_id = _valid_session_id(request.cookies.get(SESSION_COOKIE))
-    if session_id is None:
+    existing_session = (
+        session_repository.get_by_session_id(session_id)
+        if session_id is not None
+        else None
+    )
+
+    if session_id is None or (
+        existing_session is not None
+        and existing_session.status == SessionStatus.COMPLETED.value
+    ):
         session_id = token_hex(16)
+        existing_session = None
         _set_session_cookie(response, session_id)
 
-    session_repository = SessionRepository(database_session)
-    if session_repository.get_by_session_id(session_id) is None:
+    if existing_session is None:
         session_service = SessionService(
             session_repository,
             scenario_repository,

@@ -87,6 +87,30 @@ def test_website_submission_completes_shared_session(
     assert session_response.json()["completed_at"].endswith("Z")
 
 
+def test_completed_session_is_not_reused_for_a_new_flow(
+    client: TestClient,
+) -> None:
+    opened = client.get("/scenario/credential-basic-001")
+    first_session_id = opened.cookies.get("phisim_session")
+    assert first_session_id
+    submitted = client.post(
+        "/scenario/credential-basic-001",
+        data={"username": "student", "password": "not-stored"},
+    )
+    assert submitted.status_code == 200
+
+    next_flow = client.get("/inbox/email-phish-001")
+    second_session_id = next_flow.cookies.get("phisim_session")
+    assert second_session_id
+    assert second_session_id != first_session_id
+
+    sessions = client.get("/api/sessions")
+    assert sessions.status_code == 200
+    by_id = {item["session_id"]: item for item in sessions.json()}
+    assert by_id[first_session_id]["status"] == "completed"
+    assert by_id[second_session_id]["status"] == "active"
+
+
 def test_email_funnel_reuses_one_session_across_registered_scenarios(
     client: TestClient,
 ) -> None:
