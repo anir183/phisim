@@ -1,15 +1,13 @@
 from collections.abc import Generator
-from pathlib import Path
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Session
 
 from phisim.utils.env import settings
+from phisim.utils.paths import DB_FILE
 
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
-
-DEFAULT_DATABASE_PATH = PROJECT_ROOT / "data" / "phisim.db"
+DEFAULT_DATABASE_PATH = DB_FILE
 DEFAULT_DATABASE_URL = f"sqlite:///{DEFAULT_DATABASE_PATH}"
 
 

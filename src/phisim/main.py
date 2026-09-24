@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from phisim.console.routes import router as console_router
 from phisim.infra.sqlite.connection import initialize_database
 from phisim.telemetry.routes import router as telemetry_router
 
@@ -19,3 +20,4 @@ app = FastAPI(
 )
 
 app.include_router(telemetry_router)
+app.include_router(console_router)

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PhiSim Security Console</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        background: #111;
+        color: #eee;
+      }
+
+      header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #333;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.25rem;
+      }
+
+      #status {
+        margin-top: 0.4rem;
+        color: #888;
+        font-size: 0.85rem;
+      }
+
+      main {
+        padding: 1rem;
+      }
+
+      #events {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .event {
+        padding: 0.75rem;
+        border: 1px solid #333;
+        border-radius: 6px;
+        background: #181818;
+      }
+
+      .event-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .event-type {
+        font-weight: 600;
+      }
+
+      .timestamp {
+        color: #888;
+        font-size: 0.8rem;
+      }
+
+      pre {
+        margin: 0.5rem 0 0;
+        overflow-x: auto;
+        color: #bbb;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>PhiSim Security Console</h1>
+      <div id="status">Connecting...</div>
+    </header>
+    <main>
+      <div id="events"></div>
+    </main>
+    <script>
+      const status = document.getElementById("status");
+      const events = document.getElementById("events");
+
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+
+      const socket = new WebSocket(
+        `${protocol}//${window.location.host}/api/events/ws`,
+      );
+
+      socket.addEventListener("open", () => {
+        status.textContent = "Connected";
+      });
+
+      socket.addEventListener("close", () => {
+        status.textContent = "Disconnected";
+      });
+
+      socket.addEventListener("error", () => {
+        status.textContent = "Connection error";
+      });
+
+      socket.addEventListener("message", (message) => {
+        const event = JSON.parse(message.data);
+
+        const element = document.createElement("article");
+        element.className = "event";
+
+        element.innerHTML = `
+              <div class="event-header">
+                  <span class="event-type">
+                      ${event.event_type}
+                  </span>
+
+                  <span class="timestamp">
+                      ${event.timestamp}
+                  </span>
+              </div>
+
+              <pre>${JSON.stringify(event, null, 2)}</pre>
+          `;
+
+        events.prepend(element);
+      });
+    </script>
+  </body>
+</html>
