@@ -35,7 +35,7 @@ persistence, and configuration.
 
 -   [ ] enforce persisted Event/Session relationships; identifiers are
   free-form by current contract
--   [ ] robust duplicate-event handling under concurrent writes
+-   [x] robust duplicate-event handling under concurrent writes
 -   [x] add focused integration fixtures
 -   [x] keep WebSocket behavior stable
 
@@ -97,7 +97,11 @@ limited to `active` and `completed`. Completion is idempotent.
   order.
 - Event `session_id` and `scenario_id` remain free-form strings for
   backward compatibility; Event creation does not require persisted rows.
-- Duplicate Event IDs return `409` and are stored only once.
+- Duplicate Scenario, Session, and Event identifiers return `409`.
+  Repository conflicts roll back before services verify and translate the
+  collision; unrelated integrity errors are not hidden.
+- All non-null Scenario, Session, and Event timestamps use ISO 8601 UTC
+  with a trailing `Z` in HTTP and WebSocket contracts.
 - `EventCreate` rejects unknown fields, including a client-supplied
   `timestamp`.
 - `credential_submission_attempted` accepts only a `field_presence`
@@ -109,9 +113,11 @@ limited to `active` and `completed`. Completion is idempotent.
 ## Verification status
 
 Focused backend tests cover Scenario/Session APIs, repositories, Event
-retrieval and duplicate handling, credential metadata allowlisting,
-validation-error redaction, and WebSocket delivery after a client failure.
-Full project checks are recorded in the implementation handoff.
+retrieval, sequential and simulated unique-write races, UTC timestamp
+serialization, application lifespan initialization, credential metadata
+allowlisting, validation-error redaction, and WebSocket delivery after a
+client failure. Full project checks are recorded in the implementation
+handoff.
 
 ## Avoid
 
