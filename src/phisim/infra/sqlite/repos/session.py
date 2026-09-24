@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import desc, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as OrmSession
 
@@ -35,6 +35,16 @@ class SessionRepository:
             SessionModel.session_id,
         )
 
+        return list(self.session.scalars(statement))
+
+    def list_recent(self, limit: int = 5) -> list[SessionModel]:
+        statement = (
+            select(SessionModel)
+            .order_by(
+                desc(SessionModel.started_at), desc(SessionModel.session_id)
+            )
+            .limit(limit)
+        )
         return list(self.session.scalars(statement))
 
     def save(self, session: SessionModel) -> SessionModel:
