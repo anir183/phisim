@@ -14,16 +14,30 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session as OrmSession
 
 from phisim.infra.sqlite.connection import get_session
+from phisim.infra.sqlite.repos.event import EventRepository
 from phisim.infra.sqlite.repos.session import SessionRepository
+from phisim.infra.sqlite.repos.simulation_attack import (
+    SimulationAttackRepository,
+)
 from phisim.infra.sqlite.repos.simulation_run import SimulationRunRepository
+from phisim.sessions.service import SessionNotFoundError
+from phisim.simulation.attack import (
+    SimulationAttackError,
+    SimulationAttackService,
+)
 from phisim.simulation.catalog import (
     CatalogSummary,
     attack_types,
     catalog_summaries,
 )
 from phisim.simulation.emit import emit_event
-from phisim.simulation.lifecycle import ensure_simulation_session
+from phisim.simulation.environment import get_or_create_victim_environment
+from phisim.simulation.lifecycle import (
+    complete_simulation_session,
+    ensure_simulation_session,
+)
 from phisim.simulation.state import SimulationStateError, SimulationStateService
+from phisim.utils.datetime import serialize_utc_datetime
 from phisim.utils.paths import TEMPLATES_DIR
 
 router = APIRouter(tags=["scenario-lab"])
@@ -80,8 +94,16 @@ def _launch_path(summary: CatalogSummary) -> str:
     return f"/scenario/{summary.scenario_id}"
 
 
-def _launch_url(summary: CatalogSummary, delay_profile: str) -> str:
-    return f"{_launch_path(summary)}?delay={delay_profile}"
+def _victim_path(channel: str, token: str, scenario_id: str) -> str:
+    if channel == "email":
+        return f"/v/{token}/mail"
+    if channel == "sms":
+        return f"/v/{token}/messages"
+    if channel == "qr":
+        return f"/v/{token}/qr/{scenario_id}"
+    if channel == "mfa":
+        return f"/v/{token}/mfa/{scenario_id}/1"
+    return f"/v/{token}/site/{scenario_id}"
 
 
 def _launch_metadata(
@@ -97,6 +119,66 @@ def _launch_metadata(
     }
 
 
+def _attack_payload(
+    attack, event_count: int | None = None
+) -> dict[str, object]:
+    return {
+        "attack_id": attack.attack_id,
+        "session_id": attack.operator_session_id,
+        "run_id": attack.run_id,
+        "scenario_id": attack.scenario_id,
+        "channel": attack.channel,
+        "status": attack.status,
+        "delivery_due_at": serialize_utc_datetime(attack.delivery_due_at),
+        "delivered_at": (
+            serialize_utc_datetime(attack.delivered_at)
+            if attack.delivered_at
+            else None
+        ),
+        "engaged_at": (
+            serialize_utc_datetime(attack.engaged_at)
+            if attack.engaged_at
+            else None
+        ),
+        "completed_at": (
+            serialize_utc_datetime(attack.completed_at)
+            if attack.completed_at
+            else None
+        ),
+        "victim_path": _victim_path(
+            attack.channel,
+            attack.victim_token,
+            attack.scenario_id,
+        ),
+        "event_count": event_count,
+        "state": attack.state,
+    }
+
+
+async def _refresh_attack_delivery(
+    database_session: OrmSession,
+    attack,
+) -> bool:
+    service = SimulationAttackService(
+        SimulationAttackRepository(database_session)
+    )
+    delivered = service.deliver_if_due(attack)
+    if delivered:
+        await emit_event(
+            session=database_session,
+            session_id=attack.operator_session_id,
+            scenario_id=attack.scenario_id,
+            event_type="message_delivered",
+            source="victim",
+            metadata={
+                "channel": attack.channel,
+                "attack_id": attack.attack_id,
+                "artifact_id": attack.scenario_id,
+            },
+        )
+    return delivered
+
+
 async def _start_run(
     request: Request,
     response: Response,
@@ -105,7 +187,7 @@ async def _start_run(
     *,
     target_role: str,
     delay_profile: str,
-) -> tuple[str, str]:
+) -> tuple[str, str, str]:
     session_id = ensure_simulation_session(
         request,
         response,
@@ -124,6 +206,26 @@ async def _start_run(
         channel=summary.channel,
         initial_state={"last_action": "scenario_started"},
     )
+    attack_service = SimulationAttackService(
+        SimulationAttackRepository(database_session)
+    )
+    existing_attack = attack_service.get_by_run_id(run.run_id)
+    if existing_attack is not None:
+        return session_id, run.run_id, existing_attack.attack_id
+    environment = get_or_create_victim_environment(
+        request,
+        response,
+        database_session,
+    )
+    attack = attack_service.create(
+        run_id=run.run_id,
+        operator_session_id=session_id,
+        victim_session_id=environment.session_id,
+        victim_token=environment.token,
+        scenario_id=summary.scenario_id,
+        channel=summary.channel,
+        delay_profile=delay_profile,
+    )
     await emit_event(
         session=database_session,
         session_id=session_id,
@@ -132,7 +234,20 @@ async def _start_run(
         source="operator",
         metadata=_launch_metadata(summary, target_role, delay_profile),
     )
-    return session_id, run.run_id
+    await emit_event(
+        session=database_session,
+        session_id=session_id,
+        scenario_id=summary.scenario_id,
+        event_type="attack_armed",
+        source="operator",
+        metadata={
+            "channel": summary.channel,
+            "attack_type": summary.attack_type,
+            "target_role": target_role,
+            "attack_id": attack.attack_id,
+        },
+    )
+    return session_id, run.run_id, attack.attack_id
 
 
 def _validate_target_role(summary: CatalogSummary, value: str) -> str:
@@ -191,7 +306,7 @@ async def launch_lab_scenario_api(
     target_role = _validate_target_role(summary, launch.target_role)
     cookie_response = Response()
     try:
-        session_id, run_id = await _start_run(
+        session_id, run_id, attack_id = await _start_run(
             request,
             cookie_response,
             database_session,
@@ -208,19 +323,38 @@ async def launch_lab_scenario_api(
     response_headers = {
         key: value
         for key, value in cookie_response.headers.items()
-        if key.casefold() != "content-length"
+        if key.casefold() not in {"content-length", "set-cookie"}
     }
-    return JSONResponse(
+    attack = SimulationAttackService(
+        SimulationAttackRepository(database_session)
+    ).get_by_attack_id(attack_id)
+    response = JSONResponse(
         content={
             "session_id": session_id,
             "run_id": run_id,
+            "attack_id": attack_id,
             "scenario_id": summary.scenario_id,
-            "launch_path": _launch_path(summary),
+            "launch_path": f"/lab/attacks/{attack_id}",
+            "operator_path": f"/lab/attacks/{attack_id}",
+            "victim_path": _victim_path(
+                summary.channel,
+                attack.victim_token,
+                summary.scenario_id,
+            ),
+            "status": attack.status,
+            "delivery_due_at": serialize_utc_datetime(attack.delivery_due_at),
             "target_role": target_role,
             "delay_profile": launch.delay_profile,
         },
         headers=response_headers,
     )
+    for raw_key, raw_value in cookie_response.raw_headers:
+        if raw_key.lower() == b"set-cookie":
+            response.headers.append(
+                "set-cookie",
+                raw_value.decode("latin-1"),
+            )
+    return response
 
 
 @router.get("/lab", response_class=HTMLResponse)
@@ -249,6 +383,17 @@ def scenario_lab(
             if summary.target_role == target_role
         )
     recent_sessions = SessionRepository(database_session).list_recent(limit=5)
+    active_attacks = SimulationAttackRepository(database_session).list_recent(
+        limit=5
+    )
+    active_attack_paths = {
+        attack.attack_id: _victim_path(
+            attack.channel,
+            attack.victim_token,
+            attack.scenario_id,
+        )
+        for attack in active_attacks
+    }
     return templates.TemplateResponse(
         request=request,
         name="lab.html",
@@ -260,6 +405,8 @@ def scenario_lab(
             "selected_target_role": target_role or "",
             "target_roles": sorted(TARGET_ROLE_CHOICES),
             "recent_sessions": recent_sessions,
+            "active_attacks": active_attacks,
+            "active_attack_paths": active_attack_paths,
             "active_page": "lab",
         },
     )
@@ -289,11 +436,11 @@ async def launch_lab_scenario_form(
         raise HTTPException(status_code=404, detail="Scenario not found.")
     target_role = _validate_target_role(summary, target_role)
     response = RedirectResponse(
-        _launch_url(summary, delay_profile),
+        "/lab",
         status_code=303,
     )
     try:
-        await _start_run(
+        _, _, attack_id = await _start_run(
             request,
             response,
             database_session,
@@ -306,4 +453,97 @@ async def launch_lab_scenario_form(
             status_code=422,
             detail="Unable to initialize the local simulation.",
         ) from None
+    response.headers["location"] = f"/lab/attacks/{attack_id}"
     return response
+
+
+@router.get("/api/lab/attacks/{attack_id}")
+async def attack_status_api(
+    attack_id: str,
+    database_session: Annotated[OrmSession, Depends(get_session)],
+) -> dict[str, object]:
+    service = SimulationAttackService(
+        SimulationAttackRepository(database_session)
+    )
+    try:
+        attack = service.get_by_attack_id(attack_id)
+    except SimulationAttackError:
+        raise HTTPException(
+            status_code=404, detail="Attack not found."
+        ) from None
+    await _refresh_attack_delivery(database_session, attack)
+    events = EventRepository(database_session).list_by_session(
+        attack.operator_session_id
+    )
+    return _attack_payload(attack, event_count=len(events))
+
+
+@router.get("/lab/attacks/{attack_id}", response_class=HTMLResponse)
+async def attack_status_page(
+    request: Request,
+    attack_id: str,
+    database_session: Annotated[OrmSession, Depends(get_session)],
+) -> HTMLResponse:
+    service = SimulationAttackService(
+        SimulationAttackRepository(database_session)
+    )
+    try:
+        attack = service.get_by_attack_id(attack_id)
+    except SimulationAttackError:
+        raise HTTPException(
+            status_code=404, detail="Attack not found."
+        ) from None
+    await _refresh_attack_delivery(database_session, attack)
+    events = EventRepository(database_session).list_by_session(
+        attack.operator_session_id
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="attack_status.html",
+        context={
+            "attack": attack,
+            "payload": _attack_payload(attack, event_count=len(events)),
+            "events": events,
+            "event_count": len(events),
+            "victim_path": _victim_path(
+                attack.channel,
+                attack.victim_token,
+                attack.scenario_id,
+            ),
+            "active_page": "lab",
+        },
+    )
+
+
+@router.post("/api/lab/attacks/{attack_id}/abandon")
+async def abandon_attack_api(
+    attack_id: str,
+    database_session: Annotated[OrmSession, Depends(get_session)],
+) -> dict[str, object]:
+    service = SimulationAttackService(
+        SimulationAttackRepository(database_session)
+    )
+    try:
+        attack = service.get_by_attack_id(attack_id)
+        service.transition(attack, "ABANDONED")
+    except SimulationAttackError:
+        raise HTTPException(
+            status_code=404, detail="Attack not found."
+        ) from None
+    await emit_event(
+        session=database_session,
+        session_id=attack.operator_session_id,
+        scenario_id=attack.scenario_id,
+        event_type="attack_abandoned",
+        source="operator",
+        metadata={
+            "channel": attack.channel,
+            "attack_id": attack.attack_id,
+        },
+    )
+    complete_simulation_session(database_session, attack.operator_session_id)
+    try:
+        complete_simulation_session(database_session, attack.victim_session_id)
+    except SessionNotFoundError:
+        pass
+    return _attack_payload(attack)

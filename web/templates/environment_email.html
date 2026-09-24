@@ -1,0 +1,13 @@
+{% extends "environment_base.html" %}
+
+{% block title %}{{ message.subject }} · Gemail{% endblock %}
+{% block app_name %}Gemail{% endblock %}
+
+{% block environment_content %}
+  <div class="fake-app-bar"><a class="button button-quiet" href="{{ url_for('victim_mail', token=environment.victim_token) }}">← Back to inbox</a><span class="badge badge-success">Mailbox</span></div>
+  <article class="message-detail" style="margin-top: 1.25rem" aria-labelledby="environment-email-subject">
+    <header class="message-detail-header"><div class="row-between"><span class="badge badge-accent">Mailbox</span><span class="kicker">{{ message.timestamp }}</span></div><h1 id="environment-email-subject">{{ message.subject }}</h1><div class="message-meta"><span><strong>From</strong> {{ message.sender_label }} &lt;{{ message.sender_address }}&gt;</span><span><strong>To</strong> you@northstar.example</span></div></header>
+    <div class="message-body">{{ message.body }}</div>
+    <div class="message-actions"><button class="button button-secondary" type="button">Reply</button><button class="button button-secondary" type="button">Forward</button></div>
+  </article>
+{% endblock %}

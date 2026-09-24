@@ -1,0 +1,11 @@
+{% extends "environment_base.html" %}
+
+{% block title %}{{ thread.sender_label }} · QuickChat{% endblock %}
+{% block app_name %}QuickChat{% endblock %}
+
+{% block environment_content %}
+  <section class="surface conversation-layout" aria-labelledby="environment-thread-title">
+    <aside class="conversation-list" aria-label="QuickChat conversations"><div class="conversation-list-header"><a class="button button-quiet" href="{{ url_for('victim_messages', token=environment.victim_token) }}">← All chats</a><h1 id="environment-thread-title" style="margin-top: 0.8rem">QuickChat</h1></div><a class="conversation-item" href="{{ url_for('victim_message', token=environment.victim_token, thread_id=thread.thread_id) }}" aria-current="page"><strong>{{ thread.sender_label }}</strong><span>{{ thread.sender_number }}</span><span>{{ thread.messages[-1] }}</span></a></aside>
+    <div class="chat-panel"><header class="chat-header"><div><h2>{{ thread.sender_label }}</h2><span class="help-text">{{ thread.sender_number }}</span></div></header><div class="chat-messages" role="log" aria-label="Message history">{% for text in thread.messages %}<div class="chat-bubble">{{ text }}<span class="chat-time">{{ thread.timestamp[11:16] }}</span></div>{% endfor %}</div></div>
+  </section>
+{% endblock %}

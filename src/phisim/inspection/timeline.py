@@ -37,6 +37,18 @@ class TimelineEntry(BaseModel):
 
 _DESCRIPTIONS = {
     "scenario_started": "Operator started the local scenario.",
+    "attack_armed": "Operator armed the local attack for delivery.",
+    "message_delivered": (
+        "The simulated message or context became available to the victim."
+    ),
+    "website_viewed": "Participant reached the scenario-specific fake service.",
+    "victim_action_completed": (
+        "Participant completed a non-credential victim action."
+    ),
+    "processing_started": (
+        "The fictional service entered its local processing state."
+    ),
+    "attack_abandoned": "Operator abandoned the local attack.",
     "scenario_completed": "Participant completed the training scenario.",
     "scenario_opened": "Participant opened the simulated scenario.",
     "page_viewed": "Participant viewed the simulation page.",

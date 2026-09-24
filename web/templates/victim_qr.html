@@ -1,0 +1,20 @@
+{% extends "victim_base.html" %}
+
+{% block title %}QR verification · {{ scenario.brand }}{% endblock %}
+{% block app_name %}Gemail · QR message{% endblock %}
+
+{% block victim_content %}
+  <div class="grid grid-2" style="align-items: start">
+    <section class="surface" style="padding: 1.25rem">
+      <span class="badge badge-accent">New message</span>
+      <h1 style="margin-top: 1rem">{{ scenario.title }}</h1>
+      <p class="message-body">{{ scenario.message }}</p>
+      <p class="help-text">The QR image is part of this fictional message.</p>
+    </section>
+    <section class="surface" style="padding: 1.25rem; text-align: center">
+      <h2>Scan QR</h2>
+      <img src="{{ qr_data_uri }}" alt="Fictional QR code" style="margin: 1rem auto" />
+      <a class="button" href="{{ url_for('victim_qr_scan', token=attack.victim_token, scenario_id=scenario.scenario_id) }}">Simulate scan</a>
+    </section>
+  </div>
+{% endblock %}

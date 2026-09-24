@@ -1,0 +1,67 @@
+{% extends "victim_base.html" %}
+
+{% block title %}{{ scenario.brand }} · Secure access{% endblock %}
+{% block app_name %}{{ scenario.brand }}{% endblock %}
+
+{% block victim_content %}
+  <div class="auth-shell" style="min-height: auto; padding: 1rem 0 3rem">
+    <section class="surface auth-card" aria-labelledby="victim-site-title">
+      <div class="auth-brand">
+        <span class="brand-mark" aria-hidden="true">{{ scenario.brand[:2]|upper }}</span>
+        <div>
+          <h1 id="victim-site-title">{{ scenario.brand }}</h1>
+          <h2>{{ scenario.organization }} · secure access</h2>
+        </div>
+      </div>
+      <div class="step-indicator" aria-label="Secure access progress">
+        <div class="step-item active"><span class="step-dot">1</span><span class="step-label">Identify</span></div>
+        <span class="step-connector" aria-hidden="true"></span>
+        <div class="step-item {% if step >= 2 %}active{% endif %}"><span class="step-dot">2</span><span class="step-label">Verify</span></div>
+      </div>
+      {% if step == 1 %}
+        <div class="auth-alert"><strong>{{ scenario.title }}</strong><br />{{ scenario.message }}</div>
+        <form method="post" action="{{ url_for('victim_site_continue', token=attack.victim_token, scenario_id=scenario.scenario_id) }}">
+          <div class="form-field">
+            <label for="identifier">
+              {% if 'registration_id' in scenario.workflow %}Exam registration ID
+              {% elif 'course_code' in scenario.workflow %}Course code
+              {% elif 'student_id' in scenario.workflow %}Student ID
+              {% elif 'address' in scenario.workflow %}Delivery address
+              {% elif 'payment' in scenario.workflow %}Billing email
+              {% elif 'employee_id' in scenario.workflow %}Employee ID
+              {% elif 'email' in scenario.workflow %}Work email
+              {% else %}Account{% endif %}
+            </label>
+            <input id="identifier" name="identifier" type="text" autocomplete="off" required autofocus />
+            <small>Your entry is used only for this local training interaction.</small>
+          </div>
+          <div class="form-actions"><button type="submit">Continue</button></div>
+        </form>
+      {% else %}
+        <div class="auth-alert"><strong>Verification required</strong><br />Complete the final step to continue to {{ scenario.organization }}.</div>
+        <form method="post" action="{{ url_for('victim_site_finish', token=attack.victim_token, scenario_id=scenario.scenario_id) }}">
+          {% if 'password' in scenario.workflow %}
+            <div class="form-field">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" autocomplete="off" required autofocus />
+              <small>The value is discarded after this local interaction.</small>
+            </div>
+            <div class="form-actions"><button type="submit">Sign in</button><a class="button button-secondary" href="{{ url_for('victim_site', token=attack.victim_token, scenario_id=scenario.scenario_id) }}">Start over</a></div>
+          {% else %}
+            <div class="form-field">
+              <label for="confirmation">
+                {% if 'address' in scenario.workflow %}Confirm delivery address
+                {% elif 'payment' in scenario.workflow %}Approve payment review
+                {% else %}Confirm verification{% endif %}
+              </label>
+              <input id="confirmation" name="confirmation" type="text" autocomplete="off" required autofocus />
+              <small>Use any fictional confirmation value. It is not retained.</small>
+            </div>
+            <div class="form-actions"><button type="submit">Continue</button><a class="button button-secondary" href="{{ url_for('victim_site', token=attack.victim_token, scenario_id=scenario.scenario_id) }}">Start over</a></div>
+          {% endif %}
+        </form>
+      {% endif %}
+      <p class="auth-footer">{{ scenario.organization }} · {{ scenario.host }}</p>
+    </section>
+  </div>
+{% endblock %}

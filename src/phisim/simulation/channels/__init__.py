@@ -3,6 +3,7 @@ from phisim.simulation.channels.index import router as index_router
 from phisim.simulation.channels.mfa import router as mfa_router
 from phisim.simulation.channels.qr import router as qr_router
 from phisim.simulation.channels.sms import router as sms_router
+from phisim.simulation.channels.victim import router as victim_router
 from phisim.simulation.channels.website import router as website_router
 
 __all__ = [
@@ -11,5 +12,6 @@ __all__ = [
     "mfa_router",
     "qr_router",
     "sms_router",
+    "victim_router",
     "website_router",
 ]

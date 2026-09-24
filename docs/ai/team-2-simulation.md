@@ -47,7 +47,7 @@ The catalog contains:
 - PayMate payment confirmation.
 - UniSecure Support security verification.
 - Nine Gemail scenarios covering credential phishing, spear phishing,
-  whaling, clone phishing, urgency, tech support, BEC, link spoofing, and
+  whaling, clone phishing, urgency, pretexting, BEC, link spoofing, and
   attachment phishing.
 - QuickChat parcel and support scenarios.
 - Local QR/quishing and NimbusID MFA-fatigue scenarios.

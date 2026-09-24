@@ -1,0 +1,39 @@
+{% extends "victim_base.html" %}
+
+{% block title %}Gemail · Inbox{% endblock %}
+{% block app_name %}Gemail{% endblock %}
+
+{% block victim_content %}
+  <section class="surface fake-app-layout" aria-labelledby="victim-gemail-title">
+    <aside class="fake-sidebar" aria-label="Gemail folders">
+      <h2>Mailbox</h2>
+      <a href="{{ url_for('victim_mail', token=attack.victim_token) }}" aria-current="page">Inbox <span class="badge badge-accent" id="victim-unread-count">{{ messages|selectattr('unread')|list|length }}</span></a>
+      <a href="#starred">Starred</a>
+      <a href="#sent">Sent</a>
+      <a href="#drafts">Drafts</a>
+      <a href="#spam">Spam</a>
+      <a href="#trash">Trash</a>
+    </aside>
+    <div class="fake-content">
+      <div class="fake-toolbar">
+        <div>
+          <h1 id="victim-gemail-title">Inbox</h1>
+          <p class="help-text">Northstar University · personal mailbox</p>
+        </div>
+        <input class="search-box" type="search" placeholder="Search mail" aria-label="Search mail" />
+      </div>
+      <div id="victim-message-list" class="message-list">
+        {% for message in messages %}
+          <a class="message-row {% if message.unread %}unread{% endif %}" data-message-id="{{ message.message_id }}" href="{{ url_for('victim_email', token=attack.victim_token, message_id=message.message_id) }}">
+            <span class="message-sender">{{ message.sender_label }}</span>
+            <span class="message-subject">{{ message.subject }}</span>
+            <span class="message-preview">{{ message.preview }}</span>
+            <span class="message-time">{{ message.timestamp[11:16] }}</span>
+          </a>
+        {% else %}
+          <div class="empty-state"><div><strong>No mail yet</strong><p>New messages will appear here.</p></div></div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endblock %}

@@ -23,7 +23,7 @@
       {% for scenario in website_scenarios %}
         <article class="surface scenario-card">
           <div>
-            <div class="row-between"><span class="badge badge-accent">{{ scenario.channel }}</span><span class="kicker">{{ scenario.attack_type|replace('_', ' ') }}</span></div>
+            <div class="row-between"><span class="badge badge-accent">{{ scenario.attack_type|replace('_', ' ')|title }}</span><span class="kicker">{{ scenario.channel }}</span></div>
             <h3>{{ scenario.brand }} · {{ scenario.title }}</h3>
             <p>{{ scenario.message }}</p>
           </div>

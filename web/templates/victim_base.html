@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Fictional Environment · PhiSim{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='phisim.css') }}" />
+  </head>
+  <body class="victim-body">
+    <div class="victim-shell" data-victim-token="{{ attack.victim_token }}" data-attack-id="{{ attack.attack_id }}">
+      <header class="victim-topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">{{ attack.channel[:1]|upper }}</span>
+          <span>{% block app_name %}Fictional environment{% endblock %}</span>
+        </div>
+        <span class="badge badge-success">Private training environment</span>
+      </header>
+      <div class="safety-strip">Fictional local environment · no external account or message is contacted</div>
+      <main class="page-frame">
+        {% block victim_content %}{% endblock %}
+      </main>
+    </div>
+    <script src="{{ url_for('static', path='victim.js') }}" defer></script>
+  </body>
+</html>

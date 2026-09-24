@@ -1,0 +1,28 @@
+{% extends "victim_base.html" %}
+
+{% block title %}QuickChat · Messages{% endblock %}
+{% block app_name %}QuickChat{% endblock %}
+
+{% block victim_content %}
+  <section class="surface conversation-layout" aria-labelledby="victim-quickchat-title">
+    <aside class="conversation-list" aria-label="QuickChat conversations">
+      <div class="conversation-list-header">
+        <div class="row-between"><h1 id="victim-quickchat-title">QuickChat</h1><span class="badge badge-accent">{{ threads|length }}</span></div>
+        <p class="help-text">Personal messages</p>
+      </div>
+      {% for thread in threads %}
+        <a class="conversation-item" data-thread-id="{{ thread.thread_id }}" href="{{ url_for('victim_message', token=attack.victim_token, thread_id=thread.thread_id) }}">
+          <div class="row-between"><strong>{{ thread.sender_label }}</strong><span class="kicker">{{ thread.timestamp[11:16] }}</span></div>
+          <span>{{ thread.sender_number }}</span>
+          <span>{{ thread.messages[-1] }}</span>
+          {% if thread.unread %}<span class="badge badge-accent">{{ thread.unread }} unread</span>{% endif %}
+        </a>
+      {% else %}
+        <div class="empty-state">No conversations.</div>
+      {% endfor %}
+    </aside>
+    <div class="fake-content">
+      <div class="empty-state"><div><strong>Select a conversation</strong><p>Your messages will appear here.</p></div></div>
+    </div>
+  </section>
+{% endblock %}

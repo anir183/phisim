@@ -27,6 +27,26 @@ def test_lab_page_exposes_operator_workspace(client: TestClient) -> None:
     assert "Fictional target preset" in response.text
     assert "No external" in response.text or "external" in response.text
     assert "Recent local runs" in response.text
+    assert "Active attacks" in response.text
+    assert ">website</span>" in response.text
+
+
+def test_lab_active_attack_row_links_to_victim_context(
+    client: TestClient,
+) -> None:
+    launch = client.post(
+        "/api/lab/launch",
+        json={
+            "scenario_id": "email-phish-001",
+            "target_role": "student",
+            "delay_profile": "instant",
+        },
+    ).json()
+    page = client.get("/lab")
+
+    assert page.status_code == 200
+    assert launch["attack_id"][:10] in page.text
+    assert launch["victim_path"] in page.text
 
 
 def test_every_catalog_target_role_is_launchable() -> None:
@@ -37,6 +57,25 @@ def test_every_catalog_target_role_is_launchable() -> None:
     ]
 
     assert missing == []
+
+
+def test_attack_status_page_keeps_operator_and_victim_separate(
+    client: TestClient,
+) -> None:
+    launch = client.post(
+        "/api/lab/launch",
+        json={
+            "scenario_id": "email-phish-001",
+            "target_role": "student",
+            "delay_profile": "instant",
+        },
+    ).json()
+    page = client.get(launch["operator_path"])
+
+    assert page.status_code == 200
+    assert "Active attack" in page.text
+    assert launch["victim_path"] in page.text
+    assert "Open victim environment" in page.text
 
 
 def test_support_portal_launch_accepts_its_fictional_target_role(
@@ -53,7 +92,8 @@ def test_support_portal_launch_accepts_its_fictional_target_role(
 
     assert response.status_code == 200
     assert response.json()["target_role"] == "university employee"
-    assert response.json()["launch_path"] == "/scenario/support-portal-001"
+    assert response.json()["launch_path"].startswith("/lab/attacks/")
+    assert response.json()["victim_path"].startswith("/v/")
 
 
 def test_lab_api_filters_scenarios_without_exposing_arbitrary_targets(
@@ -89,7 +129,9 @@ def test_lab_launch_creates_session_run_and_safe_start_event(
     assert int(response.headers["content-length"]) > 0
     session_id = body["session_id"]
     assert body["run_id"]
-    assert body["launch_path"] == "/inbox/email-phish-001"
+    assert body["launch_path"].startswith("/lab/attacks/")
+    assert body["victim_path"].startswith("/v/")
+    assert body["attack_id"]
     assert client.cookies.get("phisim_session") == session_id
 
     with Session(test_engine) as database_session:
@@ -102,9 +144,13 @@ def test_lab_launch_creates_session_run_and_safe_start_event(
         assert run.state["last_action"] == "scenario_started"
 
         events = EventRepository(database_session).list_by_session(session_id)
-        assert [event.event_type for event in events] == ["scenario_started"]
+        assert [event.event_type for event in events] == [
+            "scenario_started",
+            "attack_armed",
+        ]
         assert events[0].metadata_["target_role"] == "student"
         assert events[0].metadata_["delay_profile"] == "instant"
+        assert events[1].metadata_["attack_id"] == body["attack_id"]
 
     analysis = client.get(f"/api/analysis/sessions/{session_id}")
     assert analysis.status_code == 200
@@ -149,9 +195,7 @@ def test_support_portal_html_launch_redirects_to_local_route(
     )
 
     assert response.status_code == 303
-    assert response.headers["location"] == (
-        "/scenario/support-portal-001?delay=instant"
-    )
+    assert response.headers["location"].startswith("/lab/attacks/")
 
 
 def test_lab_html_launch_redirects_to_local_route(
@@ -168,5 +212,5 @@ def test_lab_html_launch_redirects_to_local_route(
     )
 
     assert response.status_code == 303
-    assert response.headers["location"] == "/sms/sms-parcel-001?delay=instant"
+    assert response.headers["location"].startswith("/lab/attacks/")
     assert client.cookies.get("phisim_session")

@@ -12,7 +12,7 @@
       "message": "Your university mailbox will be suspended within 24 hours unless you verify your account details.",
       "reminder": "Fictional UniSecure training simulation. No credentials were kept.",
       "target_role": "student",
-      "workflow": ["landing", "username", "password", "outcome"],
+      "workflow": ["landing", "student_id", "password", "outcome"],
       "indicators": ["credential_request", "urgent_language", "domain_mismatch", "authority_impersonation"]
     },
     {
@@ -27,7 +27,7 @@
       "message": "Confirm your delivery address and sign in before your order is released to the carrier.",
       "reminder": "Fictional Amazaun training simulation. No credentials were kept.",
       "target_role": "online shopper",
-      "workflow": ["landing", "username", "password", "outcome"],
+      "workflow": ["landing", "address", "confirmation", "outcome"],
       "indicators": ["credential_request", "urgent_language", "domain_mismatch", "personalization"]
     },
     {
@@ -42,7 +42,7 @@
       "message": "Verify your sign-in to keep your shared files available and avoid service interruption.",
       "reminder": "Fictional CloudBox training simulation. No credentials were kept.",
       "target_role": "collaborator",
-      "workflow": ["landing", "username", "password", "outcome"],
+      "workflow": ["landing", "email", "password", "outcome"],
       "indicators": ["credential_request", "incident_fear", "domain_mismatch"]
     },
     {
@@ -57,12 +57,12 @@
       "message": "Confirm the pending payment and sign in before the hold expires at 5:00 PM today.",
       "reminder": "Fictional PayMate training simulation. No credentials were kept.",
       "target_role": "billing administrator",
-      "workflow": ["landing", "username", "password", "outcome"],
+      "workflow": ["landing", "payment", "confirmation", "outcome"],
       "indicators": ["credential_request", "invoice_fraud", "urgent_language", "domain_mismatch"]
     },
     {
       "scenario_id": "support-portal-001",
-      "attack_type": "tech_support",
+      "attack_type": "pretexting",
       "channel": "website",
       "brand": "UniSecure Support",
       "organization": "Northstar University IT",
@@ -72,8 +72,38 @@
       "message": "We detected a sign-in from an unknown device. Complete a support verification to protect your account.",
       "reminder": "Fictional support training simulation. No credentials were kept.",
       "target_role": "university employee",
-      "workflow": ["landing", "username", "password", "outcome"],
+      "workflow": ["landing", "employee_id", "verification", "outcome"],
       "indicators": ["credential_request", "incident_fear", "tech_support", "domain_mismatch"]
+    },
+    {
+      "scenario_id": "mak-exam-001",
+      "attack_type": "credential_phishing",
+      "channel": "website",
+      "brand": "MAKExam",
+      "organization": "Northstar Institute of Technology",
+      "host": "makexam.example",
+      "title": "Exam registration verification",
+      "greeting": "Northstar student,",
+      "message": "Confirm your examination registration before the local assessment window closes.",
+      "reminder": "Fictional MAKExam training simulation. No credentials were kept.",
+      "target_role": "student",
+      "workflow": ["landing", "registration_id", "password", "outcome"],
+      "indicators": ["credential_request", "urgent_language", "domain_mismatch"]
+    },
+    {
+      "scenario_id": "technosphere-001",
+      "attack_type": "spear_phishing",
+      "channel": "website",
+      "brand": "TechnoSphere",
+      "organization": "Northstar TechnoSphere",
+      "host": "technosphere.example",
+      "title": "Course workspace access",
+      "greeting": "Northstar faculty member,",
+      "message": "A new course workspace is waiting. Verify your course code to continue.",
+      "reminder": "Fictional TechnoSphere training simulation. No credentials were kept.",
+      "target_role": "faculty",
+      "workflow": ["landing", "course_code", "password", "outcome"],
+      "indicators": ["credential_request", "personalization", "domain_mismatch"]
     },
     {
       "scenario_id": "qr-phish-001",
@@ -197,7 +227,7 @@
     },
     {
       "message_id": "tech-support-001",
-      "attack_type": "tech_support",
+      "attack_type": "pretexting",
       "brand": "Gemail",
       "sender_label": "Northstar Support",
       "sender_address": "support@northstar.example",
@@ -307,7 +337,7 @@
     },
     {
       "thread_id": "sms-tech-support-001",
-      "attack_type": "tech_support",
+      "attack_type": "pretexting",
       "brand": "QuickChat",
       "organization": "Northstar Support",
       "sender_label": "Northstar Support",
@@ -345,6 +375,55 @@
       "workflow": ["notification", "prompt", "approve_or_deny", "repeat", "outcome"],
       "delay_profile": "short",
       "indicators": ["mfa_fatigue", "request_confirmation", "urgent_language"]
+    }
+  ],
+  "baseline_email": [
+    {
+      "message_id": "ordinary-001",
+      "sender_label": "Professor Sen",
+      "sender_address": "sen@northstar.example",
+      "subject": "Project schedule for next week",
+      "preview": "The revised lab schedule is attached to this fictional thread.",
+      "body": "Hello,\n\nThe revised project schedule is ready. Please review the meeting time before the next lab session.\n\nRegards,\nProfessor Sen\nNorthstar University",
+      "timestamp": "2026-09-25T08:15:00Z"
+    },
+    {
+      "message_id": "ordinary-002",
+      "sender_label": "Campus Library",
+      "sender_address": "library@northstar.example",
+      "subject": "Borrowing hours this week",
+      "preview": "The fictional library is open until 8 PM on weekdays.",
+      "body": "Hello,\n\nOur fictional library hours have changed for this week. The desk is open until 8 PM.\n\nNorthstar Library Team",
+      "timestamp": "2026-09-24T16:40:00Z",
+      "unread": true
+    },
+    {
+      "message_id": "ordinary-003",
+      "sender_label": "Northstar Students Union",
+      "sender_address": "students@northstar.example",
+      "subject": "Fictional club fair reminder",
+      "preview": "Club sign-ups close before the end of the day.",
+      "body": "Hello everyone,\n\nThe fictional club fair sign-up list closes today. Reply with the club you plan to visit.\n\nStudents Union",
+      "timestamp": "2026-09-24T12:05:00Z",
+      "unread": true
+    }
+  ],
+  "baseline_sms": [
+    {
+      "thread_id": "ordinary-sms-001",
+      "sender_label": "Professor Sen",
+      "sender_number": "+1 (555) 010-1144",
+      "messages": ["Can you send me the revised notes before the lab?"],
+      "timestamp": "2026-09-25T08:20:00Z",
+      "unread": 1
+    },
+    {
+      "thread_id": "ordinary-sms-002",
+      "sender_label": "Study Group",
+      "sender_number": "+1 (555) 010-2210",
+      "messages": ["Meeting moved to 3 PM in the fictional study room."],
+      "timestamp": "2026-09-24T17:30:00Z",
+      "unread": 0
     }
   ]
 }

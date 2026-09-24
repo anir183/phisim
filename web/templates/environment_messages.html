@@ -1,0 +1,18 @@
+{% extends "environment_base.html" %}
+
+{% block title %}QuickChat · Messages{% endblock %}
+{% block app_name %}QuickChat{% endblock %}
+
+{% block environment_content %}
+  <section class="surface conversation-layout" aria-labelledby="environment-quickchat-title">
+    <aside class="conversation-list" aria-label="QuickChat conversations">
+      <div class="conversation-list-header"><div class="row-between"><h1 id="environment-quickchat-title">QuickChat</h1><span class="badge badge-accent">{{ threads|length }}</span></div><p class="help-text">Personal messages</p></div>
+      {% for thread in threads %}
+        <a class="conversation-item" href="{{ url_for('victim_message', token=environment.victim_token, thread_id=thread.thread_id) }}">
+          <div class="row-between"><strong>{{ thread.sender_label }}</strong><span class="kicker">{{ thread.timestamp[11:16] }}</span></div><span>{{ thread.sender_number }}</span><span>{{ thread.messages[-1] }}</span>{% if thread.unread %}<span class="badge badge-accent">{{ thread.unread }} unread</span>{% endif %}
+        </a>
+      {% endfor %}
+    </aside>
+    <div class="fake-content"><div class="empty-state"><div><strong>Select a conversation</strong><p>Your messages will appear here.</p></div></div></div>
+  </section>
+{% endblock %}

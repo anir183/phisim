@@ -1,0 +1,25 @@
+{% extends "victim_base.html" %}
+
+{% block title %}Training complete · {{ scenario.brand }}{% endblock %}
+{% block app_name %}{{ scenario.brand }}{% endblock %}
+
+{% block victim_content %}
+  <section class="surface outcome-card" aria-labelledby="victim-reveal-title">
+    <div class="row-between">
+      <div><p class="eyebrow">Training complete</p><h1 id="victim-reveal-title">What happened?</h1></div>
+      <span class="badge badge-success">Local incident</span>
+    </div>
+    <p class="message-body">You followed a fictional {{ scenario.attack_type|replace('_', ' ') }} workflow through {{ scenario.brand }}. The submitted value was not retained.</p>
+    <h2 style="margin-top: 1.5rem">Why it was suspicious</h2>
+    <ul class="evidence-list">
+      {% for code in scenario.indicators %}<li><strong>{{ code|replace('_', ' ')|title }}</strong>{{ indicator_info.get(code, 'An additional training observation.') }}</li>{% endfor %}
+    </ul>
+    <h2 style="margin-top: 1.5rem">Safer response</h2>
+    <ul class="evidence-list">
+      <li><strong>Use the known app</strong>Open the service independently instead of following an unexpected message link.</li>
+      <li><strong>Slow down</strong>Urgency and authority claims are reasons to verify, not reasons to rush.</li>
+      <li><strong>Report safely</strong>Do not forward credentials or sensitive information.</li>
+    </ul>
+    <div class="form-actions" style="margin-top: 1.5rem"><a class="button" href="{{ return_path }}">Return to environment</a></div>
+  </section>
+{% endblock %}

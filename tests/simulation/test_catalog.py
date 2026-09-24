@@ -56,3 +56,19 @@ def test_catalog_summaries_cover_all_workflows() -> None:
         "mfa",
     }
     assert all(summary.indicators for summary in summaries)
+
+
+def test_victim_baseline_content_exists_separately_from_attack_content() -> (
+    None
+):
+    from phisim.simulation.catalog import BASELINE_EMAILS, BASELINE_SMS
+
+    assert len(BASELINE_EMAILS) >= 3
+    assert len(BASELINE_SMS) >= 2
+    assert all(
+        message.message_id.startswith("ordinary-")
+        for message in BASELINE_EMAILS
+    )
+    assert all(
+        thread.thread_id.startswith("ordinary-") for thread in BASELINE_SMS
+    )

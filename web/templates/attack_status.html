@@ -1,0 +1,61 @@
+{% extends "shell.html" %}
+
+{% block title %}Active Attack · PhiSim Lab{% endblock %}
+
+{% block content %}
+  <main class="page-frame narrow" data-attack-id="{{ attack.attack_id }}">
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow">Operator attack control</p>
+        <h1>Active attack</h1>
+        <p class="hero-copy">The victim environment remains separate while this local incident develops.</p>
+      </div>
+      <span id="attack-status" class="badge badge-warning">{{ attack.status }}</span>
+    </header>
+
+    <section class="surface outcome-card" aria-labelledby="attack-name">
+      <p class="eyebrow">{{ attack.channel|upper }} · {{ attack.scenario_id }}</p>
+      <h1 id="attack-name">{{ attack.scenario_id }}</h1>
+      <p class="help-text">Run <code>{{ attack.run_id[:12] }}</code> · incident Session <code>{{ attack.operator_session_id[:12] }}</code> · victim Session <code>{{ attack.victim_session_id[:12] }}</code> · context <code>{{ attack.victim_token[:12] }}</code></p>
+
+      <div class="grid grid-2" style="margin-top: 1.25rem">
+        <div class="surface-soft" style="padding: 1rem">
+          <div class="kicker">Lifecycle</div>
+          <p id="attack-lifecycle">{{ attack.status }}</p>
+        </div>
+        <div class="surface-soft" style="padding: 1rem">
+          <div class="kicker">Delivery due</div>
+          <p id="attack-due">{{ attack.delivery_due_at }}</p>
+        </div>
+      </div>
+
+      <div class="notice" style="margin-top: 1rem">
+        <strong>Victim link</strong>
+        <p>Open this in the victim tab. It starts with ordinary fictional content; the attack message appears only after delivery.</p>
+        <a id="victim-link" class="button" href="{{ victim_path }}">Open victim environment</a>
+      </div>
+
+      <div class="section-heading" style="margin-top: 1.5rem">
+        <h2>Live incident events</h2>
+        <span class="badge" id="attack-event-count">{{ event_count }}</span>
+      </div>
+      <div id="attack-events" class="timeline-list">
+        {% for event in events %}
+          <div class="timeline-item"><strong>{{ event.event_type }}</strong><span class="kicker">{{ event.timestamp }}</span><span class="timeline-meta">{{ event.source }}</span></div>
+        {% else %}
+          <div class="empty-state">No events recorded yet.</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-actions" style="margin-top: 1.25rem">
+        <button id="refresh-attack" class="button button-secondary" type="button">Refresh status</button>
+        <button id="abandon-attack" class="button button-danger" type="button">Abandon attack</button>
+        <a class="button button-quiet" href="{{ url_for('console') }}">Open analyst console</a>
+      </div>
+    </section>
+  </main>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', path='lab.js') }}" defer></script>
+{% endblock %}

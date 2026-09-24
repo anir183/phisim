@@ -9,6 +9,14 @@ import phisim.infra.sqlite.connection as connection
 from phisim.main import app
 
 
+def test_health_endpoint_is_local_and_success() -> None:
+    with TestClient(app) as client:
+        response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 def test_lifespan_initializes_temporary_database(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

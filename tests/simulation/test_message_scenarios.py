@@ -48,6 +48,8 @@ def test_index_lists_every_channel(client: TestClient) -> None:
     assert "/qr/qr-phish-001" in response.text
     assert "/mfa/mfa-fatigue-001/1" in response.text
     assert "/scenario/credential-basic-001" in response.text
+    assert ">website</span>" in response.text
+    assert "Credential Phishing" in response.text
 
 
 @pytest.mark.parametrize("artifact_id,channel,view_path", ARTIFACTS)

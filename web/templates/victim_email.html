@@ -1,0 +1,46 @@
+{% extends "victim_base.html" %}
+
+{% block title %}{{ message.subject }} · Gemail{% endblock %}
+{% block app_name %}Gemail{% endblock %}
+
+{% block victim_content %}
+  <div class="fake-app-bar">
+    <a class="button button-quiet" href="{{ url_for('victim_mail', token=attack.victim_token) }}">← Back to inbox</a>
+    <span class="badge badge-success">Mailbox</span>
+  </div>
+  <article class="message-detail" style="margin-top: 1.25rem" aria-labelledby="victim-email-subject">
+    <header class="message-detail-header">
+      <div class="row-between">
+        <span class="badge {% if message.is_attack %}badge-warning{% else %}badge-accent{% endif %}">{% if message.is_attack %}New message{% else %}Mailbox{% endif %}</span>
+        <span class="kicker">{{ message.timestamp }}</span>
+      </div>
+      <h1 id="victim-email-subject">{{ message.subject }}</h1>
+      <div class="message-meta">
+        <span><strong>From</strong> {{ message.sender_label }} &lt;{{ message.sender_address }}&gt;</span>
+        <span><strong>To</strong> you@northstar.example</span>
+      </div>
+    </header>
+    <div class="message-body">{{ message.body }}</div>
+    {% if message.spoofed_url %}
+      <div class="notice notice-warning"><strong>Link preview:</strong> {{ message.spoofed_url }} · local destination {{ message.target_scenario_id }}</div>
+    {% endif %}
+    {% if message.is_attack %}
+      {% if message.attachment_name %}
+        <div class="attachment-card">
+          <div class="row"><span class="attachment-icon" aria-hidden="true">DOC</span><div><div class="attachment-name">{{ message.attachment_name }}</div><div class="help-text">Inert attachment preview</div></div></div>
+          <a class="button button-secondary" href="{{ url_for('victim_attachment', token=attack.victim_token, message_id=message.message_id) }}">Preview attachment</a>
+        </div>
+      {% endif %}
+      <div class="message-actions">
+        <a class="button" href="{{ url_for('victim_email_link', token=attack.victim_token, message_id=message.message_id) }}">Open message link</a>
+        <button class="button button-secondary" type="button">Reply</button>
+        <button class="button button-secondary" type="button">Forward</button>
+      </div>
+    {% else %}
+      <div class="message-actions">
+        <button class="button button-secondary" type="button">Reply</button>
+        <button class="button button-secondary" type="button">Forward</button>
+      </div>
+    {% endif %}
+  </article>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "victim_base.html" %}
+
+{% block title %}Processing · {{ scenario.brand }}{% endblock %}
+{% block app_name %}{{ scenario.brand }}{% endblock %}
+
+{% block victim_content %}
+  <section class="surface outcome-card" aria-labelledby="victim-processing-title">
+    <p class="eyebrow">{{ scenario.organization }}</p>
+    <h1 id="victim-processing-title">Checking your request</h1>
+    {% if 'address' in scenario.workflow %}
+      <p class="message-body">Confirming the fictional delivery details and checking the local order preview.</p>
+    {% elif 'payment' in scenario.workflow %}
+      <p class="message-body">Reviewing the fictional payment request and preparing the local confirmation screen.</p>
+    {% elif 'verification' in scenario.workflow %}
+      <p class="message-body">Validating the fictional support request and preparing the result screen.</p>
+    {% else %}
+      <p class="message-body">Authenticating the fictional account request and preparing the result screen.</p>
+    {% endif %}
+    <div class="loading-line" role="status" aria-label="Local request processing">
+      <span></span><span></span><span></span>
+    </div>
+    <p class="help-text">This local transition is deterministic and does not contact an external service.</p>
+    <form method="post" action="{{ url_for('victim_result', token=attack.victim_token, scenario_id=scenario.scenario_id) }}" style="margin-top: 1.25rem">
+      <button type="submit">View result</button>
+    </form>
+  </section>
+{% endblock %}

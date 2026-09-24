@@ -16,6 +16,13 @@
       <span class="badge badge-accent">Local only</span>
     </header>
 
+    <section class="notice" aria-label="Victim environment setup">
+      <strong>Two-tab demonstration:</strong>
+      open the <a href="{{ url_for('baseline_mail') }}">fictional mailbox</a> or
+      <a href="{{ url_for('baseline_messages') }}">QuickChat</a> first, then
+      launch an attack here. The environment stays baseline until delivery.
+    </section>
+
     <section class="surface" aria-labelledby="filters-title">
       <div class="fake-content">
         <div class="fake-toolbar">
@@ -59,6 +66,35 @@
       </div>
     </section>
 
+    <section class="surface" style="margin-top: 1rem" aria-labelledby="active-attacks-title">
+      <div class="fake-content">
+        <div class="fake-toolbar">
+          <h2 id="active-attacks-title">Active attacks</h2>
+          <span class="badge badge-warning">{{ active_attacks|length }} local runs</span>
+        </div>
+        {% if active_attacks %}
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Attack</th><th>Channel</th><th>Status</th><th>Delivery</th><th>Victim</th></tr></thead>
+              <tbody>
+                {% for attack in active_attacks %}
+                  <tr>
+                    <td><a href="{{ url_for('attack_status_page', attack_id=attack.attack_id) }}"><code>{{ attack.attack_id[:10] }}</code></a><br /><span class="help-text">{{ attack.scenario_id }}</span></td>
+                    <td>{{ attack.channel }}</td>
+                    <td><span class="badge {{ 'badge-success' if attack.status == 'COMPLETED' else 'badge-warning' }}">{{ attack.status }}</span></td>
+                    <td>{{ attack.delivery_due_at }}</td>
+                    <td><a href="{{ active_attack_paths[attack.attack_id] }}">Open context</a></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">No active attacks. Launch a scenario to arm one.</div>
+        {% endif %}
+      </div>
+    </section>
+
     <section class="surface" style="margin-top: 1rem" aria-labelledby="recent-title">
       <div class="fake-content">
         <div class="fake-toolbar">
@@ -98,14 +134,14 @@
           <article class="surface scenario-card">
             <div>
               <div class="row-between">
-                <span class="badge badge-accent">{{ summary.channel }}</span>
-                <span class="kicker">{{ summary.attack_type|replace('_', ' ') }}</span>
+                <span class="badge badge-accent">{{ summary.attack_type|replace('_', ' ')|title }}</span>
+                <span class="kicker">{{ summary.channel }}</span>
               </div>
               <h3>{{ summary.title }}</h3>
               <p>{{ summary.description }}</p>
             </div>
             <div class="scenario-card-footer">
-              <span class="kicker">{{ summary.brand }} · {{ summary.target_role }}</span>
+              <span class="kicker">{{ summary.brand }} · {{ summary.target_role|title }}</span>
               <form method="post" action="{{ url_for('launch_lab_scenario_form') }}">
                 <input type="hidden" name="scenario_id" value="{{ summary.scenario_id }}" />
                 <input type="hidden" name="target_role" value="{{ summary.target_role }}" />

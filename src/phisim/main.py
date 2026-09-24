@@ -28,6 +28,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+@app.get("/health", include_in_schema=False)
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 app.mount(
     "/static",
     StaticFiles(directory=str(STATIC_DIR)),

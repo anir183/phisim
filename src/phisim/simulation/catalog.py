@@ -112,6 +112,29 @@ class MfaScenario:
 
 
 @dataclass(frozen=True)
+class BaselineEmail:
+    message_id: str
+    sender_label: str
+    sender_address: str
+    subject: str
+    preview: str
+    body: str
+    timestamp: str
+    folder: str = "Inbox"
+    unread: bool = False
+
+
+@dataclass(frozen=True)
+class BaselineSms:
+    thread_id: str
+    sender_label: str
+    sender_number: str
+    messages: tuple[str, ...]
+    timestamp: str
+    unread: int = 0
+
+
+@dataclass(frozen=True)
 class CatalogSummary:
     scenario_id: str
     attack_type: str
@@ -139,14 +162,22 @@ def _load_catalog() -> dict[str, Any]:
 
 
 def _validate_catalog(data: dict[str, Any]) -> None:
-    required_sections = ("website", "email", "sms", "mfa")
+    required_sections = (
+        "website",
+        "email",
+        "sms",
+        "mfa",
+        "baseline_email",
+        "baseline_sms",
+    )
     missing = [name for name in required_sections if name not in data]
     if missing:
         raise ValueError(f"Scenario catalog is missing sections: {missing}")
 
     identifiers: set[str] = set()
+    catalog_sections = ("website", "email", "sms", "mfa")
     website_ids = {str(item["scenario_id"]) for item in data["website"]}
-    for section in required_sections:
+    for section in catalog_sections:
         for item in data[section]:
             identifier = str(
                 item.get(
@@ -195,6 +226,18 @@ def _validate_catalog(data: dict[str, Any]) -> None:
             raise ValueError(
                 f"Catalog host is not reserved fictional space: {host}"
             )
+
+    for section, identifier_key in (
+        ("baseline_email", "message_id"),
+        ("baseline_sms", "thread_id"),
+    ):
+        for item in data[section]:
+            identifier = str(item.get(identifier_key, ""))
+            if not identifier or identifier in identifiers:
+                raise ValueError(
+                    f"Invalid or duplicate baseline identifier: {identifier}"
+                )
+            identifiers.add(identifier)
 
 
 def _indicators(item: dict[str, Any]) -> tuple[str, ...]:
@@ -301,6 +344,37 @@ def _sms_threads(data: dict[str, Any]) -> tuple[SmsThread, ...]:
     )
 
 
+def _baseline_emails(data: dict[str, Any]) -> tuple[BaselineEmail, ...]:
+    return tuple(
+        BaselineEmail(
+            message_id=str(item["message_id"]),
+            sender_label=str(item["sender_label"]),
+            sender_address=str(item["sender_address"]),
+            subject=str(item["subject"]),
+            preview=str(item["preview"]),
+            body=str(item["body"]),
+            timestamp=str(item["timestamp"]),
+            folder=str(item.get("folder", "Inbox")),
+            unread=bool(item.get("unread", False)),
+        )
+        for item in data["baseline_email"]
+    )
+
+
+def _baseline_sms(data: dict[str, Any]) -> tuple[BaselineSms, ...]:
+    return tuple(
+        BaselineSms(
+            thread_id=str(item["thread_id"]),
+            sender_label=str(item["sender_label"]),
+            sender_number=str(item["sender_number"]),
+            messages=tuple(str(value) for value in item["messages"]),
+            timestamp=str(item["timestamp"]),
+            unread=int(item.get("unread", 0)),
+        )
+        for item in data["baseline_sms"]
+    )
+
+
 def _mfa_scenarios(data: dict[str, Any]) -> tuple[MfaScenario, ...]:
     return tuple(
         MfaScenario(
@@ -332,6 +406,8 @@ SCENARIOS: tuple[Scenario, ...] = _website_scenarios(_CATALOG)
 EMAIL_MESSAGES: tuple[EmailMessage, ...] = _email_messages(_CATALOG)
 SMS_THREADS: tuple[SmsThread, ...] = _sms_threads(_CATALOG)
 MFA_SCENARIOS: tuple[MfaScenario, ...] = _mfa_scenarios(_CATALOG)
+BASELINE_EMAILS: tuple[BaselineEmail, ...] = _baseline_emails(_CATALOG)
+BASELINE_SMS: tuple[BaselineSms, ...] = _baseline_sms(_CATALOG)
 
 INDICATOR_INFO: dict[str, str] = {
     "credential_request": "It directly asked for usernames or passwords.",
@@ -396,6 +472,24 @@ def get_mfa_scenario(scenario_id: str) -> MfaScenario | None:
             for scenario in MFA_SCENARIOS
             if scenario.scenario_id == scenario_id
         ),
+        None,
+    )
+
+
+def get_baseline_email(message_id: str) -> BaselineEmail | None:
+    return next(
+        (
+            message
+            for message in BASELINE_EMAILS
+            if message.message_id == message_id
+        ),
+        None,
+    )
+
+
+def get_baseline_sms(thread_id: str) -> BaselineSms | None:
+    return next(
+        (thread for thread in BASELINE_SMS if thread.thread_id == thread_id),
         None,
     )
 

@@ -6,6 +6,7 @@ from phisim.simulation.channels import (
     mfa_router,
     qr_router,
     sms_router,
+    victim_router,
     website_router,
 )
 
@@ -16,3 +17,4 @@ router.include_router(email_router)
 router.include_router(sms_router)
 router.include_router(qr_router)
 router.include_router(mfa_router)
+router.include_router(victim_router)
