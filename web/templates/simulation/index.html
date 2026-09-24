@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}PhiSim Simulation Lab{% endblock %}
+
+{% block content %}
+  <section class="card" aria-labelledby="index-title">
+    <header class="login-header">
+      <div class="org-mark" aria-hidden="true">PS</div>
+      <div>
+        <h1 id="index-title" class="page-title">PhiSim Simulation Lab</h1>
+        <p class="hint">Fictional, local security-awareness exercises</p>
+      </div>
+    </header>
+
+    <p>
+      These short experiences demonstrate common phishing patterns. Each page is
+      a fictional, local simulation: submitted credentials are never stored or
+      transmitted, and every interesting interaction is recorded as a telemetry
+      event for the analyst console.
+    </p>
+
+    <div class="scenario-list">
+      {% for scenario in scenarios %}
+        <article class="scenario-row">
+          <div>
+            <h2 class="scenario-name">{{ scenario.organization }}</h2>
+            <p class="hint">
+              {{ scenario.scenario_id }} &middot; {{ scenario.channel }} channel
+              &middot; {{ scenario.title }}
+            </p>
+          </div>
+          <a
+            class="btn"
+            href="{{ url_for('scenario_login', scenario_id=scenario.scenario_id) }}"
+          >
+            Launch simulation
+          </a>
+        </article>
+      {% else %}
+        <p>No simulations are configured yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
+
+{% block footer %}
+  PhiSim is a local security-awareness lab. No external delivery, no real
+  accounts, no stored credentials.
+{% endblock %}

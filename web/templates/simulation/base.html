@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}PhiSim{% endblock %}</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: #10131a;
+        color: #e6e9ef;
+        min-height: 100vh;
+      }
+      .simulation-badge {
+        position: fixed;
+        top: 0.9rem;
+        left: 0.9rem;
+        z-index: 10;
+        background: #23304d;
+        border: 1px solid #3c4c73;
+        color: #bcd2ff;
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.3rem 0.6rem;
+        border-radius: 999px;
+      }
+      main {
+        max-width: 46rem;
+        margin: 0 auto;
+        padding: 3.4rem 1.25rem 2rem;
+      }
+      .card {
+        background: #1a1f2b;
+        border: 1px solid #2b3242;
+        border-radius: 12px;
+        padding: 2rem;
+      }
+      .login-header {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      .org-mark {
+        width: 3.25rem;
+        height: 3.25rem;
+        border-radius: 12px;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        background: #2d6cff;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.15rem;
+      }
+      .ok-mark {
+        background: #1f8a4c;
+        font-size: 1.4rem;
+      }
+      .page-title {
+        margin: 0;
+        font-size: 1.35rem;
+      }
+      .hint {
+        color: #8b93a7;
+        font-size: 0.85rem;
+        margin: 0.2rem 0 0;
+      }
+      .urgency-banner {
+        background: #3a2d12;
+        border: 1px solid #7a5c1e;
+        color: #ffd98a;
+        border-radius: 8px;
+        padding: 0.9rem 1rem;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+      }
+      .ok-banner {
+        background: #13281c;
+        border: 1px solid #245c3b;
+        color: #9fe0b8;
+        border-radius: 8px;
+        padding: 0.9rem 1rem;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1.1rem;
+      }
+      .field label {
+        font-size: 0.9rem;
+        color: #b9c0cf;
+      }
+      .field input {
+        background: #0f1320;
+        border: 1px solid #343c50;
+        color: #eef1f6;
+        border-radius: 8px;
+        padding: 0.7rem 0.8rem;
+        font-size: 1rem;
+      }
+      .field input:focus {
+        outline: 2px solid #2d6cff;
+        border-color: transparent;
+      }
+      .btn {
+        background: #2d6cff;
+        color: #fff;
+        border: 0;
+        border-radius: 8px;
+        padding: 0.8rem 1.1rem;
+        font-size: 1rem;
+        cursor: pointer;
+        display: inline-block;
+        text-decoration: none;
+        text-align: center;
+      }
+      .btn:hover {
+        background: #3f79ff;
+      }
+      .link-hint {
+        margin-top: 1.25rem;
+      }
+      .host-display {
+        color: #f2b35c;
+        font-family: ui-monospace, monospace;
+      }
+      .section-title {
+        margin: 1.75rem 0 0.75rem;
+        font-size: 1.05rem;
+      }
+      .indicator-list {
+        margin: 0 0 1.75rem;
+        padding-left: 1.25rem;
+        line-height: 1.55;
+      }
+      .indicator-list li {
+        margin-bottom: 0.6rem;
+      }
+      .steps {
+        margin: 0 0 1.75rem;
+        padding-left: 1.25rem;
+        line-height: 1.55;
+      }
+      .scenario-list {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .scenario-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        background: #141927;
+        border: 1px solid #2b3242;
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+      }
+      .scenario-name {
+        margin: 0 0 0.25rem;
+        font-size: 1.05rem;
+      }
+      .simulation-footer {
+        text-align: center;
+        color: #6b7288;
+        font-size: 0.8rem;
+        padding: 1.5rem 1rem 2.5rem;
+      }
+      @media (max-width: 560px) {
+        .scenario-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .card {
+          padding: 1.4rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <span class="simulation-badge">PhiSim local simulation</span>
+    <main>{% block content %}{% endblock %}</main>
+    <footer class="simulation-footer">
+      {% block footer %}{% endblock %}
+    </footer>
+  </body>
+</html>
