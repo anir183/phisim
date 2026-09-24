@@ -76,6 +76,36 @@ The existing event tests still send a `timestamp` field in create
 requests even though timestamp is server-generated. Remove that stale
 input from the tests as part of backend contract cleanup.
 
+## Simulation integration notes (Team 2)
+
+The P0 fake credential site (`credential-basic-001`) is implemented on
+`feature/team-2`. Contract notes for Team 1 / integrators:
+
+-   **Session source:** there is no session API yet, so the simulation
+    assigns a browser cookie `phisim_session` (random hex token) and
+    reuses it across events. This is provisional until Team 1 exposes a
+    session lifecycle; `TelemetryService` currently accepts any
+    `session_id`.
+-   **Emit boundary:** `phisim/simulation/emit.py` composes
+    `EventRepository` + `TelemetryService` (the same composition the
+    telemetry routes use) and records an `EventCreate`. No SQLAlchemy
+    writes live in simulation code.
+-   **Router registration:** `src/phisim/main.py` still needs two lines
+    (Team 1 owns the file; Team 2 left it untouched by agreement):
+
+    ``` python
+    from phisim.simulation.routes import router as simulation_router
+
+    app.include_router(simulation_router)
+    ```
+
+-   **Templates:** live under `web/templates/simulation/` with inline CSS
+    because `web/static` is not mounted yet. Externalizing to
+    `web/static/simulation/` is a follow-up once static serving exists.
+-   **Scenario metadata:** a provisional local registry in
+    `phisim/simulation/catalog.py` (frozen `Scenario` dataclass) pending
+    the Team 1 shared scenario registry.
+
 ## Integration rule
 
 If an implementation can wait for another team's stable contract, do not

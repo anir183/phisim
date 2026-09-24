@@ -19,12 +19,16 @@ telemetry/session contracts.
 
 ### Fake credential site
 
--   [ ] scenario metadata
--   [ ] fake login page
--   [ ] safe submission handling
--   [ ] `credential_submission_attempted`
--   [ ] educational outcome page
--   [ ] test that submitted password is not persisted/emitted
+-   [x] scenario metadata
+-   [x] fake login page
+-   [x] safe submission handling
+-   [x] `credential_submission_attempted`
+-   [x] educational outcome page
+-   [x] test that submitted password is not persisted/emitted
+
+Scenario `credential-basic-001` is implemented in
+`phisim/simulation/catalog.py`, `routes.py`, and `web/templates/simulation/`.
+See `docs/ai/integration.md` for contract notes.
 
 ### Email
 
