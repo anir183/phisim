@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from phisim.infra.sqlite.models.scenario import Scenario
@@ -10,7 +11,13 @@ class ScenarioRepository:
 
     def create(self, scenario: Scenario) -> Scenario:
         self.session.add(scenario)
-        self.session.commit()
+
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise
+
         self.session.refresh(scenario)
 
         return scenario

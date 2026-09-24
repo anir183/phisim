@@ -1,6 +1,8 @@
 from datetime import UTC, datetime
 
+import pytest
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from phisim.infra.sqlite.models.event import Event
@@ -89,3 +91,110 @@ def test_create_update_and_retrieve_session(test_engine: Engine) -> None:
         assert retrieved.status == "completed"
         assert retrieved.completed_at is not None
         assert repository.list_all() == [saved]
+
+
+def test_scenario_repository_rolls_back_duplicate(test_engine: Engine) -> None:
+    with Session(test_engine) as session:
+        repository = ScenarioRepository(session)
+        created_at = datetime.now(UTC)
+        repository.create(
+            Scenario(
+                scenario_id="scenario-duplicate",
+                name="First Scenario",
+                scenario_type="credential",
+                description="",
+                created_at=created_at,
+            )
+        )
+
+        with pytest.raises(IntegrityError):
+            repository.create(
+                Scenario(
+                    scenario_id="scenario-duplicate",
+                    name="Second Scenario",
+                    scenario_type="credential",
+                    description="",
+                    created_at=created_at,
+                )
+            )
+
+        retrieved = repository.get_by_scenario_id("scenario-duplicate")
+
+        assert retrieved is not None
+        assert retrieved.name == "First Scenario"
+
+
+def test_session_repository_rolls_back_duplicate(test_engine: Engine) -> None:
+    with Session(test_engine) as session:
+        scenario_repository = ScenarioRepository(session)
+        repository = SessionRepository(session)
+        started_at = datetime.now(UTC)
+        scenario_repository.create(
+            Scenario(
+                scenario_id="scenario-duplicate",
+                name="Scenario",
+                scenario_type="credential",
+                description="",
+                created_at=started_at,
+            )
+        )
+        repository.create(
+            SessionModel(
+                session_id="session-duplicate",
+                scenario_id="scenario-duplicate",
+                started_at=started_at,
+                completed_at=None,
+                status="active",
+            )
+        )
+
+        with pytest.raises(IntegrityError):
+            repository.create(
+                SessionModel(
+                    session_id="session-duplicate",
+                    scenario_id="scenario-duplicate",
+                    started_at=started_at,
+                    completed_at=None,
+                    status="completed",
+                )
+            )
+
+        retrieved = repository.get_by_session_id("session-duplicate")
+
+        assert retrieved is not None
+        assert retrieved.status == "active"
+
+
+def test_event_repository_rolls_back_duplicate(test_engine: Engine) -> None:
+    with Session(test_engine) as session:
+        repository = EventRepository(session)
+        timestamp = datetime.now(UTC)
+        repository.create(
+            Event(
+                event_id="event-duplicate",
+                timestamp=timestamp,
+                session_id="session-001",
+                scenario_id="scenario-001",
+                event_type="scenario_opened",
+                source="browser",
+                metadata_={},
+            )
+        )
+
+        with pytest.raises(IntegrityError):
+            repository.create(
+                Event(
+                    event_id="event-duplicate",
+                    timestamp=timestamp,
+                    session_id="session-001",
+                    scenario_id="scenario-001",
+                    event_type="scenario_interaction",
+                    source="browser",
+                    metadata_={},
+                )
+            )
+
+        retrieved = repository.get_by_event_id("event-duplicate")
+
+        assert retrieved is not None
+        assert retrieved.event_type == "scenario_opened"

@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from phisim.infra.sqlite.models.event import Event
@@ -10,7 +11,13 @@ class EventRepository:
 
     def create(self, event: Event) -> Event:
         self.session.add(event)
-        self.session.commit()
+
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise
+
         self.session.refresh(event)
 
         return event

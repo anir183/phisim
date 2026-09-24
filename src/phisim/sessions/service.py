@@ -1,6 +1,8 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from sqlalchemy.exc import IntegrityError
+
 from phisim.infra.sqlite.models.session import Session as SessionModel
 from phisim.infra.sqlite.repos.scenario import ScenarioRepository
 from phisim.infra.sqlite.repos.session import SessionRepository
@@ -49,7 +51,13 @@ class SessionService:
             status=SessionStatus.ACTIVE.value,
         )
 
-        return self.repository.create(session)
+        try:
+            return self.repository.create(session)
+        except IntegrityError:
+            if self.repository.get_by_session_id(session_id) is not None:
+                raise DuplicateSessionError from None
+
+            raise
 
     def get(self, session_id: str) -> SessionModel:
         session = self.repository.get_by_session_id(session_id)

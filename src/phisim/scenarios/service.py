@@ -1,5 +1,7 @@
 from datetime import UTC, datetime
 
+from sqlalchemy.exc import IntegrityError
+
 from phisim.infra.sqlite.models.scenario import Scenario
 from phisim.infra.sqlite.repos.scenario import ScenarioRepository
 from phisim.scenarios.schemas import ScenarioCreate
@@ -32,7 +34,16 @@ class ScenarioService:
             created_at=datetime.now(UTC),
         )
 
-        return self.repository.create(scenario)
+        try:
+            return self.repository.create(scenario)
+        except IntegrityError:
+            if (
+                self.repository.get_by_scenario_id(scenario_data.scenario_id)
+                is not None
+            ):
+                raise DuplicateScenarioError from None
+
+            raise
 
     def get(self, scenario_id: str) -> Scenario:
         scenario = self.repository.get_by_scenario_id(scenario_id)

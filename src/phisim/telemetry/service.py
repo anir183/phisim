@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from pydantic import ValidationError
+from sqlalchemy.exc import IntegrityError
 
 from phisim.infra.sqlite.models.event import Event
 from phisim.infra.sqlite.repos.event import EventRepository
@@ -100,7 +101,13 @@ class TelemetryService:
             metadata_=event_data.metadata,
         )
 
-        event = self.repository.create(event)
+        try:
+            event = self.repository.create(event)
+        except IntegrityError:
+            if self.repository.get_by_event_id(event_data.event_id) is not None:
+                raise DuplicateEventError(event_data.event_id) from None
+
+            raise
 
         await self.broadcaster.broadcast(
             {

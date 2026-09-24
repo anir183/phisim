@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as OrmSession
 
 from phisim.infra.sqlite.models.session import Session as SessionModel
@@ -10,7 +11,13 @@ class SessionRepository:
 
     def create(self, session: SessionModel) -> SessionModel:
         self.session.add(session)
-        self.session.commit()
+
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise
+
         self.session.refresh(session)
 
         return session
@@ -31,7 +38,12 @@ class SessionRepository:
         return list(self.session.scalars(statement))
 
     def save(self, session: SessionModel) -> SessionModel:
-        self.session.commit()
+        try:
+            self.session.commit()
+        except IntegrityError:
+            self.session.rollback()
+            raise
+
         self.session.refresh(session)
 
         return session
