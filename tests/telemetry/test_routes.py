@@ -6,7 +6,6 @@ def test_create_event(client: TestClient) -> None:
         "/api/events",
         json={
             "event_id": "event-001",
-            "timestamp": "2026-09-24T08:30:00Z",
             "session_id": "session-001",
             "scenario_id": "credential-basic-001",
             "event_type": "page_viewed",
@@ -34,7 +33,6 @@ def test_create_event_rejects_missing_event_id(
     response = client.post(
         "/api/events",
         json={
-            "timestamp": "2026-09-24T08:30:00Z",
             "session_id": "session-001",
             "scenario_id": "credential-basic-001",
             "event_type": "page_viewed",
@@ -52,7 +50,6 @@ def test_create_event_rejects_empty_event_id(
         "/api/events",
         json={
             "event_id": "",
-            "timestamp": "2026-09-24T08:30:00Z",
             "session_id": "session-001",
             "scenario_id": "credential-basic-001",
             "event_type": "page_viewed",
@@ -68,7 +65,6 @@ def test_create_event_rejects_duplicate_event_id(
 ) -> None:
     event = {
         "event_id": "event-duplicate",
-        "timestamp": "2026-09-24T08:30:00Z",
         "session_id": "session-001",
         "scenario_id": "credential-basic-001",
         "event_type": "page_viewed",
