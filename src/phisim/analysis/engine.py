@@ -103,4 +103,63 @@ def analyze_event(event: EventResponse) -> list[Indicator]:
             )
         )
 
+    # 5. Unexpected Link
+    link_url = str(metadata.get("link_url", "")).lower()
+    if link_url and "login" not in link_url.lower() and "reset" in link_url:
+        # Example heuristic for unexpected links
+        indicators.append(
+            Indicator(
+                code="unexpected_link",
+                category="deception",
+                context="medium",
+                evidence=f"Found unexpected link pattern: '{link_url}'",
+                explanation=(
+                    "Links that are unexpected or use generic reset patterns "
+                    "are often suspicious."
+                ),
+            )
+        )
+
+    # 6. Suspicious Attachment
+    attachment_name = str(metadata.get("attachment_name", "")).lower()
+    suspicious_extensions = [".exe", ".scr", ".js", ".vbs", ".bat", ".iso"]
+    for ext in suspicious_extensions:
+        if attachment_name.endswith(ext):
+            indicators.append(
+                Indicator(
+                    code="suspicious_attachment",
+                    category="malware_delivery",
+                    context="high",
+                    evidence=(
+                        f"Attachment '{attachment_name}' has suspicious "
+                        f"extension '{ext}'"
+                    ),
+                    explanation=(
+                        "Executable or script attachments are commonly used "
+                        "to deliver malware."
+                    ),
+                )
+            )
+            break
+
+    # 7. Unusual MFA Request
+    if (
+        event.event_type == "mfa_prompt_displayed"
+        and metadata.get("is_unusual_context") is True
+    ):
+        indicators.append(
+            Indicator(
+                code="unusual_mfa_request",
+                category="credential_harvesting",
+                context="high",
+                evidence=(
+                    "MFA prompt displayed in an unusual context or location."
+                ),
+                explanation=(
+                    "Attackers use unexpected MFA prompts to bypass "
+                    "two-factor authentication (MFA fatigue)."
+                ),
+            )
+        )
+
     return indicators

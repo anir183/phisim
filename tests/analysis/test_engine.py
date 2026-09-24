@@ -60,3 +60,42 @@ def test_analyze_domain_mismatch():
 
     assert len(indicators) == 1
     assert indicators[0].code == "domain_mismatch"
+
+
+def test_analyze_unexpected_link():
+    event = create_mock_event(
+        "email_opened",
+        {
+            "link_url": "http://evil.com/reset-password",
+        },
+    )
+    indicators = analyze_event(event)
+
+    assert len(indicators) == 1
+    assert indicators[0].code == "unexpected_link"
+
+
+def test_analyze_suspicious_attachment():
+    event = create_mock_event(
+        "email_opened",
+        {
+            "attachment_name": "invoice.exe",
+        },
+    )
+    indicators = analyze_event(event)
+
+    assert len(indicators) == 1
+    assert indicators[0].code == "suspicious_attachment"
+
+
+def test_analyze_unusual_mfa_request():
+    event = create_mock_event(
+        "mfa_prompt_displayed",
+        {
+            "is_unusual_context": True,
+        },
+    )
+    indicators = analyze_event(event)
+
+    assert len(indicators) == 1
+    assert indicators[0].code == "unusual_mfa_request"
