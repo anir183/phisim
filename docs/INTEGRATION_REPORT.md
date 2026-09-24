@@ -99,6 +99,9 @@ The principal integration commits are:
 | `1128eef` | align simulation evidence assertions |
 | `582cb8a` | integrate safe console telemetry |
 | `95359ed` | finalize integration handoff documentation |
+| `832ed6e` | add the 20-section integration report |
+| `caeaf88` | start a new Session after terminal flows |
+| `01a2278` | normalize timeline compatibility and UTC sorting |
 
 Team 1's original eight local commits remain ancestors of the staging branch.
 No history was rebased or force-updated, and no remote operation other than a
