@@ -379,7 +379,7 @@ The required commands were run against the final code:
 
 | Command | Result |
 |---|---|
-| `uv run format` | 79 files already formatted |
+| `uv run format` | 80 files already formatted |
 | `uv run test` | 118 passed, 1 warning |
 | `uv run lint` | passed |
 | `uv run typecheck` | 0 errors, 0 warnings, 0 informations |
