@@ -181,3 +181,29 @@ Stop and review the design if a feature needs:
 
 The educational requirement should be solved with a safer simulation
 mechanism whenever possible.
+
+------------------------------------------------------------------------
+
+## 13. Email/SMS implementation boundary
+
+The local simulation UI is deliberately the only P0 "delivery"
+mechanism.
+
+### Email
+
+``` text
+Fake inbox -> fake message -> local interaction
+```
+
+There is no SMTP connection and no external email API.
+
+### SMS
+
+``` text
+Fake conversation -> fake message -> local interaction
+```
+
+There is no carrier connection and no external SMS API.
+
+This means a fresh PhiSim checkout does not need email/SMS credentials
+and does not need outbound network access to demonstrate either feature.

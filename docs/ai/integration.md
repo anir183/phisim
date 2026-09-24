@@ -80,3 +80,56 @@ input from the tests as part of backend contract cleanup.
 
 If an implementation can wait for another team's stable contract, do not
 bypass the contract by importing that team's internals.
+
+## First 2--3 hour team run
+
+The first shared session should optimize for a working vertical slice,
+not feature count.
+
+### Parallel start
+
+``` text
+Team 1: Event + Scenario + Session contracts
+Team 2: Fake credential site
+Team 3: Indicator fixtures/rules + secret-safety test
+Team 4: Console event/session view
+```
+
+### Integration checkpoint
+
+At the end of the first run:
+
+``` text
+fake site
+  -> event
+  -> persistence
+  -> analysis
+  -> WebSocket
+  -> console
+```
+
+Do not start email/SMS integration until this path works.
+
+### Next run
+
+Use the same primitives to add:
+
+``` text
+fake email inbox -> fake email -> local link
+fake SMS thread  -> fake message -> local link
+```
+
+No external delivery APIs are involved.
+
+## Integration checklist
+
+-   [ ] scenario can be identified without hardcoded UI-only state
+-   [ ] session is created/reused correctly
+-   [ ] event has stable event_id
+-   [ ] timestamp is server-generated
+-   [ ] submitted password never appears in event metadata
+-   [ ] duplicate events are handled deterministically
+-   [ ] analysis consumes events rather than database internals
+-   [ ] console consumes API/WebSocket contracts rather than SQLAlchemy
+-   [ ] all links remain local
+-   [ ] no external delivery provider is configured

@@ -376,3 +376,41 @@ Before requesting review:
 -   [ ] Contract changes are explicitly documented.
 -   [ ] Security boundary remains intact.
 -   [ ] No real delivery mechanism was added.
+
+------------------------------------------------------------------------
+
+## 19. Short collaborative development sessions
+
+For a 2--3 hour team session, use this rhythm.
+
+### 0--15 minutes
+
+-   pull/rebase from `dev`
+-   read the relevant `docs/ai/*.md`
+-   agree on contracts
+-   confirm file ownership
+
+### 15--90 minutes
+
+Work in parallel on owned files.
+
+Avoid shared root files unless required.
+
+### 90--120 minutes
+
+Integrate the smallest working path.
+
+Run focused tests.
+
+### 120--180 minutes, if available
+
+-   fix integration issues
+-   run `uv run check`
+-   update the relevant `docs/ai/*.md`
+-   commit coherent changes
+-   prepare the next handoff
+
+Do not spend the entire session on architecture discussion.
+
+The first short-session milestone is the fake-site vertical slice. The
+next is email + SMS using the same primitives.

@@ -228,7 +228,39 @@ equivalent safe state.
 
 ### Email simulation
 
-Email is represented as an inert simulated message.
+Email is represented as an inert simulated message inside a local PhiSim
+mailbox.
+
+The P0 implementation does **not** send email. It does not require SMTP,
+an SMTP server, Gmail/Microsoft APIs, SendGrid, Mailgun, Resend, or any
+other external mail provider.
+
+The first implementation is simply:
+
+``` text
+FastAPI
+   |
+Jinja2/local templates
+   |
+Fake inbox
+   |
+Fake email viewer
+   |
+link/interaction
+   |
+existing simulation + telemetry
+```
+
+A simulated email may contain:
+
+-   fictional sender
+-   fictional subject
+-   body text
+-   local links
+-   harmless attachment representations
+
+If RFC/MIME parsing becomes educationally useful later, Python's
+standard-library `email` package may be used. It is not required for P0.
 
 Possible interactions:
 
@@ -242,13 +274,82 @@ No SMTP transport is required.
 
 ### SMS simulation
 
-SMS is represented as an inert simulated message/conversation.
+SMS is represented as an inert simulated message/conversation inside
+PhiSim.
+
+The P0 implementation does **not** send SMS. It does not require Twilio,
+Vonage, AWS SNS, Firebase messaging, a carrier API, phone-number lists,
+or any external SMS provider.
+
+The first implementation is simply:
+
+``` text
+FastAPI
+   |
+Jinja2/local templates
+   |
+Fake conversation UI
+   |
+link/interaction
+   |
+existing simulation + telemetry
+```
+
+No phone number is contacted. A sender can be represented by fictional
+text such as `Delivery Service` or a synthetic number.
 
 No carrier or SMS gateway is required.
 
 ------------------------------------------------------------------------
 
-## 7. Analysis subsystem
+## 7. Shared channel model
+
+Email, SMS, and the fake credential site are **channels of the same
+simulation system**, not three independent applications.
+
+``` text
+                    Scenario
+                       |
+          +------------+------------+
+          |            |            |
+       Website       Email         SMS
+          |            |            |
+          +------------+------------+
+                       |
+                  Interaction
+                       |
+                   Telemetry
+                       |
+             +---------+---------+
+             |                   |
+          SQLite             Analysis
+             |                   |
+             +---------+---------+
+                       |
+                    Console
+```
+
+Channel-specific code should primarily describe presentation and
+interaction semantics. Session management, event emission, persistence,
+analysis, and console integration remain shared.
+
+### P0 package rule
+
+No new dependency is required specifically for email or SMS.
+
+The existing stack is sufficient:
+
+``` text
+FastAPI
+Jinja2
+Pydantic
+SQLAlchemy + SQLite
+WebSocket
+```
+
+Use Python's standard library before adding another dependency.
+
+## 8. Analysis subsystem
 
 Analysis converts raw events and scenario metadata into structured
 observations.
@@ -282,7 +383,7 @@ Analysis should be deterministic and testable.
 
 ------------------------------------------------------------------------
 
-## 8. Inspection subsystem
+## 9. Inspection subsystem
 
 Inspection answers:
 
@@ -307,7 +408,7 @@ in analysis.
 
 ------------------------------------------------------------------------
 
-## 9. Security subsystem
+## 10. Security subsystem
 
 Security contains guardrails that protect the simulation itself.
 
@@ -327,7 +428,7 @@ demands one.
 
 ------------------------------------------------------------------------
 
-## 10. Analyst console
+## 11. Analyst console
 
 The console is a consumer of backend contracts.
 
@@ -362,7 +463,7 @@ application generates most events.
 
 ------------------------------------------------------------------------
 
-## 11. Application composition
+## 12. Application composition
 
 `main.py` should remain a composition root.
 
@@ -376,7 +477,7 @@ It should not become the place where business logic is implemented.
 
 ------------------------------------------------------------------------
 
-## 12. Dependency direction
+## 13. Dependency direction
 
 Prefer this direction:
 
@@ -408,7 +509,7 @@ repository -> service
 
 ------------------------------------------------------------------------
 
-## 13. Shared utilities
+## 14. Shared utilities
 
 `utils/` is for genuinely cross-cutting small helpers.
 
@@ -423,7 +524,7 @@ Before adding a utility:
 
 ------------------------------------------------------------------------
 
-## 14. Web assets
+## 15. Web assets
 
 Use separate namespaces under the shared web roots:
 
@@ -442,7 +543,7 @@ template or stylesheet.
 
 ------------------------------------------------------------------------
 
-## 15. External boundaries
+## 16. External boundaries
 
 PhiSim intentionally has no required external delivery boundary.
 

@@ -70,3 +70,29 @@ understand and merge.
 
 **Reason:** Reducing shared-file edits is the primary merge-conflict
 prevention mechanism.
+
+------------------------------------------------------------------------
+
+## D008 --- Email and SMS are local simulated channels
+
+**Decision:** P0 email and SMS use local FastAPI/Jinja2 simulation UIs.
+They do not use real delivery APIs.
+
+**Reason:** The project demonstrates phishing recognition and telemetry.
+External delivery would add unnecessary credentials, network access,
+operational complexity, and safety risk.
+
+**P0 dependency impact:** No additional third-party package is required
+specifically for email or SMS.
+
+------------------------------------------------------------------------
+
+## D009 --- Vertical slice before scenario breadth
+
+**Decision:** The first 2--3 hour team session targets one complete
+fake-site → telemetry → analysis → console path before implementing all
+P0 channels.
+
+**Reason:** A working vertical slice validates the shared contracts
+early and prevents four teams from independently building incompatible
+partial systems.

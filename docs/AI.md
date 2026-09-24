@@ -160,35 +160,35 @@ implementation.
 
 Use the narrowest appropriate subsystem.
 
-  -----------------------------------------------------------------------
-  Need                                Location
-  ----------------------------------- -----------------------------------
-  event API                           `src/phisim/telemetry/`
+  ---------------------------------------------------------------------
+  Need                               Location
+  ---------------------------------- ----------------------------------
+  event API                          `src/phisim/telemetry/`
 
-  DB model/repository                 `src/phisim/infra/sqlite/`
+  DB model/repository                `src/phisim/infra/sqlite/`
 
-  simulation behavior                 `src/phisim/simulation/`
+  simulation behavior                `src/phisim/simulation/`
 
-  scenario assets                     `scenarios/`
+  scenario assets                    `scenarios/`
 
-  indicator logic                     `src/phisim/analysis/`
+  indicator logic                    `src/phisim/analysis/`
 
-  inspection/explanation              `src/phisim/inspection/`
+  inspection/explanation             `src/phisim/inspection/`
 
-  security guardrail                  `src/phisim/security/`
+  security guardrail                 `src/phisim/security/`
 
-  analyst UI backend                  `src/phisim/console/`
+  analyst UI backend                 `src/phisim/console/`
 
-  console browser assets              `web/templates/console/`,
-                                      `web/static/console/`
+  console browser assets             `web/templates/console/`,
+                                     `web/static/console/`
 
-  simulation browser assets           `web/templates/simulation/`,
-                                      `web/static/simulation/`
+  simulation browser assets          `web/templates/simulation/`,
+                                     `web/static/simulation/`
 
-  tiny cross-cutting helper           `src/phisim/utils/`
+  tiny cross-cutting helper          `src/phisim/utils/`
 
-  tests                               matching `tests/` area
-  -----------------------------------------------------------------------
+  tests                              matching `tests/` area
+  ---------------------------------------------------------------------
 
 Do not create new top-level directories without a documented reason.
 
@@ -450,7 +450,72 @@ They are not a replacement for canonical project documentation.
 
 ------------------------------------------------------------------------
 
-## 17. Final response format for coding agents
+## 18. First 2--3 hour execution target
+
+For the first collaborative implementation session, do not attempt to
+finish every P0 feature.
+
+The target is one complete vertical slice:
+
+``` text
+fake credential site
+    -> session
+    -> telemetry
+    -> SQLite
+    -> analysis
+    -> WebSocket
+    -> console
+```
+
+With four contributors working roughly 2--3 hours each, use this split:
+
+-   Team 1: minimum Scenario/Session/Event backend contract
+-   Team 2: fake credential site
+-   Team 3: four basic indicators + credential-secret safety test
+-   Team 4: live event/session console
+
+Once that works, the next short run adds email and SMS.
+
+## 19. Email/SMS implementation rule
+
+Email and SMS are **local simulated interfaces**, not delivery systems.
+
+### Email
+
+Use:
+
+``` text
+FastAPI + Jinja2
+    -> fake inbox
+    -> fake email viewer
+    -> local links/interactions
+```
+
+No SMTP server or email provider is required.
+
+### SMS
+
+Use:
+
+``` text
+FastAPI + Jinja2
+    -> fake message conversation
+    -> local links/interactions
+```
+
+No SMS gateway or carrier API is required.
+
+The P0 implementation requires no new third-party dependency for either
+channel.
+
+Python's standard-library `email` package may be used later if
+representing MIME/header structures is educationally useful.
+
+Do not independently introduce Twilio, Vonage, AWS SNS, Gmail/Microsoft
+APIs, SendGrid, Mailgun, Resend, SMTP credentials, phone-number lists,
+or external recipients.
+
+## 20. Final response format for coding agents
 
 When an AI coding task is complete, report:
 

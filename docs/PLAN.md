@@ -17,7 +17,138 @@ No real phishing delivery is part of the project.
 
 ------------------------------------------------------------------------
 
-## 2. Priority model
+## 2A. First 2--3 hour implementation run
+
+The first team session is intentionally a **thin vertical slice**, not
+an attempt to finish P0.
+
+With four contributors working for roughly **2--3 hours each** (about
+8--12 person-hours total), the target is:
+
+``` text
+fake credential site
+      ↓
+session
+      ↓
+credential_submission_attempted
+      ↓
+existing event API
+      ↓
+SQLite
+      ↓
+WebSocket
+      ↓
+analyst console
+```
+
+### Team 1 --- first run
+
+**Goal:** stabilize the minimum backend contract.
+
+1.  Confirm/fix `EventCreate` and `EventResponse`.
+2.  Remove stale client-supplied `timestamp` from tests; timestamp
+    remains server-generated.
+3.  Add the minimum Scenario model/repository.
+4.  Add the minimum Session model/repository.
+5.  Expose only the endpoints needed for the first vertical slice.
+6.  Add/maintain test fixtures.
+
+**Do not spend this run on:**
+
+-   migrations
+-   PostgreSQL support
+-   generic repository interfaces
+-   large refactors
+-   production deployment
+
+### Team 2 --- first run
+
+**Goal:** make the fake credential site usable.
+
+1.  Add one fictional scenario.
+2.  Render a local fake login page.
+3.  Start/associate a session.
+4.  Handle form submission safely.
+5.  Emit `credential_submission_attempted`.
+6.  Never include the submitted password in telemetry.
+7.  Show a safe educational outcome after submission.
+
+### Team 3 --- first run
+
+**Goal:** provide the minimum explainable analysis.
+
+Implement a small deterministic indicator set:
+
+``` text
+credential_request
+urgent_language
+domain_mismatch
+authority_impersonation
+```
+
+The team can initially test against fixtures rather than waiting for
+full end-to-end integration.
+
+Also add the first security test proving that submitted passwords cannot
+enter an event payload.
+
+### Team 4 --- first run
+
+**Goal:** turn the existing console into a useful first demo.
+
+1.  Display the live event stream.
+2.  Display scenario/session information.
+3.  Display a simple event timeline.
+4.  Render event values safely using DOM text APIs.
+5.  Handle a missing/disconnected WebSocket without crashing the page.
+
+### First-run definition of done
+
+The first run is successful when a contributor can:
+
+``` text
+open local fake site
+    → interact with fake login
+    → submit fictional credentials
+    → receive an educational outcome
+    → observe an event in the console
+    → see the event persisted in SQLite
+    → see basic indicators
+```
+
+This is the first **functional PhiSim milestone**.
+
+### Second 2--3 hour run
+
+After the vertical slice works, reuse the exact same machinery for:
+
+1.  **Email phishing**
+2.  **SMS/smishing**
+
+Neither requires a real delivery provider.
+
+Email:
+
+``` text
+FastAPI
+  → fake inbox
+  → fake email viewer
+  → local link
+  → existing simulation/telemetry
+```
+
+SMS:
+
+``` text
+FastAPI
+  → fake conversation
+  → local message/link
+  → existing simulation/telemetry
+```
+
+No SMTP, email provider, SMS gateway, Twilio, Vonage, AWS SNS, Gmail
+API, Microsoft Graph, SendGrid, Mailgun, or Resend integration is
+required for P0.
 
 ### P0 --- first integrated milestone
 
@@ -71,7 +202,7 @@ P2 work must not destabilize P0 contracts.
 
 ------------------------------------------------------------------------
 
-## 3. Workstream split for four members
+## 3. Priority model
 
 The split is deliberately **directory-oriented**. Each member should
 normally create and modify files in their owned area only.

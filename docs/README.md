@@ -9,9 +9,9 @@ phishing platform.
 
 ## Documentation map
 
-  ------------------------------------------------------------------------
+  -----------------------------------------------------------------------
   Document                             Purpose
-  ------------------------------------ -----------------------------------
+  ------------------------------------ ----------------------------------
   [PLAN.md](PLAN.md)                   What will be implemented, in what
                                        priority, with acceptance criteria
                                        and team ownership
@@ -36,8 +36,8 @@ phishing platform.
   [CONTRIBUTING.md](CONTRIBUTING.md)   Cross-platform setup and human/AI
                                        development workflow
 
-  [SECURITY.md](SECURITY.md)           Safety boundary for all simulations
-                                       and development
+  [SECURITY.md](SECURITY.md)           Safety boundary for all
+                                       simulations and development
 
   [DECISIONS.md](DECISIONS.md)         Short record of important
                                        architectural decisions
@@ -45,7 +45,7 @@ phishing platform.
   [ai/](ai/)                           AI-agent planning and workstream
                                        files; these are the only project
                                        docs AI agents may edit
-  ------------------------------------------------------------------------
+  -----------------------------------------------------------------------
 
 ## Priority
 
