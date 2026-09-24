@@ -18,12 +18,12 @@ enforce safety constraints.
 
 ## Phase 0
 
--   [ ] define indicator structure
--   [ ] define indicator codes
--   [ ] implement deterministic rules
--   [ ] define evidence/explanation format
--   [ ] create analysis fixtures
--   [ ] define secret-stripping/security checks
+-   [x] define indicator structure
+-   [x] define indicator codes
+-   [x] implement deterministic rules
+-   [x] define evidence/explanation format
+-   [x] create analysis fixtures
+-   [x] define fail-closed secret-safety checks
 
 Initial indicators:
 
@@ -39,20 +39,23 @@ unusual_mfa_request
 
 ## Phase 1
 
--   [ ] scenario-aware indicator rules
--   [ ] session-level aggregation
--   [ ] inspection/timeline explanation
--   [ ] console-ready analysis results
+-   [x] scenario-aware indicator rules
+-   [x] session-level aggregation
+-   [x] inspection/timeline explanation
+-   [x] console-ready analysis results
 
-## Rules
+## Integrated contract
 
-Analysis should not own UI rendering.
+Analysis consumes validated `EventResponse` values. The WebSocket boundary
+attaches deterministic indicators to each live Event, and
+`GET /api/analysis/sessions/{session_id}` (also available as
+`GET /api/sessions/{session_id}/analysis`) returns deduplicated indicators
+plus a UTC `Z` timeline for reconnecting clients.
 
-Inspection should explain analysis results rather than duplicate their
-detection logic.
-
-Security helpers should enforce concrete constraints, not become a
-generic policy engine.
+Simulation evidence uses non-secret fields such as `subject`, `content`,
+`channel`, link targets, attachment names, and explicit catalog flags. The
+security guardrail rejects raw or nested credential keys; it never silently
+strips them. The Team 1 credential allowlist remains authoritative.
 
 ## Output principle
 

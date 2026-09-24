@@ -185,7 +185,7 @@ No external delivery APIs are involved.
 -   [x] timestamp is server-generated
 -   [x] submitted password never appears in event metadata
 -   [x] duplicate events are handled deterministically
--   [ ] analysis consumes events rather than database internals
+-   [x] analysis consumes events rather than database internals
 -   [ ] console consumes API/WebSocket contracts rather than SQLAlchemy
 -   [x] all links remain local
 -   [x] no external delivery provider is configured

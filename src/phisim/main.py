@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from phisim.analysis.routes import router as analysis_router
 from phisim.console.routes import router as console_router
 from phisim.infra.sqlite.connection import initialize_database
 from phisim.scenarios.routes import router as scenario_router
@@ -38,6 +39,7 @@ async def request_validation_error_handler(
 
 app.include_router(scenario_router)
 app.include_router(session_router)
+app.include_router(analysis_router)
 app.include_router(simulation_router)
 app.include_router(telemetry_router)
 app.include_router(console_router)
