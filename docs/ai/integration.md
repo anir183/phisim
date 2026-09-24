@@ -128,8 +128,8 @@ No external delivery APIs are involved.
 -   [ ] event has stable event_id
 -   [ ] timestamp is server-generated
 -   [x] submitted password never appears in event metadata
--   [ ] duplicate events are handled deterministically
+-   [x] duplicate events are handled deterministically
 -   [x] analysis consumes events rather than database internals
--   [ ] console consumes API/WebSocket contracts rather than SQLAlchemy
+-   [x] console consumes API/WebSocket contracts rather than SQLAlchemy
 -   [ ] all links remain local
 -   [ ] no external delivery provider is configured

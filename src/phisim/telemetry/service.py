@@ -39,6 +39,22 @@ class TelemetryService:
 
         event = self.repository.create(event)
 
+        from phisim.analysis.engine import analyze_event
+        from phisim.telemetry.schemas import EventResponse
+
+        event_response = EventResponse(
+            id=event.id,
+            event_id=event.event_id,
+            timestamp=event.timestamp,
+            session_id=event.session_id,
+            scenario_id=event.scenario_id,
+            event_type=event.event_type,
+            source=event.source,
+            metadata=event.metadata_,
+        )
+        indicators = analyze_event(event_response)
+        indicator_dicts = [i.model_dump() for i in indicators]
+
         await self.broadcaster.broadcast(
             {
                 "id": event.id,
@@ -49,6 +65,7 @@ class TelemetryService:
                 "event_type": event.event_type,
                 "source": event.source,
                 "metadata": event.metadata_,
+                "indicators": indicator_dicts,
             }
         )
 
