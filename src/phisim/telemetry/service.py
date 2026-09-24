@@ -23,6 +23,10 @@ class TelemetryService:
         if self.repository.get_by_event_id(event_data.event_id) is not None:
             raise DuplicateEventError(event_data.event_id)
 
+        from phisim.security.guardrails import enforce_safe_event_metadata
+
+        safe_metadata = enforce_safe_event_metadata(event_data.metadata)
+
         event = Event(
             event_id=event_data.event_id,
             timestamp=datetime.now(UTC),
@@ -30,7 +34,7 @@ class TelemetryService:
             scenario_id=event_data.scenario_id,
             event_type=event_data.event_type,
             source=event_data.source,
-            metadata_=event_data.metadata,
+            metadata_=safe_metadata,
         )
 
         event = self.repository.create(event)
