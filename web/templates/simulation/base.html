@@ -1,7 +1,9 @@
 {% extends "shell.html" %}
 
+{% block body_class %}legacy-shell{% if site_theme %} mock-site mock-{{ site_theme.key }}{% endif %}{% endblock %}
+
 {% block content %}
-  <main class="{% block page_class %}page-frame{% endblock %}">
+  <main class="{% block page_class %}page-frame{% if site_theme %} mock-site-shell mock-{{ site_theme.key }}{% endif %}{% endblock %}">
     {% block simulation_header %}{% endblock %}
     {% block simulation_content %}{% endblock %}
   </main>

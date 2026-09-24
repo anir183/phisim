@@ -20,6 +20,7 @@ from phisim.simulation.channels.common import (
 )
 from phisim.simulation.evidence import sms_evidence, sms_link_evidence
 from phisim.simulation.lifecycle import ensure_simulation_session
+from phisim.simulation.site_themes import get_site_theme
 
 router = APIRouter(tags=["simulation"])
 
@@ -40,7 +41,11 @@ async def sms_inbox(
     return templates.TemplateResponse(
         request=request,
         name="simulation/sms.html",
-        context={"threads": threads, "active_page": "simulation"},
+        context={
+            "threads": threads,
+            "site_theme": get_site_theme("sms", "sms"),
+            "active_page": "simulation",
+        },
     )
 
 
@@ -56,7 +61,11 @@ async def sms_view(
     response = templates.TemplateResponse(
         request=request,
         name="simulation/sms_thread.html",
-        context={"thread": thread, "active_page": "simulation"},
+        context={
+            "thread": thread,
+            "site_theme": get_site_theme(thread.thread_id, "sms"),
+            "active_page": "simulation",
+        },
     )
     session_id = ensure_simulation_session(
         request,

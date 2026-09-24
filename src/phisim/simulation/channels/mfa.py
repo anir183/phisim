@@ -20,6 +20,7 @@ from phisim.simulation.lifecycle import (
     complete_simulation_session,
     ensure_simulation_session,
 )
+from phisim.simulation.site_themes import get_site_theme
 
 router = APIRouter(tags=["simulation"])
 
@@ -54,6 +55,7 @@ async def mfa_prompt(
         context=timing_context(
             request,
             scenario=scenario,
+            site_theme=get_site_theme(scenario.scenario_id, "mfa"),
             step=current_step,
             active_page="simulation",
         ),
@@ -157,6 +159,7 @@ async def mfa_respond(
         context=timing_context(
             request,
             scenario=scenario,
+            site_theme=get_site_theme(scenario.scenario_id, "mfa"),
             fatigued=fatigued,
             indicator_info=INDICATOR_INFO,
             active_page="simulation",

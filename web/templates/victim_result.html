@@ -1,27 +1,25 @@
 {% extends "victim_base.html" %}
 
-{% block title %}Processing · {{ scenario.brand }}{% endblock %}
-{% block app_name %}{{ scenario.brand }}{% endblock %}
+{% block title %}Request received · {{ site_theme.display_name }}{% endblock %}
+{% block app_name %}{{ site_theme.display_name }}{% endblock %}
 
 {% block victim_content %}
-  <section class="surface outcome-card" aria-labelledby="victim-processing-title">
-    <p class="eyebrow">{{ scenario.organization }}</p>
-    <h1 id="victim-processing-title">Checking your request</h1>
-    {% if 'address' in scenario.workflow %}
-      <p class="message-body">Confirming the fictional delivery details and checking the local order preview.</p>
-    {% elif 'payment' in scenario.workflow %}
-      <p class="message-body">Reviewing the fictional payment request and preparing the local confirmation screen.</p>
-    {% elif 'verification' in scenario.workflow %}
-      <p class="message-body">Validating the fictional support request and preparing the result screen.</p>
+  <section class="mock-result-card mock-result-{{ site_theme.key }}" aria-labelledby="victim-result-title">
+    <span class="mock-card-icon" aria-hidden="true">{{ site_theme.mark }}</span>
+    <p class="mock-site-eyebrow">{{ scenario.organization }}</p>
+    <h1 id="victim-result-title">Your request is ready to review</h1>
+    {% if "address" in scenario.workflow %}
+      <p class="mock-hero-body">Your fictional delivery details are ready for the next local step.</p>
+    {% elif "payment" in scenario.workflow %}
+      <p class="mock-hero-body">Your fictional payment review is ready for the next local step.</p>
+    {% elif "verification" in scenario.workflow %}
+      <p class="mock-hero-body">Your fictional support verification is ready for the next local step.</p>
     {% else %}
-      <p class="message-body">Authenticating the fictional account request and preparing the result screen.</p>
+      <p class="mock-hero-body">Your fictional account request is ready for the next local step.</p>
     {% endif %}
-    <div class="loading-line" role="status" aria-label="Local request processing">
-      <span></span><span></span><span></span>
-    </div>
-    <p class="help-text">This local transition is deterministic and does not contact an external service.</p>
-    <form method="post" action="{{ url_for('victim_result', token=attack.victim_token, scenario_id=scenario.scenario_id) }}" style="margin-top: 1.25rem">
-      <button type="submit">View result</button>
+    <form method="post" action="{{ url_for('victim_result', token=attack.victim_token, scenario_id=scenario.scenario_id) }}">
+      <button type="submit">Open training debrief</button>
     </form>
+    {% if end_url %}{% include "sites/end_control.html" %}{% endif %}
   </section>
 {% endblock %}

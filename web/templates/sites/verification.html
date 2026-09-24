@@ -1,0 +1,35 @@
+<section class="mock-verification mock-verification-{{ site_theme.key }}" aria-labelledby="mock-verification-title">
+  <div class="mock-verification-breadcrumb">
+    <a href="{{ home_action|default('#') }}">{{ site_theme.display_name }}</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ verification_title|default("Complete verification") }}</span>
+  </div>
+  <section class="mock-auth-card" aria-labelledby="mock-verification-title">
+    <div class="mock-auth-brand">
+      <span class="mock-card-icon" aria-hidden="true">{{ site_theme.mark }}</span>
+      <div>
+        <p class="mock-site-eyebrow">{{ scenario.organization }}</p>
+        <h1 id="mock-verification-title">{{ verification_title|default("Complete verification") }}</h1>
+      </div>
+    </div>
+    <p class="mock-auth-intro">{{ verification_body|default(scenario.message) }}</p>
+    <form method="post" action="{{ form_action }}" class="mock-site-form">
+      <div class="form-field">
+        <label for="mock-verification-field">{{ field_label|default("Verification detail") }}</label>
+        <input id="mock-verification-field" name="{{ field_name|default('confirmation') }}" type="{{ field_type|default('text') }}" autocomplete="off" required autofocus />
+        <small>The value is discarded and never stored.</small>
+      </div>
+      <div class="form-actions">
+        <button type="submit">{{ submit_label|default("Continue") }}</button>
+        <a class="button button-secondary" href="{{ home_action|default('#') }}">Back to {{ site_theme.display_name }}</a>
+      </div>
+    </form>
+    <p class="mock-local-note">Local fictional workflow · no external service is contacted.</p>
+  </section>
+  {% if end_url %}
+    <footer class="mock-site-footer mock-verification-footer">
+      <span>{{ site_theme.footer_note }}</span>
+      {% include "sites/end_control.html" %}
+    </footer>
+  {% endif %}
+</section>

@@ -1,0 +1,73 @@
+<section class="mock-landing mock-landing-{{ site_theme.key }}" aria-labelledby="mock-landing-title">
+  <nav class="mock-landing-nav" aria-label="{{ site_theme.display_name }} navigation">
+    <div class="mock-landing-nav-links">
+      {% for item in site_theme.nav %}<span class="{% if loop.first %}active{% endif %}">{{ item }}</span>{% endfor %}
+    </div>
+    <span class="mock-landing-domain">{{ scenario.host }}</span>
+  </nav>
+  <div class="mock-landing-progress" aria-label="Fictional verification progress">
+    <span class="mock-progress-step active"><span class="step-dot">1</span><span class="step-label">Identify</span></span>
+    <span class="mock-progress-line" aria-hidden="true"></span>
+    <span class="mock-progress-step"><span class="step-dot">2</span><span class="step-label">Verify</span></span>
+  </div>
+  <div class="mock-landing-hero">
+    <div class="mock-hero-copy">
+      <p class="mock-site-eyebrow">{{ scenario.organization }}</p>
+      <h1 id="mock-landing-title">{{ site_theme.hero_title }}</h1>
+      <p class="mock-hero-body">{{ site_theme.hero_body }}</p>
+      <div class="mock-hero-meta">
+        <span class="mock-status-dot" aria-hidden="true"></span>
+        <span>{{ site_theme.stat_label }}: <strong>{{ site_theme.stat_value }}</strong></span>
+        <span class="mock-meta-divider" aria-hidden="true">·</span>
+        <span>{{ scenario.host }}</span>
+      </div>
+    </div>
+    <div class="mock-hero-card">
+      <span class="mock-card-icon" aria-hidden="true">{{ site_theme.mark }}</span>
+      <div>
+        <strong>{{ scenario.title }}</strong>
+        <p>{{ scenario.greeting }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mock-dashboard-grid">
+    <div class="mock-dashboard-cards">
+      {% for title, body in site_theme.cards %}
+        <article class="mock-dashboard-card">
+          <span class="mock-card-kicker">{{ title }}</span>
+          <p>{{ body }}</p>
+        </article>
+      {% endfor %}
+    </div>
+
+    <section class="mock-action-card" aria-labelledby="mock-action-title">
+      <div class="mock-action-heading">
+        <div>
+          <p class="mock-site-eyebrow">Action required</p>
+          <h2 id="mock-action-title">{{ site_theme.primary_cta }}</h2>
+        </div>
+        <span class="mock-action-badge">Fictional</span>
+      </div>
+      <p class="mock-action-message">{{ scenario.message }}</p>
+      {% if form_action %}
+        <form method="post" action="{{ form_action }}" class="mock-site-form">
+          <div class="form-field">
+            <label for="mock-identifier">{{ identifier_label|default("Account identifier") }}</label>
+            <input id="mock-identifier" name="{{ identifier_name|default('identifier') }}" type="{{ identifier_type|default('text') }}" autocomplete="off" required autofocus />
+            <small>Use any fictional value. It is used only for this local interaction.</small>
+          </div>
+          <div class="form-actions">
+            <button type="submit">{{ site_theme.primary_cta }}</button>
+            <a class="button button-secondary" href="{{ secondary_action|default('#') }}">{{ site_theme.secondary_cta }}</a>
+          </div>
+        </form>
+      {% endif %}
+    </section>
+  </div>
+
+  <footer class="mock-site-footer">
+    <span>{{ site_theme.footer_note }}</span>
+    {% if end_url %}{% include "sites/end_control.html" %}{% endif %}
+  </footer>
+</section>

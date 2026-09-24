@@ -1,23 +1,24 @@
 {% extends "simulation/base.html" %}
 
-{% block title %}{{ scenario.brand }} · QR verification{% endblock %}
+{% block title %}{{ site_theme.display_name }} · QR verification{% endblock %}
 
 {% block simulation_content %}
-  <div class="grid grid-2" style="align-items: start">
-    <section class="surface" style="padding: 1.25rem" aria-labelledby="qr-title">
-      <div class="row-between"><span class="badge badge-accent">QR message</span><span class="kicker">{{ scenario.organization }}</span></div>
-      <h1 id="qr-title" style="margin-top: 1rem">{{ scenario.title }}</h1>
-      <p class="message-body">{{ scenario.message }}</p>
-      <div class="notice notice-warning" style="margin-top: 1rem">This code belongs to a fictional {{ scenario.brand }} message. It points to a local destination only.</div>
-    </section>
-    <section class="surface" style="padding: 1.25rem; text-align: center" aria-labelledby="scan-title">
-      <h2 id="scan-title">Scan simulation</h2>
-      <img class="qr-image" src="{{ qr_data_uri }}" alt="Local QR code for the fictional {{ scenario.brand }} verification flow" style="margin: 1rem auto" />
-      <p class="help-text">Destination preview: <span class="host-display">{{ scan_url }}</span></p>
+  <section class="mock-qr-shell" aria-labelledby="qr-title">
+    <div class="mock-qr-message">
+      <span class="mock-site-eyebrow">QR message · {{ scenario.organization }}</span>
+      <h1 id="qr-title">{{ scenario.title }}</h1>
+      <p class="mock-hero-body">{{ scenario.message }}</p>
+      <div class="mock-qr-warning"><strong>Fictional QR message</strong><span>This code points to a local destination only.</span></div>
+    </div>
+    <div class="mock-qr-card">
+      <span class="mock-card-icon" aria-hidden="true">{{ site_theme.mark }}</span>
+      <h2>Scan to continue</h2>
+      <img src="{{ qr_data_uri }}" alt="Local QR code for the fictional {{ site_theme.display_name }} verification flow" />
+      <p class="help-text host-display">{{ scan_url }}</p>
       <a class="button" href="{{ url_for('qr_scan', scenario_id=scenario.scenario_id) }}">Simulate scan</a>
-      <p class="help-text" style="margin-top: 0.8rem">A real phone is not contacted or required.</p>
-    </section>
-  </div>
+      <span class="mock-local-note">A real phone is not contacted or required.</span>
+    </div>
+  </section>
 {% endblock %}
 
 {% block simulation_footer %}{{ scenario.reminder }}{% endblock %}

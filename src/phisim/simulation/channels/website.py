@@ -21,6 +21,7 @@ from phisim.simulation.lifecycle import (
     complete_simulation_session,
     ensure_simulation_session,
 )
+from phisim.simulation.site_themes import get_site_theme
 
 router = APIRouter(tags=["simulation"])
 
@@ -45,6 +46,7 @@ async def _complete_credential_submission(
         context=timing_context(
             request,
             scenario=scenario,
+            site_theme=get_site_theme(scenario.scenario_id, scenario.channel),
             result=result,
             indicator_info=INDICATOR_INFO,
             active_page="simulation",
@@ -112,6 +114,7 @@ async def scenario_login(
         context=timing_context(
             request,
             scenario=scenario,
+            site_theme=get_site_theme(scenario.scenario_id, scenario.channel),
             active_page="simulation",
         ),
     )
@@ -163,6 +166,9 @@ async def scenario_username(
             context=timing_context(
                 request,
                 scenario=scenario,
+                site_theme=get_site_theme(
+                    scenario.scenario_id, scenario.channel
+                ),
                 active_page="simulation",
                 error="Enter a username to continue.",
             ),
@@ -218,6 +224,7 @@ async def scenario_password(
         context=timing_context(
             request,
             scenario=scenario,
+            site_theme=get_site_theme(scenario.scenario_id, scenario.channel),
             active_page="simulation",
         ),
     )
@@ -300,3 +307,63 @@ async def scenario_submit(
         username_present=bool(form.get("username", "")),
         password_value=form.get("password", ""),
     )
+
+
+@router.post("/scenario/{scenario_id}/end", response_class=HTMLResponse)
+async def scenario_end(
+    request: Request,
+    scenario_id: str,
+    session: Annotated[OrmSession, Depends(get_session)],
+) -> HTMLResponse:
+    scenario = get_scenario(scenario_id)
+    if scenario is None or scenario.channel != "website":
+        raise HTTPException(status_code=404, detail="Scenario not found.")
+    response = templates.TemplateResponse(
+        request=request,
+        name="simulation/outcome.html",
+        context=timing_context(
+            request,
+            scenario=scenario,
+            site_theme=get_site_theme(scenario.scenario_id, scenario.channel),
+            result="ended",
+            ended_early=True,
+            indicator_info=INDICATOR_INFO,
+            active_page="simulation",
+        ),
+    )
+    session_id = ensure_simulation_session(
+        request,
+        response,
+        session,
+        scenario_id=scenario.scenario_id,
+        scenario_name=scenario.title,
+        scenario_type=scenario.channel,
+        description=scenario.message,
+    )
+    run = get_or_create_run(
+        session,
+        session_id=session_id,
+        scenario_id=scenario.scenario_id,
+        channel=scenario.channel,
+        initial_state={"auth_stage": "landing"},
+    )
+    state = get_run_state(session, run.run_id)
+    if state.get("auth_stage") != "complete":
+        update_run_state(
+            session,
+            run.run_id,
+            {"auth_stage": "complete", "last_action": "scenario_completed"},
+        )
+        await emit_simulation_event(
+            session,
+            session_id,
+            scenario_id=scenario.scenario_id,
+            event_type="scenario_completed",
+            metadata={
+                "channel": scenario.channel,
+                "attack_type": scenario.attack_type,
+                "outcome": "ended_by_user",
+            },
+        )
+    complete_simulation_session(session, session_id)
+    return response

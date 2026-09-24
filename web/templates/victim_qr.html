@@ -1,20 +1,22 @@
 {% extends "victim_base.html" %}
 
-{% block title %}QR verification · {{ scenario.brand }}{% endblock %}
-{% block app_name %}Gemail · QR message{% endblock %}
+{% block title %}QR verification · {{ site_theme.display_name }}{% endblock %}
+{% block app_name %}{{ site_theme.display_name }} · QR message{% endblock %}
 
 {% block victim_content %}
-  <div class="grid grid-2" style="align-items: start">
-    <section class="surface" style="padding: 1.25rem">
-      <span class="badge badge-accent">New message</span>
-      <h1 style="margin-top: 1rem">{{ scenario.title }}</h1>
-      <p class="message-body">{{ scenario.message }}</p>
-      <p class="help-text">The QR image is part of this fictional message.</p>
-    </section>
-    <section class="surface" style="padding: 1.25rem; text-align: center">
-      <h2>Scan QR</h2>
-      <img src="{{ qr_data_uri }}" alt="Fictional QR code" style="margin: 1rem auto" />
+  <section class="mock-qr-shell" aria-labelledby="victim-qr-title">
+    <div class="mock-qr-message">
+      <span class="mock-site-eyebrow">New message · {{ scenario.organization }}</span>
+      <h1 id="victim-qr-title">{{ scenario.title }}</h1>
+      <p class="mock-hero-body">{{ scenario.message }}</p>
+      <div class="mock-qr-warning"><strong>Fictional QR message</strong><span>The code points to a local destination only.</span></div>
+    </div>
+    <div class="mock-qr-card">
+      <span class="mock-card-icon" aria-hidden="true">{{ site_theme.mark }}</span>
+      <h2>Scan to continue</h2>
+      <img src="{{ qr_data_uri }}" alt="Fictional QR code for {{ site_theme.display_name }}" />
       <a class="button" href="{{ url_for('victim_qr_scan', token=attack.victim_token, scenario_id=scenario.scenario_id) }}">Simulate scan</a>
-    </section>
-  </div>
+      <span class="mock-local-note">No camera or external service is used.</span>
+    </div>
+  </section>
 {% endblock %}

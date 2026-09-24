@@ -19,6 +19,7 @@ from phisim.simulation.channels.common import (
 )
 from phisim.simulation.evidence import qr_evidence
 from phisim.simulation.lifecycle import ensure_simulation_session
+from phisim.simulation.site_themes import get_site_theme
 
 router = APIRouter(tags=["simulation"])
 
@@ -46,6 +47,10 @@ async def qr_view(
         name="simulation/qr.html",
         context={
             "scenario": scenario,
+            "site_theme": get_site_theme(
+                scenario.target_scenario_id or scenario.scenario_id,
+                "website",
+            ),
             "qr_data_uri": _qr_data_uri(scan_url),
             "scan_url": scan_url,
             "active_page": "simulation",

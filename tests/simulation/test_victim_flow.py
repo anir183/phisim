@@ -1,6 +1,7 @@
 import re
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -85,6 +86,7 @@ def test_preopened_mailbox_is_the_environment_used_by_operator_launch(
     )
     delivered = client.get("/mail")
     assert "email-phish-001" in delivered.text
+    assert "mock-gmail" in delivered.text
 
 
 def test_operator_launch_keeps_attack_separate_until_victim_delivery(
@@ -169,7 +171,8 @@ def test_victim_email_link_site_and_safe_completion_are_one_session(
     assert processing.headers["location"].endswith("/result")
     result = client.get(processing.headers["location"])
     assert result.status_code == 200
-    assert "Checking your request" in result.text
+    assert "What happened?" in result.text
+    assert "Checking your request" not in result.text
     completed = client.post(processing.headers["location"])
     assert completed.status_code == 200
     assert "What happened?" in completed.text
@@ -322,6 +325,107 @@ def test_academic_portals_have_distinct_fictional_workflows(
     assert learning_page.status_code == 200
     assert "TechnoSphere" in learning_page.text
     assert "Course code" in learning_page.text
+
+
+@pytest.mark.parametrize(
+    ("scenario_id", "theme_key", "hero_text"),
+    [
+        (
+            "credential-basic-001",
+            "unisecure",
+            "Northstar account center",
+        ),
+        (
+            "credential-shopping-001",
+            "amazaun",
+            "Your order is ready",
+        ),
+        (
+            "credential-cloud-001",
+            "cloudbox",
+            "Your CloudBox workspace",
+        ),
+        (
+            "credential-payment-001",
+            "paymate",
+            "Payment review center",
+        ),
+        (
+            "support-portal-001",
+            "support",
+            "Northstar IT support desk",
+        ),
+        (
+            "mak-exam-001",
+            "makexam",
+            "Assessment registration",
+        ),
+        (
+            "technosphere-001",
+            "technosphere",
+            "Course workspace",
+        ),
+    ],
+)
+def test_each_website_has_a_distinct_branded_landing_page(
+    client: TestClient,
+    test_engine: Engine,
+    scenario_id: str,
+    theme_key: str,
+    hero_text: str,
+) -> None:
+    launch = _launch(client, scenario_id, "student")
+    token = launch["victim_path"].split("/")[2]
+    _set_due(test_engine, launch["attack_id"], datetime.now(UTC))
+
+    page = client.get(f"/v/{token}/site/{scenario_id}")
+
+    assert page.status_code == 200
+    assert f"mock-landing-{theme_key}" in page.text
+    assert hero_text in page.text
+    assert "End simulation" in page.text
+    assert "Checking your request" not in page.text
+
+
+def test_end_simulation_completes_without_credentials(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    launch = _launch(client, "credential-basic-001", "student")
+    token = launch["victim_path"].split("/")[2]
+    _set_due(test_engine, launch["attack_id"], datetime.now(UTC))
+    site_path = f"/v/{token}/site/credential-basic-001"
+
+    landing = client.get(site_path)
+    assert landing.status_code == 200
+    ended = client.post(f"{site_path}/end")
+    assert ended.status_code == 200
+    assert "Simulation ended" in ended.text
+    assert "What happened?" in ended.text
+    assert "fictional-secret" not in ended.text
+
+    status = client.get(f"/v/{token}/status")
+    assert status.status_code == 200
+    assert status.json()["status"] == "COMPLETED"
+
+    with Session(test_engine) as database_session:
+        attack = SimulationAttackRepository(database_session).get_by_attack_id(
+            launch["attack_id"]
+        )
+        assert attack is not None
+        events = EventRepository(database_session).list_by_session(
+            attack.operator_session_id
+        )
+        event_types = [event.event_type for event in events]
+        assert "credential_submission_attempted" not in event_types
+        completed_event = next(
+            event for event in events if event.event_type == "attack_completed"
+        )
+        assert completed_event.metadata_["outcome"] == "ended_by_user"
+
+    repeated = client.post(f"{site_path}/end")
+    assert repeated.status_code == 200
+    assert "Simulation ended" in repeated.text
 
 
 def test_shopping_flow_uses_confirmation_instead_of_password(
@@ -492,6 +596,7 @@ def test_preopened_quickchat_receives_only_the_launched_thread(
     delivered = client.get("/messages")
     assert "ordinary-sms-001" not in delivered.text
     assert "sms-parcel-001" in delivered.text
+    assert "mock-quickchat" in delivered.text
 
 
 def test_sms_delivery_uses_the_same_attack_context(

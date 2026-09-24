@@ -43,6 +43,7 @@ from phisim.simulation.evidence import (
     sms_link_evidence,
 )
 from phisim.simulation.lifecycle import complete_simulation_session
+from phisim.simulation.site_themes import get_site_theme
 from phisim.utils.datetime import serialize_utc_datetime
 
 router = APIRouter(tags=["victim-environment"])
@@ -312,6 +313,7 @@ async def baseline_mail(
             name="victim_mail.html",
             context={
                 "attack": display_attack,
+                "site_theme": get_site_theme(None, "email"),
                 "messages": _email_messages_for_history(history),
                 "active_page": "victim",
             },
@@ -353,6 +355,7 @@ async def baseline_messages(
             name="victim_messages.html",
             context={
                 "attack": display_attack,
+                "site_theme": get_site_theme(None, "sms"),
                 "threads": _sms_threads_for_history(history),
                 "active_page": "victim",
             },
@@ -412,6 +415,7 @@ async def victim_mail(
         name="victim_mail.html",
         context={
             "attack": display_attack,
+            "site_theme": get_site_theme(None, "email"),
             "messages": _email_messages_for_history(history),
             "active_page": "victim",
         },
@@ -473,6 +477,7 @@ async def victim_email(
         name="victim_email.html",
         context={
             "attack": attack,
+            "site_theme": _site_theme_for_attack(attack),
             "message": message,
             "active_page": "victim",
         },
@@ -526,6 +531,7 @@ async def victim_attachment(
         name="victim_attachment.html",
         context={
             "attack": attack,
+            "site_theme": _site_theme_for_attack(attack),
             "message": message,
             "active_page": "victim",
         },
@@ -581,6 +587,92 @@ def victim_return_path(attack) -> str:
     return f"/v/{attack.victim_token}/mail"
 
 
+def _site_theme_for_attack(attack):
+    return get_site_theme(attack.scenario_id, attack.channel)
+
+
+def _site_theme_for_scenario(scenario):
+    return get_site_theme(scenario.scenario_id, scenario.channel)
+
+
+def _site_end_path(attack, scenario_id: str) -> str:
+    return f"/v/{attack.victim_token}/site/{scenario_id}/end"
+
+
+async def _complete_attack(
+    request: Request,
+    database_session: OrmSession,
+    attack,
+    scenario,
+    *,
+    outcome: str,
+) -> HTMLResponse:
+    service = _attack_service(database_session)
+    if attack.status == "DELIVERED":
+        _engage(database_session, attack)
+    if attack.status == "ENGAGED":
+        service.transition(attack, "COMPLETED")
+    service.update_state(
+        attack,
+        {
+            "processing": False,
+            "result_revealed": True,
+            "current_step": 4,
+            "last_action": "attack_completed",
+        },
+    )
+    if outcome == "ended_by_user":
+        event_outcome = "ended_by_user"
+    else:
+        event_outcome = "training_complete"
+    await emit_simulation_event(
+        database_session,
+        attack.operator_session_id,
+        scenario_id=attack.scenario_id,
+        event_type="attack_completed",
+        source="victim",
+        metadata={
+            "channel": attack.channel,
+            "attack_type": scenario.attack_type,
+            "attack_id": attack.attack_id,
+            "delivery_id": attack.attack_id,
+            "outcome": event_outcome,
+        },
+    )
+    await emit_simulation_event(
+        database_session,
+        attack.operator_session_id,
+        scenario_id=attack.scenario_id,
+        event_type="scenario_completed",
+        source="victim",
+        metadata={
+            "channel": "website",
+            "attack_type": scenario.attack_type,
+            "attack_id": attack.attack_id,
+            "delivery_id": attack.attack_id,
+            "outcome": event_outcome,
+        },
+    )
+    complete_simulation_session(database_session, attack.operator_session_id)
+    try:
+        complete_simulation_session(database_session, attack.victim_session_id)
+    except SessionNotFoundError:
+        pass
+    return templates.TemplateResponse(
+        request=request,
+        name="victim_reveal.html",
+        context={
+            "attack": attack,
+            "scenario": scenario,
+            "site_theme": _site_theme_for_scenario(scenario),
+            "indicator_info": INDICATOR_INFO,
+            "return_path": victim_return_path(attack),
+            "ended_early": outcome == "ended_by_user",
+            "active_page": "victim",
+        },
+    )
+
+
 @router.get("/v/{token}/messages", response_class=HTMLResponse)
 async def victim_messages(
     request: Request,
@@ -606,6 +698,7 @@ async def victim_messages(
         name="victim_messages.html",
         context={
             "attack": display_attack,
+            "site_theme": get_site_theme(None, "sms"),
             "threads": _sms_threads_for_history(history),
             "active_page": "victim",
         },
@@ -674,6 +767,7 @@ async def victim_message(
         name="victim_message.html",
         context={
             "attack": attack,
+            "site_theme": _site_theme_for_attack(attack),
             "thread": thread,
             "active_page": "victim",
         },
@@ -741,6 +835,8 @@ async def victim_site(
         context={
             "attack": attack,
             "scenario": scenario,
+            "site_theme": _site_theme_for_scenario(scenario),
+            "end_url": _site_end_path(attack, scenario.scenario_id),
             "step": max(1, min(step, 2)),
             "active_page": "victim",
         },
@@ -880,16 +976,28 @@ async def victim_result(
         raise HTTPException(status_code=404, detail="Website not found.")
     _require_context(attack)
     _require_target(attack, scenario_id)
+    if attack.status == "COMPLETED":
+        return templates.TemplateResponse(
+            request=request,
+            name="victim_reveal.html",
+            context={
+                "attack": attack,
+                "scenario": scenario,
+                "site_theme": _site_theme_for_scenario(scenario),
+                "indicator_info": INDICATOR_INFO,
+                "return_path": victim_return_path(attack),
+                "ended_early": False,
+                "active_page": "victim",
+            },
+        )
     if not attack.state.get("processing"):
         raise HTTPException(status_code=404, detail="No pending result.")
-    return templates.TemplateResponse(
-        request=request,
-        name="victim_result.html",
-        context={
-            "attack": attack,
-            "scenario": scenario,
-            "active_page": "victim",
-        },
+    return await _complete_attack(
+        request,
+        database_session,
+        attack,
+        scenario,
+        outcome="training_complete",
     )
 
 
@@ -908,61 +1016,64 @@ async def victim_result_submit(
         raise HTTPException(status_code=404, detail="Website not found.")
     _require_context(attack)
     _require_target(attack, scenario_id)
+    if attack.status == "COMPLETED":
+        return templates.TemplateResponse(
+            request=request,
+            name="victim_reveal.html",
+            context={
+                "attack": attack,
+                "scenario": scenario,
+                "site_theme": _site_theme_for_scenario(scenario),
+                "indicator_info": INDICATOR_INFO,
+                "return_path": victim_return_path(attack),
+                "ended_early": False,
+                "active_page": "victim",
+            },
+        )
     if not attack.state.get("processing"):
         raise HTTPException(status_code=404, detail="No pending result.")
-    service = _attack_service(database_session)
-    service.update_state(
+    return await _complete_attack(
+        request,
+        database_session,
         attack,
-        {
-            "processing": False,
-            "result_revealed": True,
-            "current_step": 4,
-            "last_action": "attack_completed",
-        },
+        scenario,
+        outcome="training_complete",
     )
-    if attack.status == "ENGAGED":
-        service.transition(attack, "COMPLETED")
-    await emit_simulation_event(
+
+
+@router.post("/v/{token}/site/{scenario_id}/end")
+async def victim_end_simulation(
+    request: Request,
+    token: str,
+    scenario_id: str,
+    database_session: Annotated[OrmSession, Depends(get_session)],
+) -> HTMLResponse:
+    attack = _get_attack(database_session, token)
+    scenario = get_scenario(scenario_id)
+    if scenario is None or scenario.channel != "website":
+        raise HTTPException(status_code=404, detail="Website not found.")
+    if attack.status == "COMPLETED":
+        return templates.TemplateResponse(
+            request=request,
+            name="victim_reveal.html",
+            context={
+                "attack": attack,
+                "scenario": scenario,
+                "site_theme": _site_theme_for_scenario(scenario),
+                "indicator_info": INDICATOR_INFO,
+                "return_path": victim_return_path(attack),
+                "ended_early": True,
+                "active_page": "victim",
+            },
+        )
+    _require_context(attack)
+    _require_target(attack, scenario_id)
+    return await _complete_attack(
+        request,
         database_session,
-        attack.operator_session_id,
-        scenario_id=attack.scenario_id,
-        event_type="attack_completed",
-        source="victim",
-        metadata={
-            "channel": attack.channel,
-            "attack_type": scenario.attack_type,
-            "attack_id": attack.attack_id,
-            "outcome": "training_complete",
-        },
-    )
-    await emit_simulation_event(
-        database_session,
-        attack.operator_session_id,
-        scenario_id=attack.scenario_id,
-        event_type="scenario_completed",
-        source="victim",
-        metadata={
-            "channel": "website",
-            "attack_type": scenario.attack_type,
-            "attack_id": attack.attack_id,
-            "outcome": "training_complete",
-        },
-    )
-    complete_simulation_session(database_session, attack.operator_session_id)
-    try:
-        complete_simulation_session(database_session, attack.victim_session_id)
-    except SessionNotFoundError:
-        pass
-    return templates.TemplateResponse(
-        request=request,
-        name="victim_reveal.html",
-        context={
-            "attack": attack,
-            "scenario": scenario,
-            "indicator_info": INDICATOR_INFO,
-            "return_path": victim_return_path(attack),
-            "active_page": "victim",
-        },
+        attack,
+        scenario,
+        outcome="ended_by_user",
     )
 
 
@@ -992,6 +1103,10 @@ async def victim_qr(
         context={
             "attack": attack,
             "scenario": scenario,
+            "site_theme": get_site_theme(
+                scenario.target_scenario_id or scenario.scenario_id,
+                "website",
+            ),
             "qr_data_uri": f"data:image/png;base64,{qr_data}",
             "scan_url": scan_url,
             "active_page": "victim",
@@ -1070,6 +1185,7 @@ async def victim_mfa(
         context={
             "attack": attack,
             "scenario": scenario,
+            "site_theme": get_site_theme(scenario.scenario_id, "mfa"),
             "step": step,
             "active_page": "victim",
         },
@@ -1153,8 +1269,10 @@ async def victim_mfa_respond(
         context={
             "attack": attack,
             "scenario": scenario,
+            "site_theme": get_site_theme(scenario.scenario_id, "mfa"),
             "indicator_info": INDICATOR_INFO,
             "return_path": victim_return_path(attack),
+            "ended_early": False,
             "active_page": "victim",
         },
     )

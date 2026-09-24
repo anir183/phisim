@@ -20,6 +20,7 @@ def test_sms_list_renders_threads(client: TestClient) -> None:
     assert response.status_code == 200
     assert THREAD_ID in response.text
     assert "sms-tech-support-001" in response.text
+    assert "mock-quickchat" in response.text
 
 
 def test_sms_view_emits_message_open(

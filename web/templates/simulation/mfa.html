@@ -1,46 +1,42 @@
 {% extends "simulation/base.html" %}
 
-{% block title %}{{ scenario.brand }} · {{ scenario.title }}{% endblock %}
+{% block title %}{{ site_theme.display_name }} · {{ scenario.title }}{% endblock %}
 
 {% block simulation_content %}
-  <div class="auth-shell" style="min-height: auto; padding: 1rem 0 3rem">
-    <section class="surface auth-card" aria-labelledby="mfa-title">
-      <div class="auth-brand">
-        <span class="brand-mark" aria-hidden="true">N</span>
-        <div>
-          <h1 id="mfa-title">{{ scenario.brand }}</h1>
-          <h2>{{ scenario.service }}</h2>
+  <section class="mock-mfa-shell" aria-labelledby="mfa-title">
+    <div class="mock-mfa-device">
+      <header class="mock-mfa-device-header">
+        <div class="mock-auth-brand">
+          <span class="mock-card-icon" aria-hidden="true">{{ site_theme.mark }}</span>
+          <div>
+            <p class="mock-site-eyebrow">{{ scenario.service }}</p>
+            <h1 id="mfa-title">{{ site_theme.display_name }}</h1>
+          </div>
+        </div>
+        <span class="mock-live-pill"><span></span> Step {{ step }} of {{ scenario.prompt_count }}</span>
+      </header>
+      <div class="mock-mfa-content">
+        <p class="mock-site-eyebrow">New sign-in approval</p>
+        <h2>Allow this sign-in?</h2>
+        <p>{{ scenario.message }}</p>
+        <div class="mock-device-card">
+          <span class="mock-device-icon" aria-hidden="true">⌁</span>
+          <div><strong>Chrome on Linux</strong><span>Northstar campus network · just now</span></div>
+        </div>
+        <div class="mock-mfa-actions">
+          <form method="post" action="{{ url_for('mfa_respond', scenario_id=scenario.scenario_id, step=step) }}" data-transition-ms="{{ delay_ms }}">
+            <input type="hidden" name="action" value="deny" />
+            <button class="button button-secondary" type="submit">Deny</button>
+          </form>
+          <form method="post" action="{{ url_for('mfa_respond', scenario_id=scenario.scenario_id, step=step) }}" data-transition-ms="{{ delay_ms }}">
+            <input type="hidden" name="action" value="approve" />
+            <button type="submit">Approve</button>
+          </form>
         </div>
       </div>
-      <div class="step-indicator" aria-label="MFA prompt sequence">
-        {% for number in range(1, scenario.prompt_count + 1) %}
-          <div class="step-item {% if number <= step %}active{% endif %}">
-            <span class="step-dot">{{ number }}</span>
-            <span class="step-label">Prompt {{ number }}</span>
-          </div>
-          {% if number < scenario.prompt_count %}
-            <span class="step-connector" aria-hidden="true"></span>
-          {% endif %}
-        {% endfor %}
-      </div>
-      <div class="auth-alert">
-        <strong>New sign-in approval</strong><br />
-        A sign-in from a new device is waiting for your approval.
-      </div>
-      <p class="help-text">{{ scenario.message }}</p>
-      <div class="form-actions" style="justify-content: center; margin-top: 1.25rem">
-        <form method="post" action="{{ url_for('mfa_respond', scenario_id=scenario.scenario_id, step=step) }}" data-transition-ms="{{ delay_ms }}">
-          <input type="hidden" name="action" value="deny" />
-          <button class="button button-secondary" type="submit">Deny</button>
-        </form>
-        <form method="post" action="{{ url_for('mfa_respond', scenario_id=scenario.scenario_id, step=step) }}" data-transition-ms="{{ delay_ms }}">
-          <input type="hidden" name="action" value="approve" />
-          <button type="submit">Approve</button>
-        </form>
-      </div>
-      <p class="auth-footer">Step {{ step }} of {{ scenario.prompt_count }} · fictional NimbusID prompt · {{ scenario.host }}</p>
-    </section>
-  </div>
+      <footer class="mock-mfa-device-footer">{{ site_theme.footer_note }}</footer>
+    </div>
+  </section>
 {% endblock %}
 
 {% block simulation_footer %}{{ scenario.reminder }}{% endblock %}

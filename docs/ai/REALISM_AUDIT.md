@@ -320,6 +320,27 @@ Fictional messenger with contacts, avatars, an empty baseline state, unread
 badges, incoming/outgoing bubbles, timestamps, delivery state, link previews,
 and dynamically delivered attack SMS.
 
+### Distinct mock-site system
+
+The primary `/v/{token}/...` flow and the legacy `/scenario/...` compatibility
+flow now share a local theme registry and CSS token system. Each target has its
+own landing/home composition and visual identity: Gemail, QuickChat, UniSecure,
+UniSecure Support, Amazaun, CloudBox, PayMate, MAKExam, TechnoSphere, and
+NimbusID. QR and MFA surfaces use the corresponding target/device theme.
+
+All marks, layouts, icons, and illustrations are local CSS/text/SVG-style
+surfaces. No external assets, fonts, requests, or real service endpoints are
+used.
+
+### Landing and completion controls
+
+Website targets open on a branded home/landing page with service-specific
+navigation, status cards, and a scenario CTA. The generic processing page is no
+longer part of the normal completion path; final actions move directly to the
+themed training debrief. Every website landing/verification page includes a
+local `End simulation` control that safely completes the interaction without
+collecting credentials.
+
 ### MAKExam / TechnoSphere
 
 Fictional examination and college portals inspired by familiar academic UX
@@ -334,7 +355,7 @@ identity, verification step, and support-specific outcome.
 ### Amazaun / CloudBox / PayMate
 
 Separate service identities with different navigation, terminology, form
-structure, processing states, and outcomes. They must not reuse one universal
+structure, workflow states, and outcomes. They must not reuse one universal
 login visual structure.
 
 ## Timing
@@ -344,7 +365,7 @@ The first implementation should use a deterministic simulation clock/provider:
 ```text
 attack launch → delivery: configurable short delay
 website navigation: short bounded transition
-credential submission: processing state, then outcome
+credential submission: safe state transition, then outcome
 MFA prompts: deterministic gaps
 ```
 
@@ -408,7 +429,8 @@ The pass is complete only when a user can:
 5. See a new unread victim message after a deterministic delay.
 6. Open a rich message and follow a scenario-specific workflow.
 7. Interact with a believable service or channel mechanism.
-8. Receive a delayed, scenario-specific processing/result/training reveal.
+8. Receive a branded service landing/home page and a scenario-specific training
+   reveal, with a safe end-simulation control available.
 9. Inspect the complete Event/indicator timeline in `/console`.
 
 The same standard must hold for email, SMS, QR, attachment, MFA, and BEC flows,
@@ -439,7 +461,9 @@ new unread attack artifact appears in the pre-opened environment
         ↓
 ENGAGED interaction emits safe Events
         ↓
-service-specific workflow enters processing/result state
+branded service landing/home page and scenario-specific CTA
+        ↓
+site-specific verification or confirmation
         ↓
 training reveal and COMPLETED state
         ↓
@@ -485,12 +509,12 @@ REST/WebSocket console timeline contains the complete sequence
 
 | Flow | Implemented mechanism | Processing/reveal behavior |
 |---|---|---|
-| Email credential phishing | Gemail message → local link → UniSecure student flow | password attempt → processing page → result/reveal |
+| Email credential phishing | Gemail message → local link → UniSecure student flow | password attempt → branded debrief |
 | SMS smishing | QuickChat thread → local link → Amazaun | site-specific confirmation/result path |
 | Shopping/payment | Address or billing confirmation instead of password | non-credential victim action Event |
-| BEC | Executive/invoice lure → PayMate review | payment confirmation → processing → reveal |
+| BEC | Executive/invoice lure → PayMate review | payment confirmation → reveal |
 | Academic portals | MAKExam registration ID and TechnoSphere course-code flows | distinct fictional labels and result copy |
-| Support | Employee ID and verification-code flow | support-specific processing copy |
+| Support | Employee ID and verification-code flow | support-specific landing and debrief |
 | CloudBox | Work-email terminology and storage context | password attempt remains boolean-only |
 | QR | Local QR image → explicit simulated scan | scan Event → target site |
 | Attachment | Inert attachment card and preview | no download, file, or execution |
@@ -501,7 +525,7 @@ REST/WebSocket console timeline contains the complete sequence
 
 Automated verification after the reconstruction:
 
-- `164 passed, 1 warning` with the repository's in-memory SQLite test fixture.
+- `174 passed, 1 warning` with the repository's in-memory SQLite test fixture.
 - `uv run ruff check .` passed.
 - `uv run ruff format --check .` passed.
 - `uv run pyright` passed with zero errors.
@@ -509,7 +533,7 @@ Automated verification after the reconstruction:
   after the last test run.
 - `GET /health` now returns `200 {"status":"ok"}` for local process checks.
 - Manual local HTTP/TestClient smoke flows A–F passed:
-  - A: pre-opened mailbox → delayed email → site → processing → reveal →
+  - A: pre-opened mailbox → delayed email → branded site landing → reveal →
     analysis timeline;
   - B: pre-opened QuickChat → delayed SMS → Amazaun site;
   - C: delayed QR context → scan;

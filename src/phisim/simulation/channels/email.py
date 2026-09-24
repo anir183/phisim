@@ -24,6 +24,7 @@ from phisim.simulation.evidence import (
     email_link_evidence,
 )
 from phisim.simulation.lifecycle import ensure_simulation_session
+from phisim.simulation.site_themes import get_site_theme
 
 router = APIRouter(tags=["simulation"])
 
@@ -59,6 +60,7 @@ async def inbox(
         context={
             "messages": messages,
             "search_query": q or "",
+            "site_theme": get_site_theme("email", "email"),
             "active_page": "simulation",
         },
     )
@@ -76,7 +78,11 @@ async def email_view(
     response = templates.TemplateResponse(
         request=request,
         name="simulation/email.html",
-        context={"message": message, "active_page": "simulation"},
+        context={
+            "message": message,
+            "site_theme": get_site_theme(message.message_id, "email"),
+            "active_page": "simulation",
+        },
     )
     session_id = ensure_simulation_session(
         request,
@@ -155,7 +161,11 @@ async def email_attachment_preview(
     response = templates.TemplateResponse(
         request=request,
         name="simulation/attachment.html",
-        context={"message": message, "active_page": "simulation"},
+        context={
+            "message": message,
+            "site_theme": get_site_theme(message.message_id, "email"),
+            "active_page": "simulation",
+        },
     )
     session_id = ensure_simulation_session(
         request,

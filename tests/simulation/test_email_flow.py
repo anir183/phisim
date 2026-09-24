@@ -22,6 +22,7 @@ def test_inbox_renders_and_lists_messages(client: TestClient) -> None:
     assert MESSAGE_ID in response.text
     assert ATTACHMENT_MESSAGE_ID in response.text
     assert "Gemail" in response.text
+    assert "mock-gmail" in response.text
 
 
 def test_inbox_search_filters_fictional_messages(

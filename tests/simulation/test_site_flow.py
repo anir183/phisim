@@ -59,6 +59,51 @@ def test_login_page_renders_and_assigns_session(
     assert events[0].source == "browser"
 
 
+def test_legacy_website_pages_use_the_shared_visual_themes(
+    client: TestClient,
+) -> None:
+    cases = (
+        ("credential-basic-001", "unisecure", "Northstar account center"),
+        ("credential-shopping-001", "amazaun", "Your order is ready"),
+        ("credential-cloud-001", "cloudbox", "Your CloudBox workspace"),
+        ("credential-payment-001", "paymate", "Payment review center"),
+        ("support-portal-001", "support", "Northstar IT support desk"),
+        ("mak-exam-001", "makexam", "Assessment registration"),
+        ("technosphere-001", "technosphere", "Course workspace"),
+    )
+    for scenario_id, theme_key, hero_text in cases:
+        response = client.get(f"/scenario/{scenario_id}")
+        assert response.status_code == 200
+        assert f"mock-landing-{theme_key}" in response.text
+        assert hero_text in response.text
+        assert "End simulation" in response.text
+
+
+def test_legacy_end_simulation_is_safe_and_idempotent(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    opened = client.get(f"/scenario/{SCENARIO_ID}")
+    session_id = opened.cookies.get("phisim_session")
+    assert session_id
+
+    ended = client.post(f"/scenario/{SCENARIO_ID}/end")
+    assert ended.status_code == 200
+    assert "You ended the simulation safely" in ended.text
+    assert "fictional-secret" not in ended.text
+
+    repeated = client.post(f"/scenario/{SCENARIO_ID}/end")
+    assert repeated.status_code == 200
+    assert "You ended the simulation safely" in repeated.text
+
+    events = _list_events(test_engine, session_id)
+    assert [event.event_type for event in events] == [
+        "scenario_opened",
+        "scenario_completed",
+    ]
+    assert events[1].metadata_["outcome"] == "ended_by_user"
+
+
 def test_two_step_website_flow_keeps_credentials_out_of_state(
     client: TestClient,
     test_engine: Engine,

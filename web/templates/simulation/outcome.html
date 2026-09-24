@@ -1,19 +1,23 @@
 {% extends "simulation/base.html" %}
 
-{% block title %}Training outcome · {{ scenario.brand }}{% endblock %}
+{% block title %}{{ "Simulation ended" if ended_early else "Training outcome" }} · {{ site_theme.display_name }}{% endblock %}
 
 {% block simulation_content %}
-  <section class="surface outcome-card" aria-labelledby="outcome-title">
+  <section class="surface outcome-card mock-reveal mock-reveal-{{ site_theme.key }}" aria-labelledby="outcome-title">
     <div class="row-between">
       <div>
-        <p class="eyebrow">Simulation complete</p>
-        <h1 id="outcome-title">You reached the training outcome</h1>
+        <p class="eyebrow">{{ "Simulation ended" if ended_early else "Simulation complete" }}</p>
+        <h1 id="outcome-title">{{ "You ended the simulation safely" if ended_early else "You reached the training outcome" }}</h1>
       </div>
       <span class="badge badge-success">Safe local run</span>
     </div>
     <div class="notice notice-success" style="margin-top: 1.25rem">
-      Nothing you typed was stored, sent, or added to an account. This
-      fictional {{ scenario.brand }} page demonstrated a {{ scenario.attack_type|replace('_', ' ') }} workflow.
+      {% if ended_early %}
+        You ended this fictional {{ site_theme.display_name }} interaction without submitting a value.
+      {% else %}
+        Nothing you typed was stored, sent, or added to an account. This
+        fictional {{ site_theme.display_name }} page demonstrated a {{ scenario.attack_type|replace('_', ' ') }} workflow.
+      {% endif %}
     </div>
     <h2 style="margin-top: 1.5rem">Why this flow was suspicious</h2>
     <ul class="evidence-list">
