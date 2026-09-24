@@ -14,7 +14,7 @@
           <div class="row-between"><strong>{{ thread.sender_label }}</strong><span class="kicker">{{ thread.timestamp[11:16] }}</span></div>
           <span>{{ thread.sender_number }}</span>
           <span>{{ thread.messages[-1] }}</span>
-          {% if thread.unread %}<span class="badge badge-accent">{{ thread.unread }} unread</span>{% endif %}
+          {% if thread.unread %}<span class="badge badge-accent">UNREAD</span>{% endif %}
         </a>
       {% else %}
         <div class="empty-state">No conversations.</div>

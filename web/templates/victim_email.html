@@ -28,11 +28,11 @@
       {% if message.attachment_name %}
         <div class="attachment-card">
           <div class="row"><span class="attachment-icon" aria-hidden="true">DOC</span><div><div class="attachment-name">{{ message.attachment_name }}</div><div class="help-text">Inert attachment preview</div></div></div>
-          <a class="button button-secondary" href="{{ url_for('victim_attachment', token=attack.victim_token, message_id=message.message_id) }}">Preview attachment</a>
+          <a class="button button-secondary" href="{{ url_for('victim_attachment', token=attack.victim_token, message_id=message.message_id) }}?delivery_id={{ message.delivery_id }}">Preview attachment</a>
         </div>
       {% endif %}
       <div class="message-actions">
-        <a class="button" href="{{ url_for('victim_email_link', token=attack.victim_token, message_id=message.message_id) }}">Open message link</a>
+        <a class="button" href="{{ url_for('victim_email_link', token=attack.victim_token, message_id=message.message_id) }}?delivery_id={{ message.delivery_id }}">Open message link</a>
         <button class="button button-secondary" type="button">Reply</button>
         <button class="button button-secondary" type="button">Forward</button>
       </div>

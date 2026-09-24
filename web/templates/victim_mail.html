@@ -24,14 +24,14 @@
       </div>
       <div id="victim-message-list" class="message-list">
         {% for message in messages %}
-          <a class="message-row {% if message.unread %}unread{% endif %}" data-message-id="{{ message.message_id }}" href="{{ url_for('victim_email', token=attack.victim_token, message_id=message.message_id) }}">
+          <a class="message-row {% if message.unread %}unread{% endif %}" data-message-id="{{ message.message_id }}" data-delivery-id="{{ message.delivery_id }}" href="{{ url_for('victim_email', token=attack.victim_token, message_id=message.message_id) }}?delivery_id={{ message.delivery_id }}">
             <span class="message-sender">{{ message.sender_label }}</span>
             <span class="message-subject">{{ message.subject }}</span>
             <span class="message-preview">{{ message.preview }}</span>
-            <span class="message-time">{{ message.timestamp[11:16] }}</span>
+            <span class="message-time">{{ message.timestamp[11:19] }}</span>
           </a>
         {% else %}
-          <div class="empty-state"><div><strong>No mail yet</strong><p>New messages will appear here.</p></div></div>
+          <div class="empty-state"><div><strong>Inbox zero</strong><p>New messages will appear here after delivery.</p></div></div>
         {% endfor %}
       </div>
     </div>

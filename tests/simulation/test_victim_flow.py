@@ -1,3 +1,4 @@
+import re
 from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
@@ -9,6 +10,8 @@ from phisim.infra.sqlite.repos.session import SessionRepository
 from phisim.infra.sqlite.repos.simulation_attack import (
     SimulationAttackRepository,
 )
+from phisim.simulation.attack import SimulationAttackService
+from phisim.simulation.lifecycle import complete_simulation_session
 
 
 def _launch(client: TestClient, scenario_id: str, role: str) -> dict:
@@ -33,20 +36,37 @@ def _set_due(engine: Engine, attack_id: str, due: datetime) -> None:
         repository.save(attack)
 
 
+def _complete_attack(engine: Engine, attack_id: str) -> None:
+    with Session(engine) as database_session:
+        repository = SimulationAttackRepository(database_session)
+        attack = repository.get_by_attack_id(attack_id)
+        assert attack is not None
+        service = SimulationAttackService(repository)
+        if attack.status == "DELIVERED":
+            service.transition(attack, "ENGAGED")
+        if attack.status == "ENGAGED":
+            service.transition(attack, "COMPLETED")
+        complete_simulation_session(
+            database_session, attack.operator_session_id
+        )
+        complete_simulation_session(database_session, attack.victim_session_id)
+
+
 def test_preopened_mailbox_is_the_environment_used_by_operator_launch(
     client: TestClient,
     test_engine: Engine,
 ) -> None:
     baseline = client.get("/mail")
     assert baseline.status_code == 200
-    assert "ordinary-001" in baseline.text
+    assert "Inbox zero" in baseline.text
+    assert "ordinary-001" not in baseline.text
     assert "email-phish-001" not in baseline.text
     assert "Scenario Lab" not in baseline.text
     token = client.cookies.get("phisim_victim_context")
     assert token
-    assert client.get(f"/v/{token}/mail/ordinary-001").status_code == 200
+    assert client.get(f"/v/{token}/mail/ordinary-001").status_code == 404
     assert (
-        client.get(f"/v/{token}/messages/ordinary-sms-001").status_code == 200
+        client.get(f"/v/{token}/messages/ordinary-sms-001").status_code == 404
     )
 
     launch = _launch(client, "email-phish-001", "student")
@@ -83,7 +103,7 @@ def test_operator_launch_keeps_attack_separate_until_victim_delivery(
     assert before.status_code == 200
     early_target = client.get(f"/v/{token}/site/credential-basic-001")
     assert early_target.status_code == 404
-    assert "ordinary-001" in before.text
+    assert "Inbox zero" in before.text
     assert "email-phish-001" not in before.text
     assert "Scenario Lab" not in before.text
 
@@ -342,13 +362,126 @@ def test_shopping_flow_uses_confirmation_instead_of_password(
         assert "credential_submission_attempted" not in event_types
 
 
+def test_previous_attack_messages_remain_in_the_same_environment(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    first = _launch(client, "email-phish-001", "student")
+    _set_due(test_engine, first["attack_id"], datetime.now(UTC))
+    second = _launch(client, "spear-phish-001", "student")
+    _set_due(test_engine, second["attack_id"], datetime.now(UTC))
+
+    inbox = client.get("/mail")
+    assert inbox.status_code == 200
+    assert "email-phish-001" in inbox.text
+    assert "spear-phish-001" in inbox.text
+    assert "ordinary-001" not in inbox.text
+
+    sms_first = _launch(client, "sms-parcel-001", "online shopper")
+    _set_due(test_engine, sms_first["attack_id"], datetime.now(UTC))
+    sms_second = _launch(client, "sms-tech-support-001", "support agent")
+    _set_due(test_engine, sms_second["attack_id"], datetime.now(UTC))
+    messages = client.get("/messages")
+    assert "sms-parcel-001" in messages.text
+    assert "sms-tech-support-001" in messages.text
+    assert "ordinary-sms-001" not in messages.text
+
+
+def test_replaying_a_completed_email_creates_a_new_delivery_instance(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    first = _launch(client, "email-phish-001", "student")
+    token = first["victim_path"].split("/")[2]
+    _set_due(test_engine, first["attack_id"], datetime.now(UTC))
+    first_inbox = client.get("/mail")
+    assert first_inbox.status_code == 200
+    _complete_attack(test_engine, first["attack_id"])
+
+    second = _launch(client, "email-phish-001", "student")
+    assert second["attack_id"] != first["attack_id"]
+    _set_due(test_engine, second["attack_id"], datetime.now(UTC))
+    inbox = client.get("/mail")
+
+    assert inbox.status_code == 200
+    assert inbox.text.count('data-message-id="email-phish-001"') == 2
+    assert f'data-delivery-id="{first["attack_id"]}"' in inbox.text
+    assert f'data-delivery-id="{second["attack_id"]}"' in inbox.text
+
+    with Session(test_engine) as database_session:
+        repository = SimulationAttackRepository(database_session)
+        first_attack = repository.get_by_attack_id(first["attack_id"])
+        second_attack = repository.get_by_attack_id(second["attack_id"])
+        assert first_attack is not None
+        assert second_attack is not None
+        assert first_attack.delivered_at is not None
+        assert second_attack.delivered_at is not None
+        assert first_attack.delivered_at != second_attack.delivered_at
+
+    first_detail = client.get(
+        f"/v/{token}/mail/email-phish-001",
+        params={"delivery_id": first["attack_id"]},
+    )
+    assert first_detail.status_code == 200
+    second_detail = client.get(
+        f"/v/{token}/mail/email-phish-001",
+        params={"delivery_id": second["attack_id"]},
+    )
+    assert second_detail.status_code == 200
+
+
+def test_replaying_a_completed_sms_creates_a_new_delivery_instance(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    first = _launch(client, "sms-parcel-001", "online shopper")
+    token = first["victim_path"].split("/")[2]
+    _set_due(test_engine, first["attack_id"], datetime.now(UTC))
+    assert client.get("/messages").status_code == 200
+    _complete_attack(test_engine, first["attack_id"])
+
+    second = _launch(client, "sms-parcel-001", "online shopper")
+    assert second["attack_id"] != first["attack_id"]
+    _set_due(test_engine, second["attack_id"], datetime.now(UTC))
+    messages = client.get("/messages")
+
+    assert messages.status_code == 200
+    assert messages.text.count('data-thread-id="sms-parcel-001"') == 2
+    assert f'data-delivery-id="{first["attack_id"]}"' in messages.text
+    assert f'data-delivery-id="{second["attack_id"]}"' in messages.text
+    assert "UNREAD" in messages.text
+    assert re.search(r"\b\d+\s+unread\b", messages.text, re.IGNORECASE) is None
+
+    with Session(test_engine) as database_session:
+        repository = SimulationAttackRepository(database_session)
+        first_attack = repository.get_by_attack_id(first["attack_id"])
+        second_attack = repository.get_by_attack_id(second["attack_id"])
+        assert first_attack is not None
+        assert second_attack is not None
+        assert first_attack.delivered_at is not None
+        assert second_attack.delivered_at is not None
+        assert first_attack.delivered_at != second_attack.delivered_at
+
+    first_detail = client.get(
+        f"/v/{token}/messages/sms-parcel-001",
+        params={"delivery_id": first["attack_id"]},
+    )
+    assert first_detail.status_code == 200
+    second_detail = client.get(
+        f"/v/{token}/messages/sms-parcel-001",
+        params={"delivery_id": second["attack_id"]},
+    )
+    assert second_detail.status_code == 200
+
+
 def test_preopened_quickchat_receives_only_the_launched_thread(
     client: TestClient,
     test_engine: Engine,
 ) -> None:
     baseline = client.get("/messages")
     assert baseline.status_code == 200
-    assert "ordinary-sms-001" in baseline.text
+    assert "No conversations" in baseline.text
+    assert "ordinary-sms-001" not in baseline.text
     assert "sms-parcel-001" not in baseline.text
     token = client.cookies.get("phisim_victim_context")
     assert token
@@ -357,7 +490,7 @@ def test_preopened_quickchat_receives_only_the_launched_thread(
     assert launch["victim_path"] == f"/v/{token}/messages"
     _set_due(test_engine, launch["attack_id"], datetime.now(UTC))
     delivered = client.get("/messages")
-    assert "ordinary-sms-001" in delivered.text
+    assert "ordinary-sms-001" not in delivered.text
     assert "sms-parcel-001" in delivered.text
 
 
@@ -371,7 +504,7 @@ def test_sms_delivery_uses_the_same_attack_context(
 
     inbox = client.get(f"/v/{token}/messages")
     assert inbox.status_code == 200
-    assert "ordinary-sms-001" in inbox.text
+    assert "ordinary-sms-001" not in inbox.text
     assert "sms-parcel-001" in inbox.text
 
     opened = client.get(f"/v/{token}/messages/sms-parcel-001")

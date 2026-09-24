@@ -33,7 +33,7 @@ async def sms_inbox(
     threads = [
         replace(
             thread,
-            unread=0 if thread.thread_id in read_ids else thread.unread,
+            unread=(thread.thread_id not in read_ids and bool(thread.unread)),
         )
         for thread in SMS_THREADS
     ]

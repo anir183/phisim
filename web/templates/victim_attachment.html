@@ -4,12 +4,12 @@
 {% block app_name %}Gemail{% endblock %}
 
 {% block victim_content %}
-  <div class="fake-app-bar"><a class="button button-quiet" href="{{ url_for('victim_email', token=attack.victim_token, message_id=message.message_id) }}">← Back to message</a><span class="badge badge-success">Inert preview</span></div>
+  <div class="fake-app-bar"><a class="button button-quiet" href="{{ url_for('victim_email', token=attack.victim_token, message_id=message.message_id) }}?delivery_id={{ attack.attack_id }}">← Back to message</a><span class="badge badge-success">Inert preview</span></div>
   <section class="surface outcome-card" style="margin-top: 1.25rem">
     <p class="eyebrow">Attachment preview</p>
     <h1>{{ message.attachment_name }}</h1>
     <div class="attachment-card" style="margin-top: 1rem"><div class="row"><span class="attachment-icon" aria-hidden="true">DOC</span><div><div class="attachment-name">Safe document representation</div><div class="help-text">{{ message.attachment_preview }}</div></div></div><span class="badge badge-warning">No download</span></div>
     <div class="notice notice-warning" style="margin-top: 1rem">This document is represented as inert text. PhiSim does not create, download, open, or execute attachments.</div>
-    <div class="form-actions" style="margin-top: 1.25rem"><a class="button" href="{{ url_for('victim_email_link', token=attack.victim_token, message_id=message.message_id) }}">Continue to message link</a><a class="button button-secondary" href="{{ url_for('victim_email', token=attack.victim_token, message_id=message.message_id) }}">Back</a></div>
+    <div class="form-actions" style="margin-top: 1.25rem"><a class="button" href="{{ url_for('victim_email_link', token=attack.victim_token, message_id=message.message_id) }}?delivery_id={{ attack.attack_id }}">Continue to message link</a><a class="button button-secondary" href="{{ url_for('victim_email', token=attack.victim_token, message_id=message.message_id) }}?delivery_id={{ attack.attack_id }}">Back</a></div>
   </section>
 {% endblock %}

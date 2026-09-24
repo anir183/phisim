@@ -310,13 +310,13 @@ WebSocket boundary.
 
 ### Gemail
 
-Fictional mail client with sidebar folders, unread counts, baseline ordinary
-messages, search, rich message headers, signatures, quoted context, safe
+Fictional mail client with sidebar folders, unread counts, an empty baseline
+state, search, rich message headers, signatures, quoted context, safe
 attachments, reply/forward affordances, and dynamically delivered attack mail.
 
 ### QuickChat
 
-Fictional messenger with contacts, avatars, baseline conversations, unread
+Fictional messenger with contacts, avatars, an empty baseline state, unread
 badges, incoming/outgoing bubbles, timestamps, delivery state, link previews,
 and dynamically delivered attack SMS.
 
@@ -425,7 +425,7 @@ tests.
 ```text
 Open /mail or /messages
         ↓
-persistent baseline environment receives an opaque local context cookie
+persistent empty baseline environment receives an opaque local context cookie
         ↓
 open /lab in another tab and launch
         ↓
@@ -472,9 +472,14 @@ REST/WebSocket console timeline contains the complete sequence
 - Victim tabs poll the local context status endpoint. The browser uses safe DOM
   text APIs and reloads only when lifecycle/state changes; delivery includes a
   local notification toast.
-- Email/SMS delivery instances are represented by persisted artifact-ID lists
-  plus read/open state in `SimulationAttack`; QR, MFA, and website contexts use
-  the same attack state boundary.
+- Each attack delivery has its own `attack_id`-backed `delivery_id`. Repeated
+  launches of the same email or SMS scenario therefore render separate cards
+  with their actual UTC delivery timestamps; artifact IDs remain the content
+  identity, not the visible-instance identity. Read/open state remains scoped
+  to the attack.
+- SMS conversation cards use a boolean unread state and display `UNREAD`
+  without a fabricated message count.
+- QR, MFA, and website contexts use the same attack state boundary.
 
 ### Workflow coverage
 
@@ -496,7 +501,7 @@ REST/WebSocket console timeline contains the complete sequence
 
 Automated verification after the reconstruction:
 
-- `161 passed, 1 warning` with the repository's in-memory SQLite test fixture.
+- `164 passed, 1 warning` with the repository's in-memory SQLite test fixture.
 - `uv run ruff check .` passed.
 - `uv run ruff format --check .` passed.
 - `uv run pyright` passed with zero errors.

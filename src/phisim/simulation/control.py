@@ -138,6 +138,7 @@ def _attack_payload(
 ) -> dict[str, object]:
     return {
         "attack_id": attack.attack_id,
+        "delivery_id": attack.attack_id,
         "session_id": attack.operator_session_id,
         "run_id": attack.run_id,
         "scenario_id": attack.scenario_id,
@@ -188,6 +189,7 @@ async def _refresh_attack_delivery(
             metadata={
                 "channel": attack.channel,
                 "attack_id": attack.attack_id,
+                "delivery_id": attack.attack_id,
                 "artifact_id": attack.scenario_id,
             },
         )

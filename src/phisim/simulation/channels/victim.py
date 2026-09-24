@@ -22,12 +22,8 @@ from phisim.simulation.attack import (
     SimulationAttackService,
 )
 from phisim.simulation.catalog import (
-    BASELINE_EMAILS,
-    BASELINE_SMS,
     INDICATOR_INFO,
     MFA_SCENARIOS,
-    get_baseline_email,
-    get_baseline_sms,
     get_email_message,
     get_scenario,
     get_sms_thread,
@@ -81,6 +77,7 @@ def _get_environment(database_session: OrmSession, token: str):
 def _payload(attack) -> dict[str, object]:
     return {
         "attack_id": attack.attack_id,
+        "delivery_id": attack.attack_id,
         "status": attack.status,
         "channel": attack.channel,
         "scenario_id": attack.scenario_id,
@@ -117,16 +114,33 @@ async def _deliver_if_due(database_session: OrmSession, attack) -> bool:
             metadata={
                 "channel": attack.channel,
                 "attack_id": attack.attack_id,
+                "delivery_id": attack.attack_id,
                 "artifact_id": attack.scenario_id,
             },
         )
     return delivered
 
 
+async def _refresh_attack_history(
+    database_session: OrmSession,
+    token: str,
+) -> list:
+    for attack in _attack_history(database_session, token):
+        await _deliver_if_due(database_session, attack)
+    return _attack_history(database_session, token)
+
+
 def _engage(database_session: OrmSession, attack) -> None:
     service = _attack_service(database_session)
     if attack.status == "DELIVERED":
         service.transition(attack, "ENGAGED")
+
+
+def _delivery_metadata(attack) -> dict[str, str]:
+    return {
+        "attack_id": attack.attack_id,
+        "delivery_id": attack.attack_id,
+    }
 
 
 def _require_context(attack) -> None:
@@ -173,7 +187,7 @@ async def _record_website_viewed(
         scenario_id=attack.scenario_id,
         event_type="website_viewed",
         source="victim",
-        metadata=scenario_evidence(scenario) | {"attack_id": attack.attack_id},
+        metadata=scenario_evidence(scenario) | _delivery_metadata(attack),
     )
     service.update_state(attack, {"website_viewed": True})
 
@@ -210,65 +224,57 @@ def _message_payload(message: Any, *, attack: bool) -> dict[str, object]:
     }
 
 
-def _baseline_email_messages() -> list[dict[str, object]]:
-    return [
-        _message_payload(message, attack=False) for message in BASELINE_EMAILS
-    ]
+def _attack_history(database_session: OrmSession, token: str) -> list:
+    return SimulationAttackRepository(database_session).list_by_victim_token(
+        token
+    )
 
 
-def _baseline_sms_threads() -> list[dict[str, object]]:
-    return [
-        {
-            "thread_id": thread.thread_id,
-            "sender_label": thread.sender_label,
-            "sender_number": thread.sender_number,
-            "messages": thread.messages,
-            "timestamp": thread.timestamp,
-            "unread": thread.unread,
-            "is_attack": False,
-        }
-        for thread in BASELINE_SMS
-    ]
-
-
-def _email_messages_for_attack(attack) -> list[dict[str, object]]:
-    messages = _baseline_email_messages()
-    if attack.channel == "email" and attack.scenario_id in attack.state.get(
-        "delivered_message_ids", []
-    ):
-        attack_message = get_email_message(attack.scenario_id)
-        if attack_message is not None:
+def _email_messages_for_history(attacks: list) -> list[dict[str, object]]:
+    messages: list[dict[str, object]] = []
+    for attack in attacks:
+        if attack.channel != "email":
+            continue
+        for message_id in attack.state.get("delivered_message_ids", []):
+            attack_message = get_email_message(message_id)
+            if attack_message is None:
+                continue
             message = _message_payload(attack_message, attack=True)
-            message["unread"] = attack.scenario_id not in attack.state.get(
+            delivered_at = attack.delivered_at or attack.updated_at
+            message["delivery_id"] = attack.attack_id
+            message["timestamp"] = serialize_utc_datetime(delivered_at)
+            message["unread"] = message_id not in attack.state.get(
                 "read_message_ids", []
             )
-            messages.insert(0, message)
+            messages.append(message)
     return messages
 
 
-def _sms_threads_for_attack(attack) -> list[dict[str, object]]:
-    threads = _baseline_sms_threads()
-    if attack.channel == "sms" and attack.scenario_id in attack.state.get(
-        "delivered_thread_ids", []
-    ):
-        attack_thread = get_sms_thread(attack.scenario_id)
-        if attack_thread is not None:
-            threads.insert(
-                0,
+def _sms_threads_for_history(attacks: list) -> list[dict[str, object]]:
+    threads: list[dict[str, object]] = []
+    for attack in attacks:
+        if attack.channel != "sms":
+            continue
+        for thread_id in attack.state.get("delivered_thread_ids", []):
+            attack_thread = get_sms_thread(thread_id)
+            if attack_thread is None:
+                continue
+            threads.append(
                 {
                     "thread_id": attack_thread.thread_id,
                     "sender_label": attack_thread.sender_label,
                     "sender_number": attack_thread.sender_number,
                     "messages": attack_thread.messages,
-                    "timestamp": attack_thread.timestamp,
+                    "timestamp": serialize_utc_datetime(
+                        attack.delivered_at or attack.updated_at
+                    ),
+                    "delivery_id": attack.attack_id,
                     "unread": (
-                        0
-                        if attack_thread.thread_id
-                        in attack.state.get("read_thread_ids", [])
-                        else attack_thread.unread
+                        thread_id not in attack.state.get("read_thread_ids", [])
+                        and bool(attack_thread.unread)
                     ),
                     "is_attack": True,
-                },
+                }
             )
     return threads
 
@@ -294,15 +300,19 @@ async def baseline_mail(
         cookie_response,
         database_session,
     )
-    attack = _get_attack_optional(database_session, environment.token)
-    if attack is not None:
-        await _deliver_if_due(database_session, attack)
+    history = await _refresh_attack_history(
+        database_session,
+        environment.token,
+    )
+    active_attack = _get_attack_optional(database_session, environment.token)
+    display_attack = active_attack or (history[0] if history else None)
+    if display_attack is not None:
         response = templates.TemplateResponse(
             request=request,
             name="victim_mail.html",
             context={
-                "attack": attack,
-                "messages": _email_messages_for_attack(attack),
+                "attack": display_attack,
+                "messages": _email_messages_for_history(history),
                 "active_page": "victim",
             },
         )
@@ -312,7 +322,7 @@ async def baseline_mail(
             name="environment_mail.html",
             context={
                 "environment": {"victim_token": environment.token},
-                "messages": _baseline_email_messages(),
+                "messages": [],
                 "active_page": "victim",
             },
         )
@@ -331,15 +341,19 @@ async def baseline_messages(
         cookie_response,
         database_session,
     )
-    attack = _get_attack_optional(database_session, environment.token)
-    if attack is not None:
-        await _deliver_if_due(database_session, attack)
+    history = await _refresh_attack_history(
+        database_session,
+        environment.token,
+    )
+    active_attack = _get_attack_optional(database_session, environment.token)
+    display_attack = active_attack or (history[0] if history else None)
+    if display_attack is not None:
         response = templates.TemplateResponse(
             request=request,
             name="victim_messages.html",
             context={
-                "attack": attack,
-                "threads": _sms_threads_for_attack(attack),
+                "attack": display_attack,
+                "threads": _sms_threads_for_history(history),
                 "active_page": "victim",
             },
         )
@@ -349,7 +363,7 @@ async def baseline_messages(
             name="environment_messages.html",
             context={
                 "environment": {"victim_token": environment.token},
-                "threads": _baseline_sms_threads(),
+                "threads": [],
                 "active_page": "victim",
             },
         )
@@ -380,24 +394,25 @@ async def victim_mail(
     database_session: Annotated[OrmSession, Depends(get_session)],
 ) -> HTMLResponse:
     _get_environment(database_session, token)
-    attack = _get_attack_optional(database_session, token)
-    if attack is None:
+    history = await _refresh_attack_history(database_session, token)
+    active_attack = _get_attack_optional(database_session, token)
+    display_attack = active_attack or (history[0] if history else None)
+    if display_attack is None:
         return templates.TemplateResponse(
             request=request,
             name="environment_mail.html",
             context={
                 "environment": {"victim_token": token},
-                "messages": _baseline_email_messages(),
+                "messages": [],
                 "active_page": "victim",
             },
         )
-    await _deliver_if_due(database_session, attack)
     return templates.TemplateResponse(
         request=request,
         name="victim_mail.html",
         context={
-            "attack": attack,
-            "messages": _email_messages_for_attack(attack),
+            "attack": display_attack,
+            "messages": _email_messages_for_history(history),
             "active_page": "victim",
         },
     )
@@ -409,58 +424,50 @@ async def victim_email(
     token: str,
     message_id: str,
     database_session: Annotated[OrmSession, Depends(get_session)],
+    delivery_id: str | None = None,
 ) -> HTMLResponse:
     _get_environment(database_session, token)
-    attack = _get_attack_optional(database_session, token)
-    baseline = get_baseline_email(message_id)
+    history = await _refresh_attack_history(database_session, token)
+    attack = next(
+        (
+            item
+            for item in history
+            if item.channel == "email"
+            and message_id in item.state.get("delivered_message_ids", [])
+            and (delivery_id is None or item.attack_id == delivery_id)
+        ),
+        None,
+    )
     if attack is None:
-        if baseline is None:
-            raise HTTPException(status_code=404, detail="Message not found.")
-        return templates.TemplateResponse(
-            request=request,
-            name="environment_email.html",
-            context={
-                "environment": {"victim_token": token},
-                "message": _message_payload(baseline, attack=False),
-                "active_page": "victim",
-            },
-        )
-    await _deliver_if_due(database_session, attack)
-    _require_context(attack)
-    attack_message = None
-    if message_id == attack.scenario_id and message_id in attack.state.get(
-        "delivered_message_ids", []
-    ):
-        attack_message = get_email_message(message_id)
-    if baseline is None and attack_message is None:
         raise HTTPException(status_code=404, detail="Message not found.")
-
-    if attack_message is not None:
-        _engage(database_session, attack)
-        service = _attack_service(database_session)
-        read_ids = set(attack.state.get("read_message_ids", []))
-        read_ids.add(message_id)
-        service.update_state(
-            attack,
-            {
-                "read_message_ids": sorted(read_ids),
-                "last_action": "message_opened",
-            },
-        )
-        await emit_simulation_event(
-            database_session,
-            attack.operator_session_id,
-            scenario_id=attack.scenario_id,
-            event_type="message_opened",
-            source="victim",
-            metadata=email_evidence(attack_message)
-            | {"attack_id": attack.attack_id},
-        )
-        message = _message_payload(attack_message, attack=True)
-    else:
-        assert baseline is not None
-        message = _message_payload(baseline, attack=False)
-
+    _require_context(attack)
+    attack_message = get_email_message(message_id)
+    if attack_message is None:
+        raise HTTPException(status_code=404, detail="Message not found.")
+    _engage(database_session, attack)
+    service = _attack_service(database_session)
+    read_ids = set(attack.state.get("read_message_ids", []))
+    read_ids.add(message_id)
+    service.update_state(
+        attack,
+        {
+            "read_message_ids": sorted(read_ids),
+            "last_action": "message_opened",
+        },
+    )
+    await emit_simulation_event(
+        database_session,
+        attack.operator_session_id,
+        scenario_id=attack.scenario_id,
+        event_type="message_opened",
+        source="victim",
+        metadata=email_evidence(attack_message) | _delivery_metadata(attack),
+    )
+    message = _message_payload(attack_message, attack=True)
+    message["delivery_id"] = attack.attack_id
+    message["timestamp"] = serialize_utc_datetime(
+        attack.delivered_at or attack.updated_at
+    )
     return templates.TemplateResponse(
         request=request,
         name="victim_email.html",
@@ -481,13 +488,20 @@ async def victim_attachment(
     token: str,
     message_id: str,
     database_session: Annotated[OrmSession, Depends(get_session)],
+    delivery_id: str | None = None,
 ) -> HTMLResponse:
-    attack = _get_attack(database_session, token)
-    if (
-        attack.channel != "email"
-        or message_id != attack.scenario_id
-        or message_id not in attack.state.get("delivered_message_ids", [])
-    ):
+    history = await _refresh_attack_history(database_session, token)
+    attack = next(
+        (
+            item
+            for item in history
+            if item.channel == "email"
+            and message_id in item.state.get("delivered_message_ids", [])
+            and (delivery_id is None or item.attack_id == delivery_id)
+        ),
+        None,
+    )
+    if attack is None:
         raise HTTPException(status_code=404, detail="Attachment not found.")
     _require_context(attack)
     message = get_email_message(message_id)
@@ -505,7 +519,7 @@ async def victim_attachment(
         event_type="attachment_opened",
         source="victim",
         metadata=email_attachment_evidence(message)
-        | {"attack_id": attack.attack_id},
+        | _delivery_metadata(attack),
     )
     return templates.TemplateResponse(
         request=request,
@@ -523,13 +537,20 @@ async def victim_email_link(
     token: str,
     message_id: str,
     database_session: Annotated[OrmSession, Depends(get_session)],
+    delivery_id: str | None = None,
 ) -> RedirectResponse:
-    attack = _get_attack(database_session, token)
-    if (
-        attack.channel != "email"
-        or message_id != attack.scenario_id
-        or message_id not in attack.state.get("delivered_message_ids", [])
-    ):
+    history = await _refresh_attack_history(database_session, token)
+    attack = next(
+        (
+            item
+            for item in history
+            if item.channel == "email"
+            and message_id in item.state.get("delivered_message_ids", [])
+            and (delivery_id is None or item.attack_id == delivery_id)
+        ),
+        None,
+    )
+    if attack is None:
         raise HTTPException(status_code=404, detail="Message link not found.")
     _require_context(attack)
     message = get_email_message(message_id)
@@ -542,7 +563,7 @@ async def victim_email_link(
         scenario_id=attack.scenario_id,
         event_type="link_clicked",
         source="victim",
-        metadata=email_link_evidence(message) | {"attack_id": attack.attack_id},
+        metadata=email_link_evidence(message) | _delivery_metadata(attack),
     )
     return RedirectResponse(
         url_for_victim_site(attack, message.target_scenario_id),
@@ -567,24 +588,25 @@ async def victim_messages(
     database_session: Annotated[OrmSession, Depends(get_session)],
 ) -> HTMLResponse:
     _get_environment(database_session, token)
-    attack = _get_attack_optional(database_session, token)
-    if attack is None:
+    history = await _refresh_attack_history(database_session, token)
+    active_attack = _get_attack_optional(database_session, token)
+    display_attack = active_attack or (history[0] if history else None)
+    if display_attack is None:
         return templates.TemplateResponse(
             request=request,
             name="environment_messages.html",
             context={
                 "environment": {"victim_token": token},
-                "threads": _baseline_sms_threads(),
+                "threads": [],
                 "active_page": "victim",
             },
         )
-    await _deliver_if_due(database_session, attack)
     return templates.TemplateResponse(
         request=request,
         name="victim_messages.html",
         context={
-            "attack": attack,
-            "threads": _sms_threads_for_attack(attack),
+            "attack": display_attack,
+            "threads": _sms_threads_for_history(history),
             "active_page": "victim",
         },
     )
@@ -596,40 +618,29 @@ async def victim_message(
     token: str,
     thread_id: str,
     database_session: Annotated[OrmSession, Depends(get_session)],
+    delivery_id: str | None = None,
 ) -> HTMLResponse:
     _get_environment(database_session, token)
-    attack = _get_attack_optional(database_session, token)
-    baseline_thread = get_baseline_sms(thread_id)
+    history = await _refresh_attack_history(database_session, token)
+    attack = next(
+        (
+            item
+            for item in history
+            if item.channel == "sms"
+            and thread_id in item.state.get("delivered_thread_ids", [])
+            and (delivery_id is None or item.attack_id == delivery_id)
+        ),
+        None,
+    )
     if attack is None:
-        if baseline_thread is None:
-            raise HTTPException(
-                status_code=404, detail="Conversation not found."
-            )
-        thread = {
-            "thread_id": baseline_thread.thread_id,
-            "sender_label": baseline_thread.sender_label,
-            "sender_number": baseline_thread.sender_number,
-            "messages": baseline_thread.messages,
-            "timestamp": baseline_thread.timestamp,
-            "unread": baseline_thread.unread,
-            "is_attack": False,
-        }
-        return templates.TemplateResponse(
-            request=request,
-            name="environment_message.html",
-            context={
-                "environment": {"victim_token": token},
-                "thread": thread,
-                "active_page": "victim",
-            },
-        )
-    await _deliver_if_due(database_session, attack)
+        raise HTTPException(status_code=404, detail="Conversation not found.")
     _require_context(attack)
     thread = next(
         (
             item
-            for item in _sms_threads_for_attack(attack)
+            for item in _sms_threads_for_history(history)
             if item["thread_id"] == thread_id
+            and item["delivery_id"] == (delivery_id or attack.attack_id)
         ),
         None,
     )
@@ -656,7 +667,7 @@ async def victim_message(
                 event_type="message_opened",
                 source="victim",
                 metadata=sms_evidence(catalog_thread)
-                | {"attack_id": attack.attack_id},
+                | _delivery_metadata(attack),
             )
     return templates.TemplateResponse(
         request=request,
@@ -674,13 +685,20 @@ async def victim_message_link(
     token: str,
     thread_id: str,
     database_session: Annotated[OrmSession, Depends(get_session)],
+    delivery_id: str | None = None,
 ) -> RedirectResponse:
-    attack = _get_attack(database_session, token)
-    if (
-        attack.channel != "sms"
-        or thread_id != attack.scenario_id
-        or thread_id not in attack.state.get("delivered_thread_ids", [])
-    ):
+    history = await _refresh_attack_history(database_session, token)
+    attack = next(
+        (
+            item
+            for item in history
+            if item.channel == "sms"
+            and thread_id in item.state.get("delivered_thread_ids", [])
+            and (delivery_id is None or item.attack_id == delivery_id)
+        ),
+        None,
+    )
+    if attack is None:
         raise HTTPException(status_code=404, detail="Message link not found.")
     _require_context(attack)
     thread = get_sms_thread(thread_id)
@@ -693,7 +711,7 @@ async def victim_message_link(
         scenario_id=attack.scenario_id,
         event_type="link_clicked",
         source="victim",
-        metadata=sms_link_evidence(thread) | {"attack_id": attack.attack_id},
+        metadata=sms_link_evidence(thread) | _delivery_metadata(attack),
     )
     return RedirectResponse(
         url_for_victim_site(attack, thread.target_scenario_id),
@@ -1044,7 +1062,7 @@ async def victim_mfa(
         scenario_id=attack.scenario_id,
         event_type="mfa_prompt_displayed",
         source="victim",
-        metadata=mfa_evidence(scenario, step) | {"attack_id": attack.attack_id},
+        metadata=mfa_evidence(scenario, step) | _delivery_metadata(attack),
     )
     return templates.TemplateResponse(
         request=request,
@@ -1092,7 +1110,7 @@ async def victim_mfa_respond(
         event_type="mfa_prompt_responded",
         source="victim",
         metadata=mfa_evidence(scenario, step, action=action)
-        | {"attack_id": attack.attack_id},
+        | _delivery_metadata(attack),
     )
     terminal = action == "deny" or step == scenario.prompt_count
     if not terminal:

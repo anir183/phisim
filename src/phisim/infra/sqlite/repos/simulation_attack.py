@@ -44,6 +44,17 @@ class SimulationAttackRepository:
             .order_by(SimulationAttack.updated_at.desc())
         )
 
+    def list_by_victim_token(self, token: str) -> list[SimulationAttack]:
+        statement = (
+            select(SimulationAttack)
+            .where(SimulationAttack.victim_token == token)
+            .order_by(
+                SimulationAttack.updated_at.desc(),
+                SimulationAttack.attack_id.desc(),
+            )
+        )
+        return list(self.session.scalars(statement))
+
     def get_by_run_id(self, run_id: str) -> SimulationAttack | None:
         return self.session.scalar(
             select(SimulationAttack).where(SimulationAttack.run_id == run_id)
