@@ -1,8 +1,143 @@
 from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any
 
 from phisim.analysis.schemas import Indicator
 from phisim.telemetry.schemas import EventResponse
+
+
+@dataclass(frozen=True)
+class IndicatorRule:
+    code: str
+    category: str
+    context: str
+    evidence: str
+    explanation: str
+
+
+_FLAG_RULES: tuple[IndicatorRule, ...] = (
+    IndicatorRule(
+        code="authority_impersonation",
+        category="social_engineering",
+        context="medium",
+        evidence=(
+            "The artifact presents itself as an authority or trusted role."
+        ),
+        explanation=(
+            "Attackers often impersonate trusted authorities to compel "
+            "compliance."
+        ),
+    ),
+    IndicatorRule(
+        code="urgent_language",
+        category="social_engineering",
+        context="medium",
+        evidence="The artifact uses urgency or a deadline.",
+        explanation=(
+            "Urgent deadlines are commonly used to pressure users into making "
+            "hasty decisions."
+        ),
+    ),
+    IndicatorRule(
+        code="personalization",
+        category="social_engineering",
+        context="medium",
+        evidence="The artifact uses personal or contextual details.",
+        explanation=(
+            "Personalization can make a fraudulent message appear tailored "
+            "to the recipient."
+        ),
+    ),
+    IndicatorRule(
+        code="incident_fear",
+        category="social_engineering",
+        context="medium",
+        evidence="The artifact claims a security incident or unusual activity.",
+        explanation=(
+            "Claims of an incident can create pressure to act immediately."
+        ),
+    ),
+    IndicatorRule(
+        code="tech_support",
+        category="authority_impersonation",
+        context="medium",
+        evidence=(
+            "The artifact presents itself as a technical support or service "
+            "team."
+        ),
+        explanation="Support-themed impersonation is a common phishing tactic.",
+    ),
+    IndicatorRule(
+        code="invoice_fraud",
+        category="financial_fraud",
+        context="high",
+        evidence=(
+            "The artifact references an invoice, payment, or financial request."
+        ),
+        explanation=(
+            "Unexpected financial requests can be used to steal funds or "
+            "credentials."
+        ),
+    ),
+    IndicatorRule(
+        code="request_confirmation",
+        category="credential_harvesting",
+        context="high",
+        evidence=(
+            "The artifact asks the recipient to confirm account or login "
+            "details."
+        ),
+        explanation=(
+            "Requests to confirm authentication details can be a pretext for "
+            "credential harvesting."
+        ),
+    ),
+    IndicatorRule(
+        code="out_of_band",
+        category="social_engineering",
+        context="medium",
+        evidence=(
+            "The interaction moved the recipient to an unexpected channel."
+        ),
+        explanation=(
+            "Moving a conversation outside its normal channel can reduce "
+            "normal verification safeguards."
+        ),
+    ),
+    IndicatorRule(
+        code="spoiled_links",
+        category="deception",
+        context="high",
+        evidence=(
+            "The visible link text does not match its local simulation "
+            "destination."
+        ),
+        explanation=(
+            "Deceptive link destinations can hide the true target from a "
+            "recipient."
+        ),
+    ),
+    IndicatorRule(
+        code="attachment_lure",
+        category="delivery",
+        context="medium",
+        evidence="An attachment was used to encourage a follow-up interaction.",
+        explanation=(
+            "Attachments can make a fraudulent request appear more official "
+            "or urgent."
+        ),
+    ),
+    IndicatorRule(
+        code="mfa_fatigue",
+        category="credential_harvesting",
+        context="high",
+        evidence="Multiple MFA approval prompts were requested in one session.",
+        explanation=(
+            "Repeated approval prompts can pressure a recipient into "
+            "approving an attacker request."
+        ),
+    ),
+)
 
 
 def _text(metadata: Mapping[str, Any], *keys: str) -> str:
@@ -158,101 +293,15 @@ def analyze_event(event: EventResponse) -> list[Indicator]:
 
     # Simulation catalog flags keep these rules deterministic without
     # inferring intent from arbitrary user-provided prose.
-    flag_rules = (
-        (
-            "authority_impersonation",
-            "social_engineering",
-            "medium",
-            "The artifact presents itself as an authority or trusted role.",
-            "Attackers often impersonate trusted authorities to compel "
-            "compliance.",
-        ),
-        (
-            "urgent_language",
-            "social_engineering",
-            "medium",
-            "The artifact uses urgency or a deadline.",
-            "Urgent deadlines are commonly used to pressure users into making "
-            "hasty decisions.",
-        ),
-        (
-            "personalization",
-            "social_engineering",
-            "medium",
-            "The artifact uses personal or contextual details.",
-            "Personalization can make a fraudulent message appear tailored "
-            "to the recipient.",
-        ),
-        (
-            "incident_fear",
-            "social_engineering",
-            "medium",
-            "The artifact claims a security incident or unusual activity.",
-            "Claims of an incident can create pressure to act immediately.",
-        ),
-        (
-            "tech_support",
-            "authority_impersonation",
-            "medium",
-            "The artifact presents itself as a technical support or service "
-            "team.",
-            "Support-themed impersonation is a common phishing tactic.",
-        ),
-        (
-            "invoice_fraud",
-            "financial_fraud",
-            "high",
-            "The artifact references an invoice, payment, or financial "
-            "request.",
-            "Unexpected financial requests can be used to steal funds or "
-            "credentials.",
-        ),
-        (
-            "request_confirmation",
-            "credential_harvesting",
-            "high",
-            "The artifact asks the recipient to confirm account or login "
-            "details.",
-            "Requests to confirm authentication details can be a pretext for "
-            "credential harvesting.",
-        ),
-        (
-            "out_of_band",
-            "social_engineering",
-            "medium",
-            "The interaction moved the recipient to an unexpected channel.",
-            "Moving a conversation outside its normal channel can reduce "
-            "normal verification safeguards.",
-        ),
-        (
-            "spoiled_links",
-            "deception",
-            "high",
-            "The visible link text does not match its local simulation "
-            "destination.",
-            "Deceptive link destinations can hide the true target from a "
-            "recipient.",
-        ),
-        (
-            "attachment_lure",
-            "delivery",
-            "medium",
-            "An attachment was used to encourage a follow-up interaction.",
-            "Attachments can make a fraudulent request appear more official "
-            "or urgent.",
-        ),
-        (
-            "mfa_fatigue",
-            "credential_harvesting",
-            "high",
-            "Multiple MFA approval prompts were requested in one session.",
-            "Repeated approval prompts can pressure a recipient into "
-            "approving an attacker request.",
-        ),
-    )
-    for code, category, context, evidence, explanation in flag_rules:
-        if _is_true(metadata, code):
-            add(code, category, context, evidence, explanation)
+    for rule in _FLAG_RULES:
+        if _is_true(metadata, rule.code):
+            add(
+                rule.code,
+                rule.category,
+                rule.context,
+                rule.evidence,
+                rule.explanation,
+            )
 
     if event.event_type == "attachment_opened":
         add(

@@ -36,6 +36,8 @@ class TimelineEntry(BaseModel):
 
 
 _DESCRIPTIONS = {
+    "scenario_started": "Operator started the local scenario.",
+    "scenario_completed": "Participant completed the training scenario.",
     "scenario_opened": "Participant opened the simulated scenario.",
     "page_viewed": "Participant viewed the simulation page.",
     "message_opened": "Participant opened the simulated message.",
@@ -44,6 +46,7 @@ _DESCRIPTIONS = {
     "link_hovered": "Participant hovered over a link.",
     "attachment_opened": "Participant opened a simulated attachment.",
     "qr_viewed": "Participant viewed the simulated QR verification flow.",
+    "qr_scan_simulated": "Participant simulated a local QR scan.",
     "mfa_prompt_displayed": (
         "Participant was prompted for multi-factor authentication."
     ),
