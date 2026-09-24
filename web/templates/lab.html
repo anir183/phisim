@@ -49,14 +49,6 @@
                 {% endfor %}
               </select>
             </div>
-            <div class="form-field">
-              <label for="target_role">Fictional target preset</label>
-              <select id="target_role" name="target_role">
-                {% for value in target_roles %}
-                  <option value="{{ value }}" {% if value == selected_target_role %}selected{% endif %}>{{ value|title }}</option>
-                {% endfor %}
-              </select>
-            </div>
           </div>
           <div class="form-actions">
             <button type="submit">Apply filters</button>

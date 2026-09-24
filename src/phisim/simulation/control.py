@@ -378,7 +378,6 @@ def scenario_lab(
     database_session: Annotated[OrmSession, Depends(get_session)],
     attack_type: str | None = Query(default=None, max_length=64),
     channel: str | None = Query(default=None, max_length=32),
-    target_role: str | None = Query(default=None, max_length=64),
 ) -> HTMLResponse:
     summaries = catalog_summaries()
     if attack_type:
@@ -390,12 +389,6 @@ def scenario_lab(
     if channel:
         summaries = tuple(
             summary for summary in summaries if summary.channel == channel
-        )
-    if target_role:
-        summaries = tuple(
-            summary
-            for summary in summaries
-            if summary.target_role == target_role
         )
     recent_sessions = SessionRepository(database_session).list_recent(limit=5)
     active_attacks = SimulationAttackRepository(database_session).list_recent(
@@ -417,8 +410,6 @@ def scenario_lab(
             "attack_types": attack_types(),
             "selected_attack_type": attack_type or "",
             "selected_channel": channel or "",
-            "selected_target_role": target_role or "",
-            "target_roles": sorted(TARGET_ROLE_CHOICES),
             "recent_sessions": recent_sessions,
             "active_attacks": active_attacks,
             "active_attack_paths": active_attack_paths,

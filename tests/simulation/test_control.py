@@ -24,7 +24,7 @@ def test_lab_page_exposes_operator_workspace(client: TestClient) -> None:
     assert "Scenario Lab" in response.text
     assert "Gemail" in response.text
     assert "QuickChat" in response.text
-    assert "Fictional target preset" in response.text
+    assert "Fictional target preset" not in response.text
     assert "No external" in response.text or "external" in response.text
     assert "Recent local runs" in response.text
     assert "Active attacks" in response.text
