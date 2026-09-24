@@ -25,5 +25,10 @@ def test_shared_static_assets_are_local_and_mounted(
     assert "replaceChildren" in victim_script.text
     assert "window.location.reload" not in victim_script.text
     assert "data-attack-id" in lab_script.text
+    assert "payload.events" in lab_script.text
+    assert "connectLiveEvents" in lab_script.text
+    assert "replaceChildren" in lab_script.text
+    assert "rememberLiveSession" in console_script.text
+    assert "setInterval(() => loadSessions" in console_script.text
     assert ".step-label" in css.text
     assert ".step-dot" in css.text

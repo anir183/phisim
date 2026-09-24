@@ -3,7 +3,7 @@
 {% block title %}Active Attack · PhiSim Lab{% endblock %}
 
 {% block content %}
-  <main class="page-frame narrow" data-attack-id="{{ attack.attack_id }}">
+  <main class="page-frame narrow" data-attack-id="{{ attack.attack_id }}" data-session-id="{{ attack.operator_session_id }}">
     <header class="page-heading">
       <div>
         <p class="eyebrow">Operator attack control</p>
@@ -39,9 +39,9 @@
         <h2>Live incident events</h2>
         <span class="badge" id="attack-event-count">{{ event_count }}</span>
       </div>
-      <div id="attack-events" class="timeline-list">
+      <div id="attack-events" class="timeline-list" role="log" aria-live="polite" aria-label="Live incident events">
         {% for event in events %}
-          <div class="timeline-item"><strong>{{ event.event_type }}</strong><span class="kicker">{{ event.timestamp }}</span><span class="timeline-meta">{{ event.source }}</span></div>
+          <div class="timeline-item" data-event-id="{{ event.event_id }}"><strong>{{ event.event_type }}</strong><span class="kicker">{{ event.timestamp }}</span><span class="timeline-meta">{{ event.source }}</span></div>
         {% else %}
           <div class="empty-state">No events recorded yet.</div>
         {% endfor %}
@@ -57,5 +57,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('static', path='lab.js') }}" defer></script>
+  <script src="{{ url_for('static', path='lab.js') }}?v=20260925-live-events" defer></script>
 {% endblock %}

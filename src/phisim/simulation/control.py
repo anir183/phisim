@@ -119,8 +119,22 @@ def _launch_metadata(
     }
 
 
+def _event_payload(event) -> dict[str, object]:
+    return {
+        "event_id": event.event_id,
+        "timestamp": serialize_utc_datetime(event.timestamp),
+        "session_id": event.session_id,
+        "scenario_id": event.scenario_id,
+        "event_type": event.event_type,
+        "source": event.source,
+        "metadata": event.metadata_,
+    }
+
+
 def _attack_payload(
-    attack, event_count: int | None = None
+    attack,
+    event_count: int | None = None,
+    events: list[dict[str, object]] | None = None,
 ) -> dict[str, object]:
     return {
         "attack_id": attack.attack_id,
@@ -151,6 +165,7 @@ def _attack_payload(
             attack.scenario_id,
         ),
         "event_count": event_count,
+        "events": events or [],
         "state": attack.state,
     }
 
@@ -475,7 +490,11 @@ async def attack_status_api(
     events = EventRepository(database_session).list_by_session(
         attack.operator_session_id
     )
-    return _attack_payload(attack, event_count=len(events))
+    return _attack_payload(
+        attack,
+        event_count=len(events),
+        events=[_event_payload(event) for event in events],
+    )
 
 
 @router.get("/lab/attacks/{attack_id}", response_class=HTMLResponse)

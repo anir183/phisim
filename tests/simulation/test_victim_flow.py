@@ -96,6 +96,10 @@ def test_operator_launch_keeps_attack_separate_until_victim_delivery(
     assert status.status_code == 200
     assert status.json()["status"] == "DELIVERED"
     assert "email-phish-001" in status.json()["state"]["delivered_message_ids"]
+    attack_status = client.get(f"/api/lab/attacks/{launch['attack_id']}")
+    assert "message_delivered" in [
+        event["event_type"] for event in attack_status.json()["events"]
+    ]
 
     delivered = client.get(f"/v/{token}/mail")
     assert "email-phish-001" in delivered.text

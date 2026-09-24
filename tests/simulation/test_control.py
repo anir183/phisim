@@ -76,6 +76,14 @@ def test_attack_status_page_keeps_operator_and_victim_separate(
     assert "Active attack" in page.text
     assert launch["victim_path"] in page.text
     assert "Open victim environment" in page.text
+    assert 'data-session-id="' in page.text
+    assert "20260925-live-events" in page.text
+    status = client.get(f"/api/lab/attacks/{launch['attack_id']}")
+    assert status.status_code == 200
+    assert {
+        "scenario_started",
+        "attack_armed",
+    } <= {event["event_type"] for event in status.json()["events"]}
 
 
 def test_support_portal_launch_accepts_its_fictional_target_role(

@@ -10,6 +10,7 @@ const state = {
   reconnectTimer: null,
   retryAttempt: 0,
   stopped: false,
+  sessionsInitialized: false,
 };
 
 const sessionFilter = document.getElementById("session-filter");
@@ -87,6 +88,29 @@ function renderSessions() {
     button.addEventListener("click", () => selectSession(session.session_id));
     sessionList.appendChild(button);
   }
+}
+
+function rememberLiveSession(event) {
+  if (!event || typeof event.session_id !== "string") return;
+  const existing = state.sessions.find(
+    (session) => session.session_id === event.session_id,
+  );
+  if (!existing) {
+    state.sessions.push({
+      session_id: event.session_id,
+      scenario_id: event.scenario_id || "unknown",
+      started_at: event.timestamp || "",
+      completed_at: null,
+      status: "active",
+    });
+  }
+  if (!state.selectedSession) {
+    state.selectedSession = event.session_id;
+    state.events.clear();
+    state.indicators.clear();
+    state.selectedEvent = "";
+  }
+  renderSessions();
 }
 
 function renderIndicatorFilter() {
@@ -199,27 +223,44 @@ function renderDetail() {
   detail.appendChild(metadata);
 }
 
-async function loadSessions() {
+async function loadSessions(force = false) {
   try {
     const sessions = await getJson("/api/sessions");
     if (!Array.isArray(sessions)) throw new Error("Unexpected Session response");
-    state.sessions = sessions;
-    if (!state.selectedSession && sessions.length > 0) {
-      state.selectedSession = sessions[sessions.length - 1].session_id;
+    const fetchedIds = new Set(sessions.map((session) => session.session_id));
+    const liveOnlySessions = state.sessions.filter(
+      (session) => !fetchedIds.has(session.session_id),
+    );
+    state.sessions = [...sessions, ...liveOnlySessions];
+    const previousSelection = state.selectedSession;
+    if (!state.selectedSession && state.sessions.length > 0) {
+      state.selectedSession = state.sessions[state.sessions.length - 1].session_id;
+    } else if (
+      state.selectedSession &&
+      !state.sessions.some((session) => session.session_id === state.selectedSession)
+    ) {
+      state.selectedSession = state.sessions[0]?.session_id || "";
     }
     renderSessions();
-    if (state.selectedSession) await selectSession(state.selectedSession);
+    const shouldRefreshSelection =
+      force || !state.sessionsInitialized || !previousSelection;
+    state.sessionsInitialized = true;
+    if (shouldRefreshSelection && state.selectedSession) {
+      await selectSession(state.selectedSession, !force && !!previousSelection);
+    }
   } catch (_error) {
     showEmpty(sessionList, "Unable to load Sessions.");
     setConnection("API error", "danger");
   }
 }
 
-async function selectSession(sessionId) {
+async function selectSession(sessionId, preserve = false) {
   state.selectedSession = sessionId;
-  state.events.clear();
-  state.indicators.clear();
-  state.selectedEvent = "";
+  if (!preserve) {
+    state.events.clear();
+    state.indicators.clear();
+    state.selectedEvent = "";
+  }
   renderSessions();
   renderTimeline();
   if (!sessionId) return;
@@ -272,6 +313,7 @@ async function refreshLiveIndicators(event) {
 
 function rememberLiveEvent(event) {
   if (!event || typeof event.event_id !== "string") return;
+  rememberLiveSession(event);
   if (state.selectedSession && event.session_id !== state.selectedSession) return;
   state.events.set(event.event_id, event);
   if (Array.isArray(event.indicators)) state.indicators.set(event.event_id, event.indicators);
@@ -324,7 +366,7 @@ function connect() {
 sessionFilter.addEventListener("change", () => selectSession(sessionFilter.value));
 channelFilter.addEventListener("change", renderTimeline);
 indicatorFilter.addEventListener("change", renderTimeline);
-refreshButton.addEventListener("click", loadSessions);
+refreshButton.addEventListener("click", () => loadSessions(true));
 clearButton.addEventListener("click", () => {
   state.events.clear();
   state.indicators.clear();
@@ -338,4 +380,5 @@ window.addEventListener("beforeunload", () => {
 });
 
 loadSessions();
+window.setInterval(() => loadSessions(), 5000);
 connect();
