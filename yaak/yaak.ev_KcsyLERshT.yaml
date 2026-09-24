@@ -3,7 +3,7 @@ model: environment
 id: ev_KcsyLERshT
 workspaceId: wk_dvBfLUkGqf
 createdAt: 2026-09-24T15:18:59.256320448
-updatedAt: 2026-09-24T15:20:14.759239555
+updatedAt: 2026-09-24T15:48:17.625028029
 name: Development
 public: true
 base: false
@@ -12,7 +12,7 @@ parentId: null
 variables:
 - enabled: true
   name: URI
-  value: ${[ secure(value=b64'WUVOQ19lVUUwYXpOdVF3RTNYUzNoSzZvb2NlcFdnWFJXeE8yak1IVEtJNk1NaWgyWStzQ3N2bzVpMlR0YWZnckNwRW8zeDNqcHprbGllRWR0V0t5dzVEYlpXUT09') ]}
+  value: ${[ secure(value=b64'WUVOQ19lVUUwYXpOdVF3SCsvOTVGUzZpbHRJbk12TkxKNCtYRGhtbVdNWVR6UGUybWlvdlBjWWRZdDczN29vMlpwanhYMU44bHZPWWt0UXM4') ]}
   id: dhYyn4vxfJ
 - enabled: true
   name: PORT

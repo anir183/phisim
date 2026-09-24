@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from phisim.infra.sqlite.models.event import Event
 from phisim.infra.sqlite.repos.event import EventRepository
 from phisim.telemetry.schemas import EventCreate
+from phisim.telemetry.websocket import EventConnectionManager
 
 
 class DuplicateEventError(Exception):
@@ -10,10 +11,15 @@ class DuplicateEventError(Exception):
 
 
 class TelemetryService:
-    def __init__(self, repository: EventRepository) -> None:
+    def __init__(
+        self,
+        repository: EventRepository,
+        broadcaster: EventConnectionManager,
+    ) -> None:
         self.repository = repository
+        self.broadcaster = broadcaster
 
-    def record_event(self, event_data: EventCreate) -> Event:
+    async def record_event(self, event_data: EventCreate) -> Event:
         if self.repository.get_by_event_id(event_data.event_id) is not None:
             raise DuplicateEventError(event_data.event_id)
 
@@ -27,4 +33,19 @@ class TelemetryService:
             metadata_=event_data.metadata,
         )
 
-        return self.repository.create(event)
+        event = self.repository.create(event)
+
+        await self.broadcaster.broadcast(
+            {
+                "id": event.id,
+                "event_id": event.event_id,
+                "timestamp": event.timestamp.isoformat(),
+                "session_id": event.session_id,
+                "scenario_id": event.scenario_id,
+                "event_type": event.event_type,
+                "source": event.source,
+                "metadata": event.metadata_,
+            }
+        )
+
+        return event

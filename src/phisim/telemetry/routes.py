@@ -1,12 +1,19 @@
 # ruff: noqa: B008
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from sqlalchemy.orm import Session
 
 from phisim.infra.sqlite.connection import get_session
 from phisim.infra.sqlite.repos.event import EventRepository
 from phisim.telemetry.schemas import EventCreate, EventResponse
 from phisim.telemetry.service import DuplicateEventError, TelemetryService
+from phisim.telemetry.websocket import manager
 
 router = APIRouter(
     prefix="/api/events",
@@ -20,10 +27,10 @@ async def create_event(
     session: Session = Depends(get_session),
 ) -> EventResponse:
     repository = EventRepository(session)
-    service = TelemetryService(repository)
+    service = TelemetryService(repository, manager)
 
     try:
-        event = service.record_event(event_data)
+        event = await service.record_event(event_data)
     except DuplicateEventError:
         raise HTTPException(
             status_code=409,
@@ -40,3 +47,14 @@ async def create_event(
         source=event.source,
         metadata=event.metadata_,
     )
+
+
+@router.websocket("/ws")
+async def event_stream(websocket: WebSocket) -> None:
+    await manager.connect(websocket)
+
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)

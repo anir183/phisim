@@ -2,7 +2,7 @@ type: http_request
 model: http_request
 id: rq_iAvxCqrE3g
 createdAt: 2026-09-24T15:17:22.733680848
-updatedAt: 2026-09-24T15:39:28.784418463
+updatedAt: 2026-09-24T15:48:24.187873766
 workspaceId: wk_dvBfLUkGqf
 folderId: null
 authentication: {}
@@ -29,7 +29,7 @@ headers:
 method: POST
 name: Create Event
 sortPriority: -1790263042732.0
-url: ${[ URI ]}:${[ PORT ]}/${[ ENDPOINT ]}/events
+url: http://${[ URI ]}:${[ PORT ]}/${[ ENDPOINT ]}/events
 urlParameters: []
 settingSendCookies:
   enabled: false
