@@ -178,6 +178,93 @@
         font-size: 0.8rem;
         padding: 1.5rem 1rem 2.5rem;
       }
+      .message-body {
+        margin: 0 0 1.25rem;
+        white-space: pre-line;
+        line-height: 1.6;
+      }
+      .attachment {
+        background: #141927;
+        border: 1px solid #2b3242;
+        border-radius: 10px;
+        padding: 0.9rem 1rem;
+        margin-bottom: 1.25rem;
+      }
+      .attachment-name {
+        font-family: ui-monospace, monospace;
+        font-size: 0.95rem;
+      }
+      .attachment .btn {
+        margin-top: 0.75rem;
+        background: #4a4f5d;
+      }
+      .sms-thread {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+      }
+      .sms-bubble {
+        max-width: 82%;
+        padding: 0.6rem 0.85rem;
+        border-radius: 14px;
+        background: #23304d;
+        line-height: 1.45;
+        align-self: flex-start;
+      }
+      .sms-bubble a {
+        color: #9fc0ff;
+      }
+      .sms-sender {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 1rem;
+      }
+      .sms-avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: #2d6cff;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        flex: 0 0 auto;
+      }
+      .qr-image {
+        width: 11rem;
+        height: 11rem;
+        object-fit: contain;
+        border-radius: 10px;
+        margin: 1rem 0;
+        background: #fff;
+        padding: 0.6rem;
+      }
+      .channel-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      .prompt-card {
+        text-align: center;
+      }
+      .prompt-card .btn {
+        min-width: 9rem;
+      }
+      .btn-deny {
+        background: #4a4f5d;
+      }
+      .btn-deny:hover {
+        background: #5a6070;
+      }
+      .mfa-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+      }
       @media (max-width: 560px) {
         .scenario-row {
           flex-direction: column;

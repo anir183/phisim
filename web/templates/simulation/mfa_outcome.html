@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Simulation Complete &middot; {{ scenario.organization }}{% endblock %}
+
+{% block content %}
+  <section class="card" aria-labelledby="mfa-outcome-title">
+    <header class="login-header">
+      <div class="org-mark ok-mark" aria-hidden="true">&check;</div>
+      <div>
+        <h1 id="mfa-outcome-title" class="page-title">Simulation Complete</h1>
+        <p class="hint">MFA fatigue outcome</p>
+      </div>
+    </header>
+
+    {% if fatigued %}
+      <div class="urgency-banner">
+        <strong>You approved every prompt.</strong>
+        That is MFA fatigue: an attacker sends so many approval requests
+        that the user gives in and confirms one. Here the requests stopped
+        after {{ scenario.prompt_count }} prompts, but every approval was
+        recorded as telemetry.
+      </div>
+    {% else %}
+      <div class="ok-banner">
+        <strong>You denied the prompt.</strong>
+        Denying an unexpected approval request is the right response. If you
+        are unsure whether a sign-in is yours, deny it and check your account
+        from the official portal.
+      </div>
+    {% endif %}
+
+    <h2 class="section-title">Why this flow was suspicious</h2>
+    <ul class="indicator-list">
+      {% for code in scenario.indicators %}
+        <li>
+          <strong>{{ code }}</strong> &mdash;
+          {{ indicator_info.get(code, "Unrecognized indicator.") }}
+        </li>
+      {% endfor %}
+    </ul>
+
+    <h2 class="section-title">Safe habits to keep</h2>
+    <ul class="steps">
+      <li>Never approve a sign-in you did not start.</li>
+      <li>Deny unknown requests and visit the service directly.</li>
+      <li>Watch for a flood of push notifications as a coercion trick.</li>
+      <li>Report the request to your security team.</li>
+    </ul>
+
+    <a class="btn" href="{{ url_for('simulation_index') }}">
+      Back to simulation list
+    </a>
+  </section>
+{% endblock %}
+
+{% block footer %}{{ scenario.reminder }}{% endblock %}

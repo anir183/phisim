@@ -20,12 +20,6 @@
     </div>
 
     <h2 class="section-title">Why this page was suspicious</h2>
-    {% set indicator_info = {
-      "credential_request": "It directly asked you to enter your username and password.",
-      "urgent_language": "It applied a deadline or threat to rush your decision.",
-      "domain_mismatch": "The login address ({{ scenario.host }}) did not match the organization's real domain.",
-      "authority_impersonation": "It claimed to come from an authority you are expected to trust.",
-    } %}
     <ul class="indicator-list">
       {% for code in scenario.indicators %}
         <li>

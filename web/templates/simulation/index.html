@@ -13,17 +13,18 @@
     </header>
 
     <p>
-      These short experiences demonstrate common phishing patterns. Each page is
-      a fictional, local simulation: submitted credentials are never stored or
-      transmitted, and every interesting interaction is recorded as a telemetry
-      event for the analyst console.
+      These short experiences demonstrate common phishing patterns. Each page
+      is a fictional, local simulation: submitted credentials are never
+      stored or transmitted, and every interesting interaction is recorded as
+      a telemetry event for the analyst console.
     </p>
 
+    <h2 class="section-title">Fake websites</h2>
     <div class="scenario-list">
-      {% for scenario in scenarios %}
+      {% for scenario in website_scenarios %}
         <article class="scenario-row">
           <div>
-            <h2 class="scenario-name">{{ scenario.organization }}</h2>
+            <h3 class="scenario-name">{{ scenario.organization }}</h3>
             <p class="hint">
               {{ scenario.scenario_id }} &middot; {{ scenario.channel }} channel
               &middot; {{ scenario.title }}
@@ -37,7 +38,98 @@
           </a>
         </article>
       {% else %}
-        <p>No simulations are configured yet.</p>
+        <p>No website simulations are configured.</p>
+      {% endfor %}
+    </div>
+
+    <h2 class="section-title">Fake mailbox</h2>
+    <div class="scenario-list">
+      {% for message in email_messages %}
+        <article class="scenario-row">
+          <div>
+            <h3 class="scenario-name">{{ message.subject }}</h3>
+            <p class="hint">
+              {{ message.message_id }} &middot; email &middot;
+              {{ message.sender_label }}
+            </p>
+          </div>
+          <a
+            class="btn"
+            href="{{ url_for('email_view', message_id=message.message_id) }}"
+          >
+            Open email
+          </a>
+        </article>
+      {% else %}
+        <p>No simulated messages are configured.</p>
+      {% endfor %}
+    </div>
+
+    <h2 class="section-title">Fake messaging</h2>
+    <div class="scenario-list">
+      {% for thread in sms_threads %}
+        <article class="scenario-row">
+          <div>
+            <h3 class="scenario-name">{{ thread.sender_label }}</h3>
+            <p class="hint">
+              {{ thread.thread_id }} &middot; sms &middot;
+              {{ thread.organization }}
+            </p>
+          </div>
+          <a
+            class="btn"
+            href="{{ url_for('sms_view', thread_id=thread.thread_id) }}"
+          >
+            Open conversation
+          </a>
+        </article>
+      {% else %}
+        <p>No simulated conversations are configured.</p>
+      {% endfor %}
+    </div>
+
+    <h2 class="section-title">QR codes</h2>
+    <div class="scenario-list">
+      {% for scenario in qr_scenarios %}
+        <article class="scenario-row">
+          <div>
+            <h3 class="scenario-name">{{ scenario.title }}</h3>
+            <p class="hint">
+              {{ scenario.scenario_id }} &middot; {{ scenario.channel }} channel
+            </p>
+          </div>
+          <a
+            class="btn"
+            href="{{ url_for('qr_view', scenario_id=scenario.scenario_id) }}"
+          >
+            Show QR code
+          </a>
+        </article>
+      {% else %}
+        <p>No QR scenarios are configured.</p>
+      {% endfor %}
+    </div>
+
+    <h2 class="section-title">MFA fatigue</h2>
+    <div class="scenario-list">
+      {% for scenario in mfa_scenarios %}
+        <article class="scenario-row">
+          <div>
+            <h3 class="scenario-name">{{ scenario.title }}</h3>
+            <p class="hint">
+              {{ scenario.scenario_id }} &middot;
+              {{ scenario.prompt_count }} approval prompts
+            </p>
+          </div>
+          <a
+            class="btn"
+            href="{{ url_for('mfa_prompt', scenario_id=scenario.scenario_id, step=1) }}"
+          >
+            Start prompts
+          </a>
+        </article>
+      {% else %}
+        <p>No MFA scenarios are configured.</p>
       {% endfor %}
     </div>
   </section>

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Fictional Mailbox{% endblock %}
+
+{% block content %}
+  <section class="card" aria-labelledby="mailbox-title">
+    <header class="login-header">
+      <div class="org-mark" aria-hidden="true">M</div>
+      <div>
+        <h1 id="mailbox-title" class="page-title">Fictional Mailbox</h1>
+        <p class="hint">Inbound messages for the local simulation</p>
+      </div>
+    </header>
+
+    <div class="scenario-list">
+      {% for message in messages %}
+        <article class="scenario-row">
+          <div>
+            <h2 class="scenario-name">{{ message.subject }}</h2>
+            <p class="hint">
+              {{ message.sender_label }} &middot; {{ message.organization }}
+            </p>
+          </div>
+          <a
+            class="btn"
+            href="{{ url_for('email_view', message_id=message.message_id) }}"
+          >
+            Open
+          </a>
+        </article>
+      {% else %}
+        <p>No simulated messages.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
+
+{% block footer %}
+  All messages shown here are fictional and delivered nowhere.
+{% endblock %}

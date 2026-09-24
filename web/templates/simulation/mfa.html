@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}{{ scenario.title }} &middot; {{ scenario.organization }}{% endblock %}
+
+{% block content %}
+  <section class="card prompt-card" aria-labelledby="mfa-title">
+    <header class="login-header">
+      <div class="org-mark" aria-hidden="true">&#43;</div>
+      <div>
+        <h1 id="mfa-title" class="page-title">{{ scenario.organization }}</h1>
+        <p class="hint">{{ scenario.service }}</p>
+      </div>
+    </header>
+
+    <div class="urgency-banner" role="alert">
+      <strong>Approve sign-in request</strong>
+      Step {{ step }} of {{ scenario.prompt_count }}. A sign-in from a new
+      device is waiting for your approval.
+    </div>
+
+    <p class="hint">{{ scenario.message }}</p>
+    <p class="hint">
+      This page is at:
+      <span class="host-display">{{ scenario.host }}</span>
+    </p>
+
+    <div class="mfa-actions">
+      <form
+        method="post"
+        action="{{ url_for('mfa_respond', scenario_id=scenario.scenario_id, step=step) }}"
+      >
+        <input type="hidden" name="action" value="deny" />
+        <button type="submit" class="btn btn-deny">Deny</button>
+      </form>
+      <form
+        method="post"
+        action="{{ url_for('mfa_respond', scenario_id=scenario.scenario_id, step=step) }}"
+      >
+        <input type="hidden" name="action" value="approve" />
+        <button type="submit" class="btn">Approve</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}
+
+{% block footer %}{{ scenario.reminder }}{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ thread.sender_label }} &middot; Fictional Messaging{% endblock %}
+
+{% block content %}
+  <section class="card" aria-labelledby="thread-title">
+    <header class="login-header">
+      <div class="org-mark" aria-hidden="true">S</div>
+      <div>
+        <h1 id="thread-title" class="page-title">{{ thread.sender_label }}</h1>
+        <p class="hint">
+          {{ thread.sender_number }} &middot; {{ thread.organization }}
+        </p>
+      </div>
+    </header>
+
+    {% if thread.spoofed_url %}
+      <div class="urgency-banner" role="note">
+        <strong>Look closely before tapping.</strong>
+        The link shows {{ thread.spoofed_url }} but its real destination is a
+        local simulation route.
+      </div>
+    {% endif %}
+
+    <div class="sms-thread">
+      {% for text in thread.messages %}
+        <div class="sms-bubble">{{ text }}</div>
+      {% endfor %}
+      <div class="sms-bubble">
+        <a
+          href="{{ url_for('sms_link', thread_id=thread.thread_id) }}"
+        >
+          {{ thread.link_label }}
+        </a>
+      </div>
+    </div>
+
+    <p class="hint">
+      The link above is a local simulation route; it never leaves this
+      machine.
+    </p>
+  </section>
+{% endblock %}
+
+{% block footer %}{{ thread.reminder }}{% endblock %}
