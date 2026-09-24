@@ -123,3 +123,21 @@ suite) passes; the full suite is `tests/` with the simulation tests.
 
 No pushes were made from this branch. Commits are grouped atomically
 (feature → tests → docs) and the working tree is clean.
+
+## Integration resolution on `feature/team-1`
+
+The provisional lifecycle concerns above were resolved during staging:
+
+- `phisim_session` now identifies a persisted Team 1 Session created through
+  `SessionService`; it is reused across a cross-channel flow.
+- Every catalog artifact used by a route is registered through
+  `ScenarioService` using its existing stable artifact ID.
+- Website credential metadata allows only the typed interaction fields and
+  boolean `field_presence`; raw values remain rejected without echo.
+- Email, SMS, QR, and MFA Events carry safe evidence fields for the
+  deterministic analysis engine, while links and attachments remain local
+  and inert.
+
+The historical wording above is retained to document the original handoff;
+the current contract is documented in `docs/ai/integration.md` and the final
+integration report.

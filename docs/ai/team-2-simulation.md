@@ -17,10 +17,12 @@ telemetry/session contracts.
 
 ## Status
 
-All team-scope P0 and P1 work is complete and integrated on
-`feature/team-2`. Every channel funnels through the shared local
-session cookie (`phisim_session`) and the same `emit.py` boundary, so
-all interactions land in the analyst console's event stream.
+All team-scope P0 and P1 work is complete and integrated on the staging
+branch. Every channel funnels through the shared local session cookie
+(`phisim_session`) and the same `emit.py` boundary, so all interactions
+land in the analyst console's event stream. The staging integration also
+registers catalog artifacts as shared Scenarios and persists/reuses the
+corresponding Session.
 
 ## P0
 
@@ -109,9 +111,11 @@ mfa_prompt_responded      (metadata: step, action)
 ```
 
 Every event carries a `channel` field in metadata and uses the artifact
-id as `scenario_id`. The funnel for message/QR links ends at the
-credential site, so following a link emits `scenario_opened` there as
-well (verified by tests).
+id as `scenario_id`. Non-credential simulation Events also carry safe
+analysis evidence such as `subject`, `content`, `display_host`, link
+comparison fields, attachment names, and catalog flags. The funnel for
+message/QR links ends at the credential site, so following a link emits
+`scenario_opened` there as well (verified by tests).
 
 ## Shared indicator glossary
 

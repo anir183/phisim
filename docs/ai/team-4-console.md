@@ -16,21 +16,21 @@ internals.
 
 ## P0
 
--   [ ] retain current live event view
--   [ ] safe DOM rendering
--   [ ] session/scenario summary
--   [ ] event timeline
--   [ ] event detail
--   [ ] basic filtering
--   [ ] reconnect/error handling for WebSocket
+-   [x] retain current live event view
+-   [x] safe DOM rendering
+-   [x] session/scenario summary
+-   [x] event timeline
+-   [x] event detail
+-   [x] basic filtering
+-   [x] reconnect/error handling for WebSocket
 
 ## P1
 
--   [ ] indicator panel
--   [ ] scenario detail
--   [ ] session detail
--   [ ] interaction timeline
--   [ ] clearer analysis evidence
+-   [x] indicator panel
+-   [x] scenario detail
+-   [x] session detail
+-   [x] interaction timeline
+-   [x] clearer analysis evidence
 
 ## Contracts consumed
 
@@ -63,3 +63,11 @@ Do not:
 
 Keep browser-facing code resilient when a field is missing or a backend
 event arrives unexpectedly.
+
+## Staging implementation
+
+There was no separate Team 4 branch to merge. The staging implementation in
+`web/templates/console.html` renders all dynamic values with DOM text APIs,
+loads the latest or a selected Session through REST, displays Event/Scenario/
+Session context and indicators, and reconnects the WebSocket with bounded
+backoff. Malformed frames are ignored without interrupting the console.

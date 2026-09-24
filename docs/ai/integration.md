@@ -99,20 +99,24 @@ responses are generic and do not echo submitted content.
 
 ## Final Team 1 handoff
 
-Team 1 backend implementation is complete with no remaining production-code
-work. The P0 Event contract intentionally keeps `session_id` and `scenario_id`
-free-form for backward compatibility; `GET /api/events?session_id=...`
-provides the supported Session grouping and timeline surface. Persisted
-Event-to-Session foreign-key enforcement is not part of the current contract.
+The backend/platform contract is integrated with the simulation, analysis,
+and console work. The P0 Event contract intentionally keeps `session_id` and
+`scenario_id` free-form for backward compatibility; `GET
+/api/events?session_id=...` provides the supported Session grouping surface.
+Persisted Event-to-Session foreign-key enforcement is not part of the
+current contract.
 
-The project-level vertical slice remains blocked on:
+The staging branch now provides:
 
-- Team 2's fake credential flow and submitted-password secrecy test
-- Team 3's deterministic analysis and broader metadata policy
-- Team 4's safe console rendering and Scenario/Session display
+- persisted Scenario and Session records for every simulation catalog entry
+- local fake website, email, SMS, QR, and MFA-fatigue flows
+- deterministic analysis and a reconnectable Session analysis/timeline API
+- strict fail-closed credential metadata validation
+- a safe text-only console consuming REST and WebSocket contracts
 
-Email, SMS, and additional scenarios remain blocked until that vertical
-slice is complete.
+The original Team 2/Team 3/Team 4 handoff notes remain useful as historical
+records; their integration-resolution sections describe the final staging
+state.
 
 ## Team 2 simulation integration
 
@@ -186,6 +190,6 @@ No external delivery APIs are involved.
 -   [x] submitted password never appears in event metadata
 -   [x] duplicate events are handled deterministically
 -   [x] analysis consumes events rather than database internals
--   [ ] console consumes API/WebSocket contracts rather than SQLAlchemy
+-   [x] console consumes API/WebSocket contracts rather than SQLAlchemy
 -   [x] all links remain local
 -   [x] no external delivery provider is configured
