@@ -1,4 +1,15 @@
+from contextlib import asynccontextmanager
+
 from fastapi import APIRouter, FastAPI
+
+from phisim.infra.sqlite.connection import initialize_database
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    initialize_database()
+    yield
+
 
 router = APIRouter()
 
@@ -11,6 +22,7 @@ async def check():
 app = FastAPI(
     title="PhiSim",
     version="0.0.0",
+    lifespan=lifespan,
 )
 
 app.include_router(router)

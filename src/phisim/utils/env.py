@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     env: str = "development"
     host: str = "127.0.0.1"
     port: int = 8000
+    db_url: str | None = None
 
     model_config = SettingsConfigDict(
         env_prefix="PHISIM_",
