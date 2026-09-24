@@ -41,6 +41,7 @@ def ensure_simulation_session(
     scenario_name: str,
     scenario_type: str,
     description: str,
+    session_id: str | None = None,
 ) -> str:
     scenario_repository = ScenarioRepository(database_session)
     if scenario_repository.get_by_scenario_id(scenario_id) is None:
@@ -58,7 +59,11 @@ def ensure_simulation_session(
             pass
 
     session_repository = SessionRepository(database_session)
-    session_id = _valid_session_id(request.cookies.get(SESSION_COOKIE))
+    cookie_session_id = _valid_session_id(request.cookies.get(SESSION_COOKIE))
+    if session_id is not None:
+        session_id = _valid_session_id(session_id)
+    else:
+        session_id = cookie_session_id
     existing_session = (
         session_repository.get_by_session_id(session_id)
         if session_id is not None
@@ -71,6 +76,8 @@ def ensure_simulation_session(
     ):
         session_id = token_hex(16)
         existing_session = None
+        _set_session_cookie(response, session_id)
+    elif session_id != cookie_session_id:
         _set_session_cookie(response, session_id)
 
     if existing_session is None:

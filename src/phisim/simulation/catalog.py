@@ -1,17 +1,37 @@
+from __future__ import annotations
+
+import json
 from dataclasses import dataclass
+from functools import lru_cache
+from pathlib import Path
+from typing import Any
 
-REAL_ORG_DOMAIN = "techno-main.edu"
-
-SIMULATION_REMINDER = (
-    "Simulated for security education only. Not an affiliate of any "
-    "real institution. No credentials were kept."
+_CATALOG_CANDIDATES = (
+    Path(__file__).resolve().parents[2] / "scenarios" / "catalog.json",
+    Path(__file__).resolve().parents[3] / "scenarios" / "catalog.json",
+)
+CATALOG_PATH = next(
+    (path for path in _CATALOG_CANDIDATES if path.is_file()),
+    _CATALOG_CANDIDATES[0],
+)
+DEFAULT_ORG_DOMAIN = "northstar.example"
+KNOWN_ORG_DOMAINS = frozenset(
+    {
+        "northstar.example",
+        "amazaun.example",
+        "cloudbox.example",
+        "paymate.example",
+        "gemail.example",
+    }
 )
 
 
 @dataclass(frozen=True)
 class Scenario:
     scenario_id: str
+    attack_type: str
     channel: str
+    brand: str
     organization: str
     host: str
     title: str
@@ -19,20 +39,33 @@ class Scenario:
     message: str
     reminder: str
     indicators: tuple[str, ...]
+    target_role: str = "trainee"
+    workflow: tuple[str, ...] = ("landing", "outcome")
+    delay_profile: str = "standard"
+    target_scenario_id: str | None = None
 
 
 @dataclass(frozen=True)
 class EmailMessage:
     message_id: str
-    subject: str
+    attack_type: str
+    brand: str
     sender_label: str
     sender_address: str
+    recipient: str
+    subject: str
     body: str
     link_label: str
     host: str
     organization: str
     reminder: str
+    target_scenario_id: str
+    timestamp: str
+    folder: str
+    unread: bool
+    preview: str
     indicators: tuple[str, ...]
+    target_role: str = "student"
     spoofed_url: str | None = None
     attachment_name: str | None = None
     attachment_preview: str | None = None
@@ -41,6 +74,8 @@ class EmailMessage:
 @dataclass(frozen=True)
 class SmsThread:
     thread_id: str
+    attack_type: str
+    brand: str
     organization: str
     sender_label: str
     sender_number: str
@@ -48,13 +83,21 @@ class SmsThread:
     link_label: str
     host: str
     reminder: str
+    target_scenario_id: str
+    timestamp: str
+    unread: int
+    typing_delay_ms: int
     indicators: tuple[str, ...]
+    target_role: str = "student"
     spoofed_url: str | None = None
 
 
 @dataclass(frozen=True)
 class MfaScenario:
     scenario_id: str
+    attack_type: str
+    channel: str
+    brand: str
     organization: str
     host: str
     title: str
@@ -63,367 +106,376 @@ class MfaScenario:
     message: str
     reminder: str
     indicators: tuple[str, ...]
+    target_role: str = "trainee"
+    workflow: tuple[str, ...] = ("notification", "prompt", "outcome")
+    delay_profile: str = "short"
 
 
-SCENARIOS: tuple[Scenario, ...] = (
-    Scenario(
-        scenario_id="credential-basic-001",
-        channel="website",
-        organization="Techno Main Salt Lake",
-        host="techno-main-sl-access.net",
-        title="Mailbox Quota Exceeded Notice",
-        greeting="Dear student,",
-        message=(
-            "Your university mailbox quota has been exceeded and will be "
-            "suspended within 24 hours unless you confirm your account "
-            "details on the login page."
-        ),
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "credential_request",
-            "urgent_language",
-            "domain_mismatch",
-            "authority_impersonation",
-        ),
-    ),
-    Scenario(
-        scenario_id="qr-phish-001",
-        channel="qr",
-        organization="Techno Main Salt Lake",
-        host="techno-main-sl-access.net",
-        title="Verification Required",
-        greeting="Scan this code to verify your identity.",
-        message=(
-            "Our security system detected unusual login activity. Scan the "
-            "code with your device camera to confirm your account and "
-            "restore access."
-        ),
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "incident_fear",
-            "urgent_language",
-            "credential_request",
-        ),
-    ),
-)
+@dataclass(frozen=True)
+class CatalogSummary:
+    scenario_id: str
+    attack_type: str
+    channel: str
+    brand: str
+    title: str
+    description: str
+    target_role: str
+    indicators: tuple[str, ...]
+    delay_profile: str
 
 
-EMAIL_MESSAGES: tuple[EmailMessage, ...] = (
-    EmailMessage(
-        message_id="email-phish-001",
-        subject="Action required: verify your mailbox",
-        sender_label="Techno Main IT Service Desk",
-        sender_address=f"helpdesk@{REAL_ORG_DOMAIN}.mail-alert.net",
-        body=(
-            "We detected a large number of undeliverable messages in your "
-            "mailbox. To keep your account active, please verify your "
-            "mailbox credentials using the link below.\n\n"
-            "Mailboxes that are not verified within 24 hours will be "
-            "temporarily suspended."
-        ),
-        link_label="Verify my mailbox",
-        host="techno-main-sl-access.net",
-        organization="Techno Main Salt Lake",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "authority_impersonation",
-            "urgent_language",
-            "credential_request",
-            "domain_mismatch",
-        ),
-    ),
-    EmailMessage(
-        message_id="spear-phish-001",
-        subject="Re: your scholarship award form",
-        sender_label="Dr. Anjali Rao, Dean of Student Affairs",
-        sender_address=f"anjali.rao@{REAL_ORG_DOMAIN}",
-        body=(
-            "I noticed your scholarship award form is still incomplete. The "
-            "closing date is tomorrow, so please sign in to the student "
-            "portal and finish the last step.\n\n"
-            "Let me know once it is done."
-        ),
-        link_label="Complete my award form",
-        host="techno-main-sl-access.net",
-        organization="Techno Main Salt Lake",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "authority_impersonation",
-            "personalization",
-            "urgent_language",
-            "credential_request",
-        ),
-    ),
-    EmailMessage(
-        message_id="whaling-001",
-        subject="CONFIDENTIAL: vendor payment approval",
-        sender_label="Priya Nair, Director of Finance",
-        sender_address=f"p.nair@{REAL_ORG_DOMAIN}",
-        body=(
-            "This payment is now overdue and the vendor is escalating. "
-            "Confirm your executive credentials on the finance portal so "
-            "the approval can be released before close of business.\n\n"
-            "Do not share this with anyone."
-        ),
-        link_label="Review payment request",
-        host="techno-main-sl-access.net",
-        organization="Techno Main Salt Lake",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "authority_impersonation",
-            "invoice_fraud",
-            "urgent_language",
-            "credential_request",
-        ),
-    ),
-    EmailMessage(
-        message_id="clone-phish-001",
-        subject="Re: file you shared with me",
-        sender_label="Kabir Sen",
-        sender_address=f"kabir.sen@{REAL_ORG_DOMAIN}",
-        body=(
-            "I found the shared file, but the link you sent has expired. "
-            "Please sign in once more so I can pick up the latest version "
-            "from the shared drive.\n\n"
-            "Thanks for resending it."
-        ),
-        link_label="Open shared file",
-        host="techno-main-sl-access.net",
-        organization="Techno Main Salt Lake",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "personalization",
-            "out_of_band",
-            "credential_request",
-        ),
-    ),
-    EmailMessage(
-        message_id="urgency-001",
-        subject="Your account will be locked at 5:00 PM today",
-        sender_label="Account Administration",
-        sender_address=f"accounts@{REAL_ORG_DOMAIN}.portals.net",
-        body=(
-            "A sign-in attempt from an unknown device has triggered a "
-            "security review. Confirm your account details before 5:00 PM "
-            "today or your access will be suspended indefinitely."
-        ),
-        link_label="Confirm my account now",
-        host="techno-main-sl-access.net",
-        organization="Techno Main Salt Lake",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "urgent_language",
-            "incident_fear",
-            "credential_request",
-            "domain_mismatch",
-        ),
-    ),
-    EmailMessage(
-        message_id="tech-support-001",
-        subject="Scheduled maintenance requires your password reset",
-        sender_label="Techno Main Support",
-        sender_address=f"support@{REAL_ORG_DOMAIN}.service-team.net",
-        body=(
-            "Our maintenance window starts at midnight. To keep your data "
-            "safe during the upgrade, every account must rotate its "
-            "password today. Use the link below to complete the reset."
-        ),
-        link_label="Reset my password",
-        host="techno-main-sl-access.net",
-        organization="Techno Main Salt Lake",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "tech_support",
-            "authority_impersonation",
-            "domain_mismatch",
-            "credential_request",
-        ),
-    ),
-    EmailMessage(
-        message_id="bec-001",
-        subject="Invoice #1042-991 outstanding",
-        sender_label="Apex Office Supplies",
-        sender_address="billing@apex-office-supplies.example",
-        body=(
-            "Invoice #1042-991 for office supplies remains unpaid. Please "
-            "sign in to the invoice portal to review the statement and "
-            "initiate the transfer before the account is flagged."
-        ),
-        link_label="View invoice",
-        host="techno-main-sl-access.net",
-        organization="Apex Office Supplies",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "invoice_fraud",
-            "urgent_language",
-            "credential_request",
-        ),
-    ),
-    EmailMessage(
-        message_id="link-spoof-001",
-        subject="Shared document has been posted",
-        sender_label="Collaboration Workspace",
-        sender_address=f"no-reply@{REAL_ORG_DOMAIN}.workspace-docs.net",
-        body=(
-            "A document was shared with you. Open the link below to review "
-            "it. You have 24 hours before the link expires."
-        ),
-        link_label="Open shared document",
-        spoofed_url="https://techno-main.edu/documents/shared",
-        host="techno-main-sl-access.net",
-        organization="Techno Main Salt Lake",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "spoiled_links",
-            "credential_request",
-            "domain_mismatch",
-        ),
-    ),
-    EmailMessage(
-        message_id="attachment-phish-001",
-        subject="Expense reimbursement waiting for you",
-        sender_label="HR Operations",
-        sender_address=f"hr@{REAL_ORG_DOMAIN}.ops-center.net",
-        body=(
-            "Your expense reimbursement statement is attached. Review the "
-            "summary and sign in to the portal to approve the payout."
-        ),
-        link_label="Sign in to approve",
-        attachment_name="Expense_Reimbursement_Form.pdf",
-        attachment_preview=(
-            "Simulated PDF preview: a one-page summary titled Expense "
-            "Reimbursement. No actual file is attached."
-        ),
-        host="techno-main-sl-access.net",
-        organization="Techno Main Salt Lake",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "attachment_lure",
-            "credential_request",
-            "domain_mismatch",
-        ),
-    ),
-)
+@lru_cache(maxsize=1)
+def _load_catalog() -> dict[str, Any]:
+    try:
+        raw = CATALOG_PATH.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise RuntimeError(
+            f"Scenario catalog is unavailable at {CATALOG_PATH}."
+        ) from exc
+
+    data: dict[str, Any] = json.loads(raw)
+    _validate_catalog(data)
+    return data
 
 
-SMS_THREADS: tuple[SmsThread, ...] = (
-    SmsThread(
-        thread_id="sms-parcel-001",
-        organization="Techno Main Parcel",
-        sender_label="Techno Main Parcel",
-        sender_number="+1 (555) 010-2233",
-        messages=(
-            "Your package was held at the local delivery center.",
-            "Confirm your delivery details to avoid a holding fee.",
-            "Reply or confirm now, or the parcel is returned tomorrow.",
-        ),
-        link_label="Track my package",
-        host="techno-main-sl-access.net",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "urgent_language",
-            "incident_fear",
-            "credential_request",
-        ),
-    ),
-    SmsThread(
-        thread_id="sms-tech-support-001",
-        organization="Techno Main Salt Lake",
-        sender_label="Techno Main Support",
-        sender_number="+1 (555) 010-8876",
-        messages=(
-            "Techno Main Support: unusual sign-in detected on your account.",
-            "Tap here to confirm it was you. Your access is limited until "
-            "verified.",
-            "If you ignore this, your account stays locked.",
-        ),
-        link_label="Confirm my identity",
-        host="techno-main-sl-access.net",
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "tech_support",
-            "authority_impersonation",
-            "credential_request",
-        ),
-    ),
-)
+def _validate_catalog(data: dict[str, Any]) -> None:
+    required_sections = ("website", "email", "sms", "mfa")
+    missing = [name for name in required_sections if name not in data]
+    if missing:
+        raise ValueError(f"Scenario catalog is missing sections: {missing}")
+
+    identifiers: set[str] = set()
+    website_ids = {str(item["scenario_id"]) for item in data["website"]}
+    for section in required_sections:
+        for item in data[section]:
+            identifier = str(
+                item.get(
+                    "scenario_id",
+                    item.get("message_id", item.get("thread_id", "")),
+                )
+            )
+            if not identifier:
+                raise ValueError(
+                    f"Catalog {section} contains an empty identifier"
+                )
+            if identifier in identifiers:
+                raise ValueError(f"Duplicate catalog identifier: {identifier}")
+            identifiers.add(identifier)
+            if not str(item.get("attack_type", "")).strip():
+                raise ValueError(
+                    f"Catalog item {identifier} has no attack_type"
+                )
+            if not str(item.get("indicators", [])):
+                raise ValueError(f"Catalog item {identifier} has no indicators")
+
+    for item in data["email"] + data["sms"]:
+        target_id = str(item["target_scenario_id"])
+        if target_id not in website_ids:
+            raise ValueError(
+                f"Catalog item {item.get('message_id', item.get('thread_id'))} "
+                f"targets unknown website scenario {target_id}"
+            )
+
+    for item in data["website"]:
+        target_id = item.get("target_scenario_id")
+        if target_id is not None and str(target_id) not in website_ids:
+            raise ValueError(
+                f"Catalog item {item['scenario_id']} targets unknown scenario "
+                f"{target_id}"
+            )
+        host = str(item.get("host", ""))
+        if host and not host.endswith((".example", ".test", ".invalid")):
+            raise ValueError(
+                f"Catalog host is not reserved fictional space: {host}"
+            )
+
+    for item in data["mfa"]:
+        host = str(item.get("host", ""))
+        if host and not host.endswith((".example", ".test", ".invalid")):
+            raise ValueError(
+                f"Catalog host is not reserved fictional space: {host}"
+            )
 
 
-MFA_SCENARIOS: tuple[MfaScenario, ...] = (
-    MfaScenario(
-        scenario_id="mfa-fatigue-001",
-        organization="Techno Main Salt Lake",
-        host="login.techno-main-sl-access.net",
-        title="Approve Sign-In",
-        service="Secure Learning Portal",
-        prompt_count=3,
-        message=(
-            "Every prompt below is a simulated multi-factor approval "
-            "request. Approving them all models MFA fatigue, where an "
-            "attacker keeps requesting approvals until the user gives in."
-        ),
-        reminder=SIMULATION_REMINDER,
-        indicators=(
-            "mfa_fatigue",
-            "request_confirmation",
-            "urgent_language",
-        ),
-    ),
-)
+def _indicators(item: dict[str, Any]) -> tuple[str, ...]:
+    return tuple(str(value) for value in item.get("indicators", []))
 
+
+def _workflow(
+    item: dict[str, Any], default: tuple[str, ...]
+) -> tuple[str, ...]:
+    return tuple(str(value) for value in item.get("workflow", default))
+
+
+def _website_scenarios(data: dict[str, Any]) -> tuple[Scenario, ...]:
+    return tuple(
+        Scenario(
+            scenario_id=str(item["scenario_id"]),
+            attack_type=str(item["attack_type"]),
+            channel=str(item["channel"]),
+            brand=str(item["brand"]),
+            organization=str(item["organization"]),
+            host=str(item["host"]),
+            title=str(item["title"]),
+            greeting=str(item["greeting"]),
+            message=str(item["message"]),
+            reminder=str(item["reminder"]),
+            indicators=_indicators(item),
+            target_role=str(item.get("target_role", "trainee")),
+            workflow=_workflow(item, ("landing", "outcome")),
+            delay_profile=str(item.get("delay_profile", "standard")),
+            target_scenario_id=(
+                str(item["target_scenario_id"])
+                if item.get("target_scenario_id")
+                else None
+            ),
+        )
+        for item in data["website"]
+    )
+
+
+def _email_messages(data: dict[str, Any]) -> tuple[EmailMessage, ...]:
+    return tuple(
+        EmailMessage(
+            message_id=str(item["message_id"]),
+            attack_type=str(item["attack_type"]),
+            brand=str(item["brand"]),
+            sender_label=str(item["sender_label"]),
+            sender_address=str(item["sender_address"]),
+            recipient=str(item["recipient"]),
+            subject=str(item["subject"]),
+            body=str(item["body"]),
+            link_label=str(item["link_label"]),
+            host=str(item["host"]),
+            organization=str(item["organization"]),
+            reminder=str(item["reminder"]),
+            target_scenario_id=str(item["target_scenario_id"]),
+            timestamp=str(item["timestamp"]),
+            folder=str(item.get("folder", "Inbox")),
+            unread=bool(item.get("unread", True)),
+            preview=str(item.get("preview", item["subject"])),
+            indicators=_indicators(item),
+            target_role=str(item.get("target_role", "student")),
+            spoofed_url=(
+                str(item["spoofed_url"]) if item.get("spoofed_url") else None
+            ),
+            attachment_name=(
+                str(item["attachment_name"])
+                if item.get("attachment_name")
+                else None
+            ),
+            attachment_preview=(
+                str(item["attachment_preview"])
+                if item.get("attachment_preview")
+                else None
+            ),
+        )
+        for item in data["email"]
+    )
+
+
+def _sms_threads(data: dict[str, Any]) -> tuple[SmsThread, ...]:
+    return tuple(
+        SmsThread(
+            thread_id=str(item["thread_id"]),
+            attack_type=str(item["attack_type"]),
+            brand=str(item["brand"]),
+            organization=str(item["organization"]),
+            sender_label=str(item["sender_label"]),
+            sender_number=str(item["sender_number"]),
+            messages=tuple(str(value) for value in item["messages"]),
+            link_label=str(item["link_label"]),
+            host=str(item["host"]),
+            reminder=str(item["reminder"]),
+            target_scenario_id=str(item["target_scenario_id"]),
+            timestamp=str(item["timestamp"]),
+            unread=int(item.get("unread", 0)),
+            typing_delay_ms=int(item.get("typing_delay_ms", 0)),
+            indicators=_indicators(item),
+            target_role=str(item.get("target_role", "student")),
+            spoofed_url=(
+                str(item["spoofed_url"]) if item.get("spoofed_url") else None
+            ),
+        )
+        for item in data["sms"]
+    )
+
+
+def _mfa_scenarios(data: dict[str, Any]) -> tuple[MfaScenario, ...]:
+    return tuple(
+        MfaScenario(
+            scenario_id=str(item["scenario_id"]),
+            attack_type=str(item["attack_type"]),
+            channel=str(item["channel"]),
+            brand=str(item["brand"]),
+            organization=str(item["organization"]),
+            host=str(item["host"]),
+            title=str(item["title"]),
+            service=str(item["service"]),
+            prompt_count=int(item["prompt_count"]),
+            message=str(item["message"]),
+            reminder=str(item["reminder"]),
+            indicators=_indicators(item),
+            target_role=str(item.get("target_role", "trainee")),
+            workflow=_workflow(
+                item,
+                ("notification", "prompt", "outcome"),
+            ),
+            delay_profile=str(item.get("delay_profile", "short")),
+        )
+        for item in data["mfa"]
+    )
+
+
+_CATALOG = _load_catalog()
+SCENARIOS: tuple[Scenario, ...] = _website_scenarios(_CATALOG)
+EMAIL_MESSAGES: tuple[EmailMessage, ...] = _email_messages(_CATALOG)
+SMS_THREADS: tuple[SmsThread, ...] = _sms_threads(_CATALOG)
+MFA_SCENARIOS: tuple[MfaScenario, ...] = _mfa_scenarios(_CATALOG)
 
 INDICATOR_INFO: dict[str, str] = {
     "credential_request": "It directly asked for usernames or passwords.",
-    "urgent_language": "It applied a deadline or threat to rush your decision.",
+    "urgent_language": "It applied a deadline or threat to rush the decision.",
     "domain_mismatch": (
-        "The real address did not match the organization's known domain."
+        "The displayed identity did not match the expected fictional domain."
     ),
     "authority_impersonation": (
-        "It pretended to be someone in a position of authority."
+        "It pretended to be a trusted person or service."
     ),
     "personalization": (
-        "It used personal or contextual details to appear trustworthy."
+        "It used contextual details to appear tailored to the recipient."
     ),
-    "spoiled_links": "The visible link text and the real destination differed.",
-    "invoice_fraud": (
-        "It referenced an invoice or payment that may be fabricated."
+    "spoiled_links": (
+        "The visible link identity differed from the local destination."
     ),
-    "attachment_lure": "It used an attachment to persuade a click.",
-    "request_confirmation": "It asked you to confirm account or login details.",
-    "mfa_fatigue": "It repeatedly asked you to approve a sign-in request.",
-    "incident_fear": (
-        "It claimed a security incident to demand immediate action."
+    "invoice_fraud": "It referenced an invoice or payment request.",
+    "attachment_lure": "It used an attachment to encourage a follow-up action.",
+    "request_confirmation": (
+        "It asked the recipient to confirm account or login details."
     ),
-    "tech_support": "It impersonated an IT, support, or service team.",
-    "out_of_band": (
-        "It moved a conversation away from the platform it normally uses."
-    ),
+    "mfa_fatigue": "It repeatedly asked the recipient to approve a sign-in.",
+    "incident_fear": "It claimed a security incident to create pressure.",
+    "tech_support": "It impersonated a fictional support or service team.",
+    "out_of_band": "It moved the interaction to an unexpected channel.",
 }
 
 
 def get_scenario(scenario_id: str) -> Scenario | None:
-    for scenario in SCENARIOS:
-        if scenario.scenario_id == scenario_id:
-            return scenario
-    return None
+    return next(
+        (
+            scenario
+            for scenario in SCENARIOS
+            if scenario.scenario_id == scenario_id
+        ),
+        None,
+    )
 
 
 def get_email_message(message_id: str) -> EmailMessage | None:
-    for message in EMAIL_MESSAGES:
-        if message.message_id == message_id:
-            return message
-    return None
+    return next(
+        (
+            message
+            for message in EMAIL_MESSAGES
+            if message.message_id == message_id
+        ),
+        None,
+    )
 
 
 def get_sms_thread(thread_id: str) -> SmsThread | None:
-    for thread in SMS_THREADS:
-        if thread.thread_id == thread_id:
-            return thread
-    return None
+    return next(
+        (thread for thread in SMS_THREADS if thread.thread_id == thread_id),
+        None,
+    )
 
 
 def get_mfa_scenario(scenario_id: str) -> MfaScenario | None:
+    return next(
+        (
+            scenario
+            for scenario in MFA_SCENARIOS
+            if scenario.scenario_id == scenario_id
+        ),
+        None,
+    )
+
+
+def all_scenario_records() -> tuple[
+    Scenario | EmailMessage | SmsThread | MfaScenario,
+    ...,
+]:
+    return (*SCENARIOS, *EMAIL_MESSAGES, *SMS_THREADS, *MFA_SCENARIOS)
+
+
+def catalog_summaries() -> tuple[CatalogSummary, ...]:
+    summaries: list[CatalogSummary] = []
+    for scenario in SCENARIOS:
+        summaries.append(
+            CatalogSummary(
+                scenario_id=scenario.scenario_id,
+                attack_type=scenario.attack_type,
+                channel=scenario.channel,
+                brand=scenario.brand,
+                title=scenario.title,
+                description=scenario.message,
+                target_role=scenario.target_role,
+                indicators=scenario.indicators,
+                delay_profile=scenario.delay_profile,
+            )
+        )
+    for message in EMAIL_MESSAGES:
+        summaries.append(
+            CatalogSummary(
+                scenario_id=message.message_id,
+                attack_type=message.attack_type,
+                channel="email",
+                brand=message.brand,
+                title=message.subject,
+                description=message.preview,
+                target_role=message.target_role,
+                indicators=message.indicators,
+                delay_profile="standard",
+            )
+        )
+    for thread in SMS_THREADS:
+        summaries.append(
+            CatalogSummary(
+                scenario_id=thread.thread_id,
+                attack_type=thread.attack_type,
+                channel="sms",
+                brand=thread.brand,
+                title=thread.sender_label,
+                description=thread.messages[0],
+                target_role=thread.target_role,
+                indicators=thread.indicators,
+                delay_profile="short",
+            )
+        )
     for scenario in MFA_SCENARIOS:
-        if scenario.scenario_id == scenario_id:
-            return scenario
-    return None
+        summaries.append(
+            CatalogSummary(
+                scenario_id=scenario.scenario_id,
+                attack_type=scenario.attack_type,
+                channel="mfa",
+                brand=scenario.brand,
+                title=scenario.title,
+                description=scenario.message,
+                target_role=scenario.target_role,
+                indicators=scenario.indicators,
+                delay_profile=scenario.delay_profile,
+            )
+        )
+    return tuple(summaries)
+
+
+def attack_types() -> tuple[str, ...]:
+    return tuple(
+        sorted({summary.attack_type for summary in catalog_summaries()})
+    )
+
+
+def known_domain(host: str) -> bool:
+    normalized = host.casefold().rstrip(".")
+    return normalized in KNOWN_ORG_DOMAINS or normalized.endswith(
+        (".example", ".test", ".invalid")
+    )
