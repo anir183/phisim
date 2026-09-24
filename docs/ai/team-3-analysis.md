@@ -25,7 +25,7 @@ enforce safety constraints.
 -   [x] create analysis fixtures
 -   [x] define fail-closed secret-safety checks
 
-Initial indicators:
+Initial and catalog-aligned indicators:
 
 ``` text
 credential_request
@@ -35,6 +35,15 @@ domain_mismatch
 authority_impersonation
 suspicious_attachment
 unusual_mfa_request
+personalization
+incident_fear
+tech_support
+invoice_fraud
+request_confirmation
+out_of_band
+spoiled_links
+attachment_lure
+mfa_fatigue
 ```
 
 ## Phase 1

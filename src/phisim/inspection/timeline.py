@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -9,12 +10,18 @@ from phisim.utils.datetime import serialize_utc_datetime
 
 
 class TimelineEntry(BaseModel):
-    event_id: str = Field(description="Stable Event identifier")
-    session_id: str = Field(description="Session grouping identifier")
-    scenario_id: str = Field(description="Scenario identifier")
+    event_id: str = Field(default="", description="Stable Event identifier")
+    session_id: str = Field(
+        default="",
+        description="Session grouping identifier",
+    )
+    scenario_id: str = Field(default="", description="Scenario identifier")
     timestamp: str = Field(description="ISO 8601 UTC timestamp")
     event_type: str = Field(description="The underlying event type")
-    source: str = Field(description="The component that emitted the Event")
+    source: str = Field(
+        default="",
+        description="The component that emitted the Event",
+    )
     description: str = Field(
         description="A human-readable explanation of the event"
     )
@@ -47,6 +54,13 @@ _DESCRIPTIONS = {
 }
 
 
+def _sort_timestamp(event: EventResponse) -> datetime:
+    timestamp = event.timestamp
+    if timestamp.tzinfo is None:
+        return timestamp.replace(tzinfo=UTC)
+    return timestamp.astimezone(UTC)
+
+
 def _description(event_type: str) -> str:
     return _DESCRIPTIONS.get(
         event_type,
@@ -58,7 +72,7 @@ def build_session_timeline(events: list[EventResponse]) -> list[TimelineEntry]:
     """Build a chronological, UTC-normalized explanation of Session Events."""
     timeline: list[TimelineEntry] = []
 
-    for event in sorted(events, key=lambda item: item.timestamp):
+    for event in sorted(events, key=_sort_timestamp):
         timeline.append(
             TimelineEntry(
                 event_id=event.event_id,
