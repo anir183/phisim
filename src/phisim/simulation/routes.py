@@ -2,14 +2,12 @@
 
 import base64
 from io import BytesIO
-from secrets import token_hex
 
 import qrcode
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from starlette.responses import Response
 
 from phisim.infra.sqlite.connection import get_session
 from phisim.simulation.catalog import (
@@ -24,11 +22,13 @@ from phisim.simulation.catalog import (
     get_sms_thread,
 )
 from phisim.simulation.emit import emit_event
+from phisim.simulation.lifecycle import (
+    complete_simulation_session,
+    ensure_simulation_session,
+)
 from phisim.telemetry.service import DuplicateEventError
 from phisim.utils.paths import TEMPLATES_DIR
 
-SESSION_COOKIE = "phisim_session"
-SESSION_HEX = frozenset("0123456789abcdef")
 CREDENTIAL_SITE_PATH = "/scenario/credential-basic-001"
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR / "simulation"))
@@ -36,41 +36,29 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR / "simulation"))
 router = APIRouter(tags=["simulation"])
 
 
-def _valid_session_id(value: str | None) -> str | None:
-    if value is None or not 1 <= len(value) <= 64:
-        return None
-    if any(char not in SESSION_HEX for char in value):
-        return None
-    return value
-
-
-def _ensure_session_id(request: Request, response: Response) -> str:
-    session_id = _valid_session_id(request.cookies.get(SESSION_COOKIE))
-    if session_id is None:
-        session_id = token_hex(16)
-        _set_session_cookie(response, session_id)
-    return session_id
-
-
-def _set_session_cookie(response: Response, session_id: str) -> None:
-    response.set_cookie(
-        SESSION_COOKIE,
-        session_id,
-        httponly=True,
-        samesite="lax",
-        path="/",
-    )
-
-
 def _redirect_to_credential_site(
     request: Request,
+    database_session: Session,
+    *,
+    scenario_id: str,
+    scenario_name: str,
+    scenario_type: str,
+    description: str,
 ) -> tuple[RedirectResponse, str]:
     location = request.url_for(
         "scenario_login",
         scenario_id="credential-basic-001",
     )
     response = RedirectResponse(str(location), status_code=302)
-    session_id = _ensure_session_id(request, response)
+    session_id = ensure_simulation_session(
+        request,
+        response,
+        database_session,
+        scenario_id=scenario_id,
+        scenario_name=scenario_name,
+        scenario_type=scenario_type,
+        description=description,
+    )
     return response, session_id
 
 
@@ -132,7 +120,15 @@ async def scenario_login(
         context={"scenario": scenario},
     )
 
-    session_id = _ensure_session_id(request, response)
+    session_id = ensure_simulation_session(
+        request,
+        response,
+        session,
+        scenario_id=scenario.scenario_id,
+        scenario_name=scenario.title,
+        scenario_type=scenario.channel,
+        description=scenario.message,
+    )
 
     await _emit(
         session=session,
@@ -175,7 +171,15 @@ async def scenario_submit(
         },
     )
 
-    session_id = _ensure_session_id(request, response)
+    session_id = ensure_simulation_session(
+        request,
+        response,
+        session,
+        scenario_id=scenario.scenario_id,
+        scenario_name=scenario.title,
+        scenario_type=scenario.channel,
+        description=scenario.message,
+    )
 
     await _emit(
         session=session,
@@ -188,6 +192,7 @@ async def scenario_submit(
             "field_presence": field_presence,
         },
     )
+    complete_simulation_session(session, session_id)
 
     return response
 
@@ -217,7 +222,15 @@ async def email_view(
         context={"message": message},
     )
 
-    session_id = _ensure_session_id(request, response)
+    session_id = ensure_simulation_session(
+        request,
+        response,
+        session,
+        scenario_id=message.message_id,
+        scenario_name=message.subject,
+        scenario_type="email",
+        description=message.body,
+    )
 
     await _emit(
         session=session,
@@ -240,7 +253,14 @@ async def email_link(
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found.")
 
-    response, session_id = _redirect_to_credential_site(request)
+    response, session_id = _redirect_to_credential_site(
+        request,
+        session,
+        scenario_id=message.message_id,
+        scenario_name=message.subject,
+        scenario_type="email",
+        description=message.body,
+    )
 
     await _emit(
         session=session,
@@ -271,7 +291,15 @@ async def email_attachment(
         message_id=message.message_id,
     )
     response = RedirectResponse(str(location), status_code=302)
-    session_id = _ensure_session_id(request, response)
+    session_id = ensure_simulation_session(
+        request,
+        response,
+        session,
+        scenario_id=message.message_id,
+        scenario_name=message.subject,
+        scenario_type="email",
+        description=message.body,
+    )
 
     await _emit(
         session=session,
@@ -312,7 +340,15 @@ async def sms_view(
         context={"thread": thread},
     )
 
-    session_id = _ensure_session_id(request, response)
+    session_id = ensure_simulation_session(
+        request,
+        response,
+        session,
+        scenario_id=thread.thread_id,
+        scenario_name=thread.sender_label,
+        scenario_type="sms",
+        description=" ".join(thread.messages),
+    )
 
     await _emit(
         session=session,
@@ -335,7 +371,14 @@ async def sms_link(
     if thread is None:
         raise HTTPException(status_code=404, detail="Conversation not found.")
 
-    response, session_id = _redirect_to_credential_site(request)
+    response, session_id = _redirect_to_credential_site(
+        request,
+        session,
+        scenario_id=thread.thread_id,
+        scenario_name=thread.sender_label,
+        scenario_type="sms",
+        description=" ".join(thread.messages),
+    )
 
     await _emit(
         session=session,
@@ -380,7 +423,15 @@ async def qr_view(
         },
     )
 
-    session_id = _ensure_session_id(request, response)
+    session_id = ensure_simulation_session(
+        request,
+        response,
+        session,
+        scenario_id=scenario.scenario_id,
+        scenario_name=scenario.title,
+        scenario_type=scenario.channel,
+        description=scenario.message,
+    )
 
     await _emit(
         session=session,
@@ -403,7 +454,14 @@ async def qr_scan(
     if scenario is None or scenario.channel != "qr":
         raise HTTPException(status_code=404, detail="Scenario not found.")
 
-    response, session_id = _redirect_to_credential_site(request)
+    response, session_id = _redirect_to_credential_site(
+        request,
+        session,
+        scenario_id=scenario.scenario_id,
+        scenario_name=scenario.title,
+        scenario_type=scenario.channel,
+        description=scenario.message,
+    )
 
     await _emit(
         session=session,
@@ -453,7 +511,15 @@ async def mfa_prompt(
         },
     )
 
-    session_id = _ensure_session_id(request, response)
+    session_id = ensure_simulation_session(
+        request,
+        response,
+        session,
+        scenario_id=scenario.scenario_id,
+        scenario_name=scenario.title,
+        scenario_type="mfa",
+        description=scenario.message,
+    )
 
     await _emit(
         session=session,
@@ -502,7 +568,15 @@ async def mfa_respond(
             step=str(current_step + 1),
         )
         response = RedirectResponse(str(location), status_code=302)
-        session_id = _ensure_session_id(request, response)
+        session_id = ensure_simulation_session(
+            request,
+            response,
+            session,
+            scenario_id=scenario.scenario_id,
+            scenario_name=scenario.title,
+            scenario_type="mfa",
+            description=scenario.message,
+        )
 
         await _emit(
             session=session,
@@ -527,7 +601,15 @@ async def mfa_respond(
             "indicator_info": INDICATOR_INFO,
         },
     )
-    session_id = _ensure_session_id(request, response)
+    session_id = ensure_simulation_session(
+        request,
+        response,
+        session,
+        scenario_id=scenario.scenario_id,
+        scenario_name=scenario.title,
+        scenario_type="mfa",
+        description=scenario.message,
+    )
 
     await _emit(
         session=session,
@@ -540,5 +622,6 @@ async def mfa_respond(
             "action": action,
         },
     )
+    complete_simulation_session(session, session_id)
 
     return response
