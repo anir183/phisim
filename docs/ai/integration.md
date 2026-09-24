@@ -72,39 +72,51 @@ console displays event + indicator
 
 ## Current known cleanup
 
-The existing event tests still send a `timestamp` field in create
-requests even though timestamp is server-generated. Remove that stale
-input from the tests as part of backend contract cleanup.
+None open from Team 2. The earlier note about stale `timestamp` input
+in event tests was resolved in commit `2f6e132` (timestamp is
+server-generated); the simulation integration on `feature/team-2` is
+wired into `phisim.main.app` and covered by tests.
 
 ## Simulation integration notes (Team 2)
 
-The P0 fake credential site (`credential-basic-001`) is implemented on
-`feature/team-2`. Contract notes for Team 1 / integrators:
+Team 2's P0 (fake website, email, SMS) and all P1 scenario types are
+implemented on `feature/team-2` and registered in `src/phisim/main.py`.
+Contract notes for Team 1 / integrators:
 
 -   **Session source:** there is no session API yet, so the simulation
     assigns a browser cookie `phisim_session` (random hex token) and
-    reuses it across events. This is provisional until Team 1 exposes a
-    session lifecycle; `TelemetryService` currently accepts any
-    `session_id`.
+    reuses it across every channel (website, email, SMS, QR, MFA). This
+    is provisional until Team 1 exposes a session lifecycle;
+    `TelemetryService` currently accepts any `session_id`.
 -   **Emit boundary:** `phisim/simulation/emit.py` composes
     `EventRepository` + `TelemetryService` (the same composition the
     telemetry routes use) and records an `EventCreate`. No SQLAlchemy
     writes live in simulation code.
--   **Router registration:** `src/phisim/main.py` still needs two lines
-    (Team 1 owns the file; Team 2 left it untouched by agreement):
-
-    ``` python
-    from phisim.simulation.routes import router as simulation_router
-
-    app.include_router(simulation_router)
-    ```
-
--   **Templates:** live under `web/templates/simulation/` with inline CSS
-    because `web/static` is not mounted yet. Externalizing to
+-   **Router registration:** `simulation_router` is included in
+    `src/phisim/main.py` alongside the telemetry and console routers.
+-   **Artifact identity:** events carry the artifact id as
+    `scenario_id` (a scenario id for website/QR/MFA artifacts, a
+    message id for email/SMS artifacts): e.g. `email-phish-001`,
+    `sms-parcel-001`, `qr-phish-001`, `mfa-fatigue-001`.
+-   **Event types:** in addition to `scenario_opened` /
+    `credential_submission_attempted`, simulation emits
+    `message_opened`, `link_clicked`, `attachment_opened`, `qr_viewed`,
+    `mfa_prompt_displayed`, and `mfa_prompt_responded`. Metadata always
+    includes a `channel` field; `link_clicked` includes a local
+    `target_url`.
+-   **Indicator glossary:** `catalog.py`'s `INDICATOR_INFO` documents
+    both the original four indicators and the P1 indicator codes so the
+    analysis/console layers can render descriptions without importing
+    simulation internals.
+-   **Templates:** live under `web/templates/simulation/` with inline
+    CSS because `web/static` is not mounted yet. Externalizing to
     `web/static/simulation/` is a follow-up once static serving exists.
--   **Scenario metadata:** a provisional local registry in
-    `phisim/simulation/catalog.py` (frozen `Scenario` dataclass) pending
-    the Team 1 shared scenario registry.
+-   **Scenario metadata:** a local registry in
+    `phisim/simulation/catalog.py` (frozen dataclasses) pending the
+    Team 1 shared scenario registry.
+-   **QR quishing:** QR codes are rendered by the existing
+    `qrcode[pil]` dependency as in-memory PNG data URIs encoding the
+    local `/qr/{id}/scan` route; no external QR services.
 
 ## Integration rule
 
