@@ -96,6 +96,23 @@ only a `field_presence` dictionary with boolean values is accepted. Other
 metadata is rejected before persistence and broadcast. Request validation
 responses are generic and do not echo submitted content.
 
+## Final Team 1 handoff
+
+Team 1 backend implementation is complete with no remaining production-code
+work. The P0 Event contract intentionally keeps `session_id` and `scenario_id`
+free-form for backward compatibility; `GET /api/events?session_id=...`
+provides the supported Session grouping and timeline surface. Persisted
+Event-to-Session foreign-key enforcement is not part of the current contract.
+
+The project-level vertical slice remains blocked on:
+
+- Team 2's fake credential flow and submitted-password secrecy test
+- Team 3's deterministic analysis and broader metadata policy
+- Team 4's safe console rendering and Scenario/Session display
+
+Email, SMS, and additional scenarios remain blocked until that vertical
+slice is complete.
+
 ## Integration rule
 
 If an implementation can wait for another team's stable contract, do not

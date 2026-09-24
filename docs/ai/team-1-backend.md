@@ -33,8 +33,8 @@ persistence, and configuration.
 
 ## Phase 1
 
--   [ ] enforce persisted Event/Session relationships; identifiers are
-  free-form by current contract
+-   [x] finalize the Event/Session relationship as free-form Event
+  identifiers with Session-filtered retrieval for P0 compatibility
 -   [x] robust duplicate-event handling under concurrent writes
 -   [x] add focused integration fixtures
 -   [x] keep WebSocket behavior stable
