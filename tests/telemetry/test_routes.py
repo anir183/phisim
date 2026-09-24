@@ -29,7 +29,7 @@ def test_create_event_accepts_free_form_ids(client: TestClient) -> None:
     assert body["event_id"] == "event-001"
     assert body["event_type"] == "page_viewed"
     assert body["metadata"]["page"] == ("/scenario/credential-basic-001")
-    assert body["timestamp"] is not None
+    assert body["timestamp"].endswith("Z")
 
 
 def test_create_event_rejects_missing_event_id(
@@ -133,10 +133,14 @@ def test_list_events_by_session(client: TestClient) -> None:
     assert first_response.status_code == 201
     assert second_response.status_code == 201
     assert list_response.status_code == 200
-    assert [event["event_id"] for event in list_response.json()] == [
+
+    listed_events = list_response.json()
+
+    assert [event["event_id"] for event in listed_events] == [
         "event-list-001",
         "event-list-002",
     ]
+    assert all(event["timestamp"].endswith("Z") for event in listed_events)
 
 
 def test_list_events_handles_unknown_session(client: TestClient) -> None:

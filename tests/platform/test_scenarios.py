@@ -27,7 +27,7 @@ def test_create_and_get_scenario(client: TestClient) -> None:
     assert created["name"] == "Fictional Login Training"
     assert created["scenario_type"] == "credential"
     assert created["description"] == "A fictional local login exercise."
-    assert created["created_at"]
+    assert created["created_at"].endswith("Z")
 
     get_response = client.get("/api/scenarios/credential-basic-001")
 

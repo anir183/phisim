@@ -1,7 +1,8 @@
-from datetime import datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from phisim.utils.datetime import UtcDateTime
 
 
 class SessionStatus(StrEnum):
@@ -25,6 +26,6 @@ class SessionResponse(BaseModel):
 
     session_id: str
     scenario_id: str
-    started_at: datetime
-    completed_at: datetime | None
+    started_at: UtcDateTime
+    completed_at: UtcDateTime | None
     status: SessionStatus

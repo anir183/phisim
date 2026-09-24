@@ -1,6 +1,6 @@
-from datetime import datetime
-
 from pydantic import BaseModel, ConfigDict, Field
+
+from phisim.utils.datetime import UtcDateTime
 
 
 class ScenarioCreate(BaseModel):
@@ -15,4 +15,4 @@ class ScenarioCreate(BaseModel):
 class ScenarioResponse(ScenarioCreate):
     model_config = ConfigDict(from_attributes=True)
 
-    created_at: datetime
+    created_at: UtcDateTime

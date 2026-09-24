@@ -34,7 +34,7 @@ def test_create_session_generates_session_id(client: TestClient) -> None:
     assert body["session_id"]
     assert body["scenario_id"] == "credential-basic-001"
     assert body["status"] == "active"
-    assert body["started_at"]
+    assert body["started_at"].endswith("Z")
     assert body["completed_at"] is None
 
 
@@ -149,7 +149,7 @@ def test_complete_session_is_idempotent(client: TestClient) -> None:
     completed = first_response.json()
 
     assert completed["status"] == "completed"
-    assert completed["completed_at"]
+    assert completed["completed_at"].endswith("Z")
     assert second_response.status_code == 200
     assert second_response.json() == completed
 

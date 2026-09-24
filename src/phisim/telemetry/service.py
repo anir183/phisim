@@ -6,6 +6,7 @@ from phisim.infra.sqlite.models.event import Event
 from phisim.infra.sqlite.repos.event import EventRepository
 from phisim.telemetry.schemas import CredentialSubmissionMetadata, EventCreate
 from phisim.telemetry.websocket import EventConnectionManager
+from phisim.utils.datetime import serialize_utc_datetime
 
 
 class DuplicateEventError(Exception):
@@ -105,7 +106,7 @@ class TelemetryService:
             {
                 "id": event.id,
                 "event_id": event.event_id,
-                "timestamp": event.timestamp.isoformat(),
+                "timestamp": serialize_utc_datetime(event.timestamp),
                 "session_id": event.session_id,
                 "scenario_id": event.scenario_id,
                 "event_type": event.event_type,

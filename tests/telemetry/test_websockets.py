@@ -39,7 +39,7 @@ def test_event_is_broadcast_to_websocket(
     assert received["source"] == event["source"]
     assert received["metadata"] == event["metadata"]
     assert received["id"] > 0
-    assert received["timestamp"]
+    assert received["timestamp"].endswith("Z")
 
 
 def test_event_is_broadcast_to_all_websocket_clients(

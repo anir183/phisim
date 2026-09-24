@@ -1,7 +1,8 @@
-from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from phisim.utils.datetime import UtcDateTime
 
 
 class CredentialSubmissionMetadata(BaseModel):
@@ -23,4 +24,4 @@ class EventCreate(BaseModel):
 
 class EventResponse(EventCreate):
     id: int
-    timestamp: datetime
+    timestamp: UtcDateTime
