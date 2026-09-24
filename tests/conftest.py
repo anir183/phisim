@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
+from phisim.infra.sqlite import models_registry  # noqa: F401
 from phisim.infra.sqlite.connection import Base, get_session
 from phisim.main import app
 
@@ -26,14 +27,19 @@ def test_engine():
 
 
 @pytest.fixture
-def client(test_engine) -> Generator[TestClient]:
+def client(
+    test_engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> Generator[TestClient]:
     def override_get_session():
         with Session(test_engine) as session:
             yield session
 
     app.dependency_overrides[get_session] = override_get_session
+    monkeypatch.setattr("phisim.main.initialize_database", lambda: None)
 
-    with TestClient(app) as test_client:
-        yield test_client
-
-    app.dependency_overrides.clear()
+    try:
+        with TestClient(app) as test_client:
+            yield test_client
+    finally:
+        app.dependency_overrides.clear()
