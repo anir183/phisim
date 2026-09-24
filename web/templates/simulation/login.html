@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ scenario.title }} &middot; {{ scenario.organization }}{% endblock %}
+
+{% block content %}
+  <section class="card" aria-labelledby="login-title">
+    <header class="login-header">
+      <div class="org-mark" aria-hidden="true">TS</div>
+      <div>
+        <h1 id="login-title" class="page-title">{{ scenario.organization }}</h1>
+        <p class="hint">Secure Sign In</p>
+      </div>
+    </header>
+
+    <div class="urgency-banner" role="alert">
+      <strong>{{ scenario.greeting }}</strong>
+      {{ scenario.message }}
+    </div>
+
+    <form
+      method="post"
+      action="{{ url_for('scenario_submit', scenario_id=scenario.scenario_id) }}"
+    >
+      <div class="field">
+        <label for="username">Username</label>
+        <input
+          id="username"
+          type="text"
+          name="username"
+          autocomplete="off"
+          autocapitalize="none"
+          required
+        />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          name="password"
+          autocomplete="off"
+          required
+        />
+      </div>
+      <button type="submit" class="btn">Sign In</button>
+    </form>
+
+    <p class="hint link-hint">
+      This browser tab is at:
+      <span class="host-display">{{ scenario.host }}</span>
+    </p>
+  </section>
+{% endblock %}
+
+{% block footer %}{{ scenario.reminder }}{% endblock %}

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -8,6 +8,8 @@ from phisim.utils.datetime import UtcDateTime
 class CredentialSubmissionMetadata(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    channel: Literal["website"] = "website"
+    interaction_result: Literal["submitted", "incomplete"] = "submitted"
     field_presence: dict[str, bool] = Field(default_factory=dict)
 
 

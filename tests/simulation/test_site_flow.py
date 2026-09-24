@@ -1,0 +1,185 @@
+import json
+
+from fastapi.testclient import TestClient
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+
+from phisim.infra.sqlite.models.event import Event
+from phisim.infra.sqlite.repos.event import EventRepository
+
+SCENARIO_ID = "credential-basic-001"
+
+
+def _list_events(engine: Engine, session_id: str) -> list[Event]:
+    with Session(engine) as session:
+        repository = EventRepository(session)
+        return repository.list_by_session(session_id)
+
+
+def _open_session(client: TestClient) -> str:
+    response = client.get(f"/scenario/{SCENARIO_ID}")
+    assert response.status_code == 200
+    session_id = response.cookies.get("phisim_session")
+    assert session_id
+    return session_id
+
+
+def test_index_renders_and_lists_scenario(client: TestClient) -> None:
+    response = client.get("/simulation")
+
+    assert response.status_code == 200
+    assert SCENARIO_ID in response.text
+    assert "Techno Main Salt Lake" in response.text
+
+
+def test_login_page_renders_and_assigns_session(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    response = client.get(f"/scenario/{SCENARIO_ID}")
+
+    assert response.status_code == 200
+    assert 'name="username"' in response.text
+    assert 'name="password"' in response.text
+    assert "Techno Main Salt Lake" in response.text
+
+    session_id = response.cookies.get("phisim_session")
+    assert session_id
+
+    events = _list_events(test_engine, session_id)
+    assert [event.event_type for event in events] == ["scenario_opened"]
+    assert events[0].scenario_id == SCENARIO_ID
+    assert events[0].source == "browser"
+
+
+def test_unknown_or_traversal_scenario_returns_404(
+    client: TestClient,
+) -> None:
+    for path in (
+        "/scenario/does-not-exist",
+        "/scenario/../../etc/passwd",
+        "/scenario/credential-basic-001/extra",
+    ):
+        assert client.get(path).status_code == 404
+        assert (
+            client.post(
+                path,
+                data={"username": "a", "password": "b"},
+            ).status_code
+            == 404
+        )
+
+
+def test_malformed_session_cookie_is_replaced(client: TestClient) -> None:
+    client.cookies.set("phisim_session", "../../etc/passwd")
+    response = client.get(f"/scenario/{SCENARIO_ID}")
+
+    assert response.status_code == 200
+    session_id = response.cookies.get("phisim_session")
+    assert session_id
+    assert session_id != "../../etc/passwd"
+    assert set(session_id) <= set("0123456789abcdef")
+
+
+def test_credential_submission_emits_safe_event(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    session_id = _open_session(client)
+
+    response = client.post(
+        f"/scenario/{SCENARIO_ID}",
+        data={"username": "student-42", "password": "hunter2"},
+    )
+
+    assert response.status_code == 200
+    assert "Simulation Complete" in response.text
+    assert "hunter2" not in response.text
+    assert "student-42" not in response.text
+
+    events = _list_events(test_engine, session_id)
+    assert [event.event_type for event in events] == [
+        "scenario_opened",
+        "credential_submission_attempted",
+    ]
+
+    submission = events[-1]
+    assert submission.session_id == session_id
+    assert submission.scenario_id == SCENARIO_ID
+    assert submission.source == "browser"
+    assert submission.metadata_ == {
+        "channel": "website",
+        "interaction_result": "submitted",
+        "field_presence": {"username": True, "password": True},
+    }
+
+
+def test_submitted_password_never_enters_any_event_field(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    session_id = _open_session(client)
+    secret = "hunter2-super-secret"
+
+    response = client.post(
+        f"/scenario/{SCENARIO_ID}",
+        data={"username": "anyone", "password": secret},
+    )
+
+    assert response.status_code == 200
+
+    for event in _list_events(test_engine, session_id):
+        payload = json.dumps(
+            {
+                "event_id": event.event_id,
+                "session_id": event.session_id,
+                "scenario_id": event.scenario_id,
+                "event_type": event.event_type,
+                "source": event.source,
+                "metadata": event.metadata_,
+            }
+        )
+        assert secret not in payload
+        assert "password" not in event.metadata_
+        assert "username" not in event.metadata_
+
+
+def test_missing_fields_produce_incomplete_event(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    session_id = _open_session(client)
+
+    response = client.post(f"/scenario/{SCENARIO_ID}", data={})
+
+    assert response.status_code == 200
+
+    events = _list_events(test_engine, session_id)
+    submission = events[-1]
+    assert submission.event_type == "credential_submission_attempted"
+    assert submission.metadata_["interaction_result"] == "incomplete"
+    assert submission.metadata_["field_presence"] == {
+        "username": False,
+        "password": False,
+    }
+
+
+def test_submission_event_is_broadcast_over_websocket(
+    client: TestClient,
+) -> None:
+    _open_session(client)
+
+    with client.websocket_connect("/api/events/ws") as websocket:
+        response = client.post(
+            f"/scenario/{SCENARIO_ID}",
+            data={"username": "wsuser", "password": "LetMeIn42!"},
+        )
+        assert response.status_code == 200
+
+        payload = websocket.receive_json()
+
+    assert payload["event_type"] == "credential_submission_attempted"
+    assert payload["scenario_id"] == SCENARIO_ID
+    assert payload["source"] == "browser"
+    assert "LetMeIn42!" not in json.dumps(payload)
+    assert "password" not in payload["metadata"]

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Simulation Complete &middot; {{ scenario.organization }}{% endblock %}
+
+{% block content %}
+  <section class="card" aria-labelledby="outcome-title">
+    <header class="login-header">
+      <div class="org-mark ok-mark" aria-hidden="true">&check;</div>
+      <div>
+        <h1 id="outcome-title" class="page-title">Simulation Complete</h1>
+        <p class="hint">Phishing awareness outcome</p>
+      </div>
+    </header>
+
+    <div class="ok-banner">
+      <strong>Nothing you typed here was stored or sent anywhere.</strong>
+      This page pretended to be <strong>{{ scenario.organization }}</strong> to
+      demonstrate how a phishing login page works. It is a fictional, local
+      simulation, and any credentials entered were discarded on submission.
+    </div>
+
+    <h2 class="section-title">Why this page was suspicious</h2>
+    <ul class="indicator-list">
+      {% for code in scenario.indicators %}
+        <li>
+          <strong>{{ code }}</strong> &mdash;
+          {{ indicator_info.get(code, "Unrecognized indicator.") }}
+        </li>
+      {% endfor %}
+    </ul>
+
+    <h2 class="section-title">Safe habits to keep</h2>
+    <ul class="steps">
+      <li>Check the browser address bar before signing in anywhere.</li>
+      <li>Open important links from the official site rather than a message.</li>
+      <li>Treat unsolicited urgency as a warning sign.</li>
+      <li>Report suspicious messages instead of acting on them.</li>
+    </ul>
+
+    <a class="btn" href="{{ url_for('simulation_index') }}">
+      Back to simulation list
+    </a>
+  </section>
+{% endblock %}
+
+{% block footer %}{{ scenario.reminder }}{% endblock %}

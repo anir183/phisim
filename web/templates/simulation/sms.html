@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Fictional Messaging{% endblock %}
+
+{% block content %}
+  <section class="card" aria-labelledby="sms-title">
+    <header class="login-header">
+      <div class="org-mark" aria-hidden="true">S</div>
+      <div>
+        <h1 id="sms-title" class="page-title">Fictional Messaging</h1>
+        <p class="hint">Simulated text conversations</p>
+      </div>
+    </header>
+
+    <div class="scenario-list">
+      {% for thread in threads %}
+        <article class="scenario-row">
+          <div>
+            <h2 class="scenario-name">{{ thread.sender_label }}</h2>
+            <p class="hint">
+              {{ thread.sender_number }} &middot; {{ thread.organization }}
+            </p>
+          </div>
+          <a
+            class="btn"
+            href="{{ url_for('sms_view', thread_id=thread.thread_id) }}"
+          >
+            Open conversation
+          </a>
+        </article>
+      {% else %}
+        <p>No simulated conversations.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
+
+{% block footer %}
+  All conversations shown here are fictional and sent nowhere.
+{% endblock %}

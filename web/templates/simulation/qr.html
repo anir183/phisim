@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ scenario.title }} &middot; {{ scenario.organization }}{% endblock %}
+
+{% block content %}
+  <section class="card" aria-labelledby="qr-title">
+    <header class="login-header">
+      <div class="org-mark" aria-hidden="true">QR</div>
+      <div>
+        <h1 id="qr-title" class="page-title">{{ scenario.title }}</h1>
+        <p class="hint">{{ scenario.organization }}</p>
+      </div>
+    </header>
+
+    <div class="urgency-banner" role="alert">
+      <strong>{{ scenario.greeting }}</strong>
+      {{ scenario.message }}
+    </div>
+
+    <img
+      class="qr-image"
+      src="{{ qr_data_uri }}"
+      alt="Local QR code that encodes the simulation link"
+    />
+
+    <p class="hint">
+      Scanning this code with a device reachable on this machine opens the
+      local simulation link directly; it never points to a real site.
+    </p>
+    <p class="hint">
+      Encoded URL:
+      <span class="host-display">{{ scan_url }}</span>
+    </p>
+
+    <div class="channel-row">
+      <a class="btn" href="{{ url_for('qr_scan', scenario_id=scenario.scenario_id) }}">
+        I scanned it &mdash; continue
+      </a>
+    </div>
+  </section>
+{% endblock %}
+
+{% block footer %}{{ scenario.reminder }}{% endblock %}

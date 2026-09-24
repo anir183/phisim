@@ -113,6 +113,21 @@ The project-level vertical slice remains blocked on:
 Email, SMS, and additional scenarios remain blocked until that vertical
 slice is complete.
 
+## Team 2 simulation integration
+
+Team 2's simulation branch is integrated with routers for the local fake
+website, mailbox, SMS viewer, QR flow, and MFA-fatigue flow. All routes
+remain local and use the shared Event/Telemetry/WebSocket boundary.
+
+The branch currently provisions a browser cookie named `phisim_session`.
+Integration must reconcile that cookie with the Team 1 Session service and
+persist catalog artifacts as shared Scenario metadata before the staging
+flow is final.
+
+Credential submission metadata remains limited to interaction facts. The
+Team 1 allowlist must be reconciled with Team 2's `channel` and
+`interaction_result` fields without allowing raw username or password values.
+
 ## Integration rule
 
 If an implementation can wait for another team's stable contract, do not
@@ -164,9 +179,9 @@ No external delivery APIs are involved.
 -   [ ] session is created/reused correctly
 -   [x] event has stable event_id
 -   [x] timestamp is server-generated
--   [ ] submitted password never appears in event metadata
+-   [x] submitted password never appears in event metadata
 -   [x] duplicate events are handled deterministically
 -   [ ] analysis consumes events rather than database internals
 -   [ ] console consumes API/WebSocket contracts rather than SQLAlchemy
--   [ ] all links remain local
--   [ ] no external delivery provider is configured
+-   [x] all links remain local
+-   [x] no external delivery provider is configured

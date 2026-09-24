@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ message.subject }} &middot; {{ message.organization }}{% endblock %}
+
+{% block content %}
+  <section class="card" aria-labelledby="email-title">
+    <header class="login-header">
+      <div class="org-mark" aria-hidden="true">@</div>
+      <div>
+        <h1 id="email-title" class="page-title">{{ message.subject }}</h1>
+        <p class="hint">
+          From: {{ message.sender_label }} &lt;{{ message.sender_address }}&gt;
+        </p>
+        <p class="hint">To: recipient &lt;yourname{{ '@' }}techno-main.edu&gt;</p>
+      </div>
+    </header>
+
+    {% if message.spoofed_url %}
+      <div class="urgency-banner" role="note">
+        <strong>Look closely before clicking.</strong>
+        The link on this page shows
+        <span class="host-display">{{ message.spoofed_url }}</span> but the
+        real destination is a local simulation route.
+      </div>
+    {% endif %}
+
+    <p class="message-body">{{ message.body }}</p>
+
+    {% if message.attachment_name %}
+      <div class="attachment">
+        <p class="attachment-name">{{ message.attachment_name }}</p>
+        {% if message.attachment_preview %}
+          <p class="hint">{{ message.attachment_preview }}</p>
+        {% endif %}
+        <a
+          class="btn"
+          href="{{ url_for('email_attachment', message_id=message.message_id) }}"
+        >
+          Open attachment
+        </a>
+      </div>
+    {% endif %}
+
+    <div class="channel-row">
+      <a
+        class="btn"
+        href="{{ url_for('email_link', message_id=message.message_id) }}"
+      >
+        {{ message.link_label }}
+      </a>
+    </div>
+
+    <p class="hint link-hint">
+      The link above is a local simulation route; it never leaves this
+      machine. This simulated mailbox is served by:
+      <span class="host-display">{{ message.host }}</span>
+    </p>
+  </section>
+{% endblock %}
+
+{% block footer %}{{ message.reminder }}{% endblock %}
