@@ -127,9 +127,9 @@ No external delivery APIs are involved.
 -   [ ] session is created/reused correctly
 -   [ ] event has stable event_id
 -   [ ] timestamp is server-generated
--   [ ] submitted password never appears in event metadata
+-   [x] submitted password never appears in event metadata
 -   [ ] duplicate events are handled deterministically
--   [ ] analysis consumes events rather than database internals
+-   [x] analysis consumes events rather than database internals
 -   [ ] console consumes API/WebSocket contracts rather than SQLAlchemy
 -   [ ] all links remain local
 -   [ ] no external delivery provider is configured

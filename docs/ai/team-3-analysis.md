@@ -18,12 +18,12 @@ enforce safety constraints.
 
 ## Phase 0
 
--   [ ] define indicator structure
--   [ ] define indicator codes
--   [ ] implement deterministic rules
--   [ ] define evidence/explanation format
--   [ ] create analysis fixtures
--   [ ] define secret-stripping/security checks
+-   [x] define indicator structure
+-   [x] define indicator codes
+-   [x] implement deterministic rules
+-   [x] define evidence/explanation format
+-   [x] create analysis fixtures
+-   [x] define secret-stripping/security checks
 
 Initial indicators:
 
