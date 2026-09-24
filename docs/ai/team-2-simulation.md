@@ -1,164 +1,153 @@
-# Team 2 --- Simulation Channels
+# Team 2 — Simulation Channels
 
 ## Owned paths
 
-``` text
+```text
 src/phisim/simulation/
-scenarios/
+scenarios/catalog.json
 web/templates/simulation/
-web/static/simulation/
+web/static/phisim.css
+web/static/simulation.js
 tests/simulation/
 ```
 
 ## Mission
 
-Build safe, fictional phishing experiences on top of the shared
-telemetry/session contracts.
+Build safe, convincing fictional security-awareness experiences on top of the
+shared Event, Session, analysis, and WebSocket contracts.
 
-## Status
+## Current status
 
-All team-scope P0 and P1 work is complete and integrated on the staging
-branch. Every channel funnels through the shared local session cookie
-(`phisim_session`) and the same `emit.py` boundary, so all interactions
-land in the analyst console's event stream. The staging integration also
-registers catalog artifacts as shared Scenarios and persists/reuses the
-corresponding Session.
+The simulation layer is integrated with the operator Scenario Lab and the
+analyst console. Static scenario content is loaded from the typed local JSON
+catalog at `scenarios/catalog.json`. Channel route ownership is split into
+focused modules under `src/phisim/simulation/channels/`; the former monolithic
+route module is now only a composition router.
 
-## P0
+All destinations are local. No message is delivered, no external provider is
+contacted, and submitted credential values are discarded immediately.
 
-### Fake credential site
+## Information architecture
 
--   [x] scenario metadata
--   [x] fake login page
--   [x] safe submission handling
--   [x] `credential_submission_attempted`
--   [x] educational outcome page
--   [x] test that submitted password is not persisted/emitted
+- `/lab` — operator/scenario control and safe target presets.
+- `/simulation` — trainee-facing simulation library.
+- `/inbox` and `/inbox/{id}` — fictional Gemail workspace.
+- `/sms` and `/sms/{id}` — fictional QuickChat workspace.
+- `/scenario/{id}` — two-step parody website login.
+- `/qr/{id}` — contextual QR message and local destination preview.
+- `/mfa/{id}/{step}` — bounded MFA practice sequence.
 
-Scenario `credential-basic-001` lives in `phisim/simulation/catalog.py`,
-`routes.py`, and `web/templates/simulation/`.
+## Scenario catalog
+
+The catalog contains:
+
+- UniSecure / Northstar University account verification.
+- Amazaun delivery-address verification.
+- CloudBox storage verification.
+- PayMate payment confirmation.
+- UniSecure Support security verification.
+- Nine Gemail scenarios covering credential phishing, spear phishing,
+  whaling, clone phishing, urgency, tech support, BEC, link spoofing, and
+  attachment phishing.
+- QuickChat parcel and support scenarios.
+- Local QR/quishing and NimbusID MFA-fatigue scenarios.
+
+Catalog records include attack type, channel, fictional brand, target role,
+workflow, safe indicators, and local target scenario IDs. Loader validation
+rejects duplicate IDs, unknown targets, and non-reserved hosts.
+
+## Channel workflows
+
+### Website
+
+1. Participant opens a parody service shell.
+2. Participant submits a fictional username.
+3. Participant reaches a separate password step.
+4. PhiSim records only boolean `field_presence` facts.
+5. Participant receives a safe educational outcome.
+
+Credential values are never placed in Event metadata, Session state, response
+text, or the database.
 
 ### Email
 
--   [x] simulated message representation (`EmailMessage` in catalog)
--   [x] message-open interaction (`message_opened`)
--   [x] link-click interaction (`link_clicked`, local redirect)
--   [x] optional harmless attachment interaction (`attachment_opened`)
--   [x] tests
-
-A local fake mailbox is served at `GET /inbox` and `GET /inbox/{id}`.
-The message link redirects to
-`/scenario/credential-basic-001` (local funnel). No mail provider.
+Gemail provides folders, sender/recipient headers, timestamps, previews,
+unread/read state, message detail, safe link workflow, and an inert attachment
+preview. Link targets are local and catalog-driven.
 
 ### SMS
 
--   [x] simulated conversation/message (`SmsThread` in catalog)
--   [x] message-open interaction (`message_opened`)
--   [x] link-click interaction (`link_clicked`, local redirect)
--   [x] tests
+QuickChat provides conversation navigation, sender identity, timestamps,
+unread state, message history, a local link, and deterministic typing metadata.
+No phone number or SMS provider is contacted.
 
-A local fake messaging view is served at `GET /sms` and
-`GET /sms/{id}`. No SMS provider; fictional sender identities only.
+### QR and attachments
 
-## P1
+QR content is generated in memory and encodes a local scan route. The scan
+action emits `qr_scan_simulated` and redirects to the catalog-selected local
+website scenario. Attachments are displayed as metadata and harmless preview
+text only; no file is generated, downloaded, or executed.
 
-All ten planned scenario types are implemented as data plus the shared
-viewers/routes; no new per-scenario machinery was introduced.
+### MFA
 
--   [x] spear phishing (`spear-phish-001`)
--   [x] whaling (`whaling-001`)
--   [x] clone phishing (`clone-phish-001`)
--   [x] urgency (`urgency-001`)
--   [x] tech support (`tech-support-001`)
--   [x] QR/quishing (`qr-phish-001`, local QR data URI via existing
-    `qrcode[pil]` dependency)
--   [x] attachment (`attachment-phish-001`, inert text representation,
-    no payload)
--   [x] link spoofing (`link-spoof-001`, visible label differs from the
-    local destination)
--   [x] BEC (`bec-001`)
--   [x] MFA fatigue (`mfa-fatigue-001`, sequential approve/deny prompts
-    emitting `mfa_prompt_displayed` / `mfa_prompt_responded`)
+NimbusID presents a bounded sequence of three simulated approval prompts.
+Approve/deny transitions, step state, and terminal outcomes are persisted as
+safe run state. `instant`, `short`, and `standard` timing profiles are
+available; client transitions are bounded and deterministic.
 
-Signal-spoofing email variants (`spear-phish-001`, `whaling-001`,
-`bec-001`, `clone-phish-001`) reuse the real (fictional) org domain
-`techno-main.edu` in the sender address while the actual page serving
-host is the phishing domain, demonstrating the mismatch.
+## Telemetry
 
-## Channels / routes
+Meaningful Event types are:
 
-``` text
-GET  /simulation                     lab index (all channels)
-GET  /scenario/{id}          POST    fake website (channel=website)
-GET  /inbox                  GET /inbox/{id}          GET /inbox/{id}/link
-GET  /inbox/{id}/attachment
-GET  /sms                    GET /sms/{id}            GET /sms/{id}/link
-GET  /qr/{id}                GET /qr/{id}/scan
-GET  /mfa/{id}/{step}        POST /mfa/{id}/{step}
-```
-
-## Event types emitted (source = browser via `emit.py`)
-
-``` text
-scenario_opened
+```text
+scenario_started             operator launch
+scenario_opened              website opened
+scenario_completed           terminal training outcome
+message_opened               email/SMS opened
+link_clicked                 email/SMS local link
+attachment_opened            inert attachment preview
+qr_viewed                    QR message viewed
+qr_scan_simulated            local QR scan action
 credential_submission_attempted
-message_opened            (email and sms)
-link_clicked              (email, sms, qr; metadata.target_url is local)
-attachment_opened
-qr_viewed
-mfa_prompt_displayed      (metadata: step, total_steps)
-mfa_prompt_responded      (metadata: step, action)
+mfa_prompt_displayed
+mfa_prompt_responded
 ```
 
-Every event carries a `channel` field in metadata and uses the artifact
-id as `scenario_id`. Non-credential simulation Events also carry safe
-analysis evidence such as `subject`, `content`, `display_host`, link
-comparison fields, attachment names, and catalog flags. The funnel for
-message/QR links ends at the credential site, so following a link emits
-`scenario_opened` there as well (verified by tests).
+Events pass through `phisim.simulation.emit` and the shared telemetry service.
+Non-secret catalog evidence includes channel, attack type, local target,
+workflow facts, and indicator flags.
 
-## Shared indicator glossary
+## State and architecture
 
-`INDICATOR_INFO` in `catalog.py` documents every indicator code used
-across artifacts, including the P1-specific ones
-(`personalization`, `spoiled_links`, `invoice_fraud`,
-`attachment_lure`, `mfa_fatigue`, `incident_fear`, `tech_support`,
-`out_of_band`). Outcome pages render these descriptions.
+- `catalog.py` contains typed dataclasses and a cached JSON loader.
+- `lifecycle.py` owns Session cookie/creation/reuse/completion.
+- `state.py` owns a small allowlisted `SimulationRun` state service.
+- `channels/` owns website, email, SMS, QR, MFA, and index routes.
+- `control.py` owns operator launch/filter behavior.
+- `timing.py` owns bounded transition profiles.
+- `evidence.py` maps catalog facts to safe analysis evidence.
+- `emit.py` remains the telemetry boundary.
 
-## Contract expectations
-
-Emit telemetry through the public telemetry boundary.
-
-Do not:
-
--   import SQLAlchemy models directly (simulation writes go through
-    `TelemetryService`)
--   write to SQLite directly
--   modify the analyst console
--   store passwords
--   send real email/SMS
--   use external/real-world domains or organizations
-
-## Design goal
-
-Scenario-specific content is data-driven in `catalog.py` and rendered
-by shared templates. No framework was built for each scenario, and no
-scenario-authoring format was introduced. For the same reason the
-`scenarios/` directory intentionally holds no scenario files yet; the
-typed Python registries are the single source of truth until a shared
-Team 1 scenario registry exists.
+`SimulationRun` contains only server-managed state such as read-message IDs,
+auth stage, MFA step, and safe action labels. It does not contain credential
+values.
 
 ## Security invariants
 
--   every redirect/encoded QR URL resolves to a local path
--   attachments are inert text only (no executable/file payloads)
--   QR codes are generated in-memory as a data URI (no filesystem
-    writes, no static mount required)
--   credentials are only ever checked for presence (field_presence)
--   no external delivery, no persistence of secrets (covered by tests)
+- Every redirect and QR destination is a local path.
+- Catalog identities and hosts use fictional parody brands and reserved
+  `.example`/`.test`/`.invalid` domains.
+- No SMTP, Twilio, Vonage, SNS, browser telemetry, or external assets.
+- No shell/process execution, file download endpoint, or executable payload.
+- Credential metadata is fail-closed and boolean-only.
+- Jinja autoescaping and DOM text APIs remain in use.
+- `StaticFiles` serves only the repository's local `web/static/` directory.
 
-## Dependency rule
+## Tests and manual verification
 
-Satisfied: no third-party dependency was added beyond the project's
-existing `qrcode[pil]` for the QR scenario. No SMTP/Twilio/Vonage/SNS/
-mail providers are involved.
+Simulation tests cover route existence, local redirects, Event ordering,
+credential non-persistence, read/unread state, distinct parody sites, inert
+attachments, QR destinations, MFA transitions, catalog constraints, and static
+assets. Yaak workspace `PhiSim` (`wk_dvBfLUkGqf`) contains the rebuilt local
+request set in folder `PhiSim Rebuild` (`fl_yeDVyHEMhf`) and the existing
+WebSocket request.
