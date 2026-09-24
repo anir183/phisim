@@ -24,12 +24,17 @@ def _open_session(client: TestClient) -> str:
     return session_id
 
 
-def test_index_renders_and_lists_scenario(client: TestClient) -> None:
-    response = client.get("/simulation")
+def test_legacy_simulation_index_redirects_to_scenario_lab(
+    client: TestClient,
+) -> None:
+    response = client.get("/simulation", follow_redirects=False)
 
-    assert response.status_code == 200
-    assert SCENARIO_ID in response.text
-    assert "UniSecure" in response.text
+    assert response.status_code == 307
+    assert response.headers["location"] == "/lab"
+    lab = client.get("/lab")
+    assert lab.status_code == 200
+    assert "Scenario Lab" in lab.text
+    assert "Simulations" not in lab.text
 
 
 def test_login_page_renders_and_assigns_session(

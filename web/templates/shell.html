@@ -19,7 +19,6 @@
         </a>
         <nav class="primary-nav" aria-label="Primary navigation">
           <a href="{{ url_for('scenario_lab') }}" {% if active_page == 'lab' %}aria-current="page"{% endif %}>Scenario Lab</a>
-          <a href="{{ url_for('simulation_index') }}" {% if active_page == 'simulation' %}aria-current="page"{% endif %}>Simulations</a>
           <a href="{{ url_for('console') }}" {% if active_page == 'console' %}aria-current="page"{% endif %}>Analyst Console</a>
         </nav>
       </header>

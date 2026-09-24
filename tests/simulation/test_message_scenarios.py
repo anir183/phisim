@@ -39,17 +39,17 @@ def _target_scenario(artifact_id: str, channel: str) -> str:
     )
 
 
-def test_index_lists_every_channel(client: TestClient) -> None:
-    response = client.get("/simulation")
+def test_legacy_simulation_index_redirects_to_scenario_lab(
+    client: TestClient,
+) -> None:
+    response = client.get("/simulation", follow_redirects=False)
 
-    assert response.status_code == 200
-    assert "/inbox/" in response.text
-    assert "/sms/" in response.text
-    assert "/qr/qr-phish-001" in response.text
-    assert "/mfa/mfa-fatigue-001/1" in response.text
-    assert "/scenario/credential-basic-001" in response.text
-    assert ">website</span>" in response.text
-    assert "Credential Phishing" in response.text
+    assert response.status_code == 307
+    assert response.headers["location"] == "/lab"
+    lab = client.get("/lab")
+    assert lab.status_code == 200
+    assert "Scenario Lab" in lab.text
+    assert "Simulations" not in lab.text
 
 
 @pytest.mark.parametrize("artifact_id,channel,view_path", ARTIFACTS)
