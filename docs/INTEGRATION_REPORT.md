@@ -22,7 +22,7 @@ lab:
 - a text-only, reconnecting analyst console; and
 - fail-closed credential metadata handling with no secret echo or persistence.
 
-The final automated suite contains **117 passing tests**. The required quality
+The final automated suite contains **118 passing tests**. The required quality
 commands all pass. A separate live local-server exercise also completed the
 website, email, SMS, QR, MFA, analysis, WebSocket, console, and security paths.
 No external delivery provider is configured, and no push was made.
@@ -67,10 +67,9 @@ The integration was performed in the existing staging worktree at
 | Team 3 analysis | `feature/team-3` | `6a769c3` | 19 tests passed |
 | Team 4 console | no branch found | — | baseline console was unsafe |
 
-The current branch was 23 commits ahead of `origin/feature/team-1` before
-this report commit; this report is the final documentation commit. The
-working tree has no tracked modifications. The following untracked items
-were present before integration and remain untouched:
+The branch is ahead of `origin/feature/team-1`; all integration commits
+remain local. The working tree has no tracked modifications. The following
+untracked items were present before integration and remain untouched:
 
 - `.opencode/`
 - `opencode.json`
@@ -331,7 +330,7 @@ network request as part of any channel flow.
 
 # 15. Automated Test Coverage
 
-The final suite has 117 tests across platform, telemetry, simulation,
+The final suite has 118 tests across platform, telemetry, simulation,
 analysis, inspection, security, and console areas.
 
 Coverage includes:
@@ -381,7 +380,7 @@ The required commands were run against the final code:
 | Command | Result |
 |---|---|
 | `uv run format` | 79 files already formatted |
-| `uv run test` | 117 passed, 1 warning |
+| `uv run test` | 118 passed, 1 warning |
 | `uv run lint` | passed |
 | `uv run typecheck` | 0 errors, 0 warnings, 0 informations |
 | `uv run check` | all lint, format, type, and test stages passed |
