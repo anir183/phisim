@@ -38,9 +38,16 @@ def test_sms_view_emits_message_open(
     assert [event.event_type for event in events] == ["message_opened"]
     assert events[0].scenario_id == THREAD_ID
     assert events[0].metadata_["channel"] == "sms"
-    assert events[0].metadata_["subject"] == "Techno Main Parcel"
+    assert events[0].metadata_["subject"] == "Northstar Parcel"
     assert events[0].metadata_["content"]
     assert events[0].metadata_["requests_credentials"] is True
+
+    sms_again = client.get("/sms")
+    marker = f'data-thread-id="{THREAD_ID}"'
+    marker_index = sms_again.text.index(marker)
+    item_start = sms_again.text.rfind("<a", 0, marker_index)
+    item_end = sms_again.text.index("</a>", marker_index)
+    assert "unread" not in sms_again.text[item_start:item_end]
 
 
 def test_sms_link_redirects_locally_and_emits_click(
@@ -58,8 +65,8 @@ def test_sms_link_redirects_locally_and_emits_click(
     assert response.history[0].status_code == 302
     location = response.history[0].headers["location"]
     assert location.startswith("http://testserver")
-    assert location.endswith("/scenario/credential-basic-001")
-    assert "Techno Main Salt Lake" in response.text
+    assert location.endswith("/scenario/credential-shopping-001")
+    assert "Amazaun" in response.text
 
     events = _list_events(test_engine, session_id)
     assert [event.event_type for event in events] == [
@@ -68,9 +75,11 @@ def test_sms_link_redirects_locally_and_emits_click(
         "scenario_opened",
     ]
     assert events[1].metadata_["channel"] == "sms"
-    assert events[1].metadata_["target_url"] == "/scenario/credential-basic-001"
-    assert events[1].metadata_["subject"] == "Techno Main Parcel"
-    assert events[-1].scenario_id == "credential-basic-001"
+    assert (
+        events[1].metadata_["target_url"] == "/scenario/credential-shopping-001"
+    )
+    assert events[1].metadata_["subject"] == "Northstar Parcel"
+    assert events[-1].scenario_id == "credential-shopping-001"
     assert all(event.session_id == session_id for event in events)
 
 

@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
         (
             "/scenario/credential-basic-001",
             "credential-basic-001",
-            "Mailbox Quota Exceeded Notice",
+            "Mailbox verification required",
             "website",
         ),
         (
@@ -22,19 +22,19 @@ from fastapi.testclient import TestClient
         (
             "/sms/sms-parcel-001",
             "sms-parcel-001",
-            "Techno Main Parcel",
+            "Northstar Parcel",
             "sms",
         ),
         (
             "/qr/qr-phish-001",
             "qr-phish-001",
-            "Verification Required",
+            "Verify your account",
             "qr",
         ),
         (
             "/mfa/mfa-fatigue-001/1",
             "mfa-fatigue-001",
-            "Approve Sign-In",
+            "Approve sign-in",
             "mfa",
         ),
     ],

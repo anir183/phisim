@@ -29,7 +29,7 @@ def test_index_renders_and_lists_scenario(client: TestClient) -> None:
 
     assert response.status_code == 200
     assert SCENARIO_ID in response.text
-    assert "Techno Main Salt Lake" in response.text
+    assert "UniSecure" in response.text
 
 
 def test_login_page_renders_and_assigns_session(
@@ -40,8 +40,10 @@ def test_login_page_renders_and_assigns_session(
 
     assert response.status_code == 200
     assert 'name="username"' in response.text
-    assert 'name="password"' in response.text
-    assert "Techno Main Salt Lake" in response.text
+    assert response.text.count('class="step-label"') == 2
+    assert response.text.count('class="step-dot"') == 2
+    assert "password" not in response.text
+    assert "UniSecure" in response.text
 
     session_id = response.cookies.get("phisim_session")
     assert session_id
@@ -50,6 +52,49 @@ def test_login_page_renders_and_assigns_session(
     assert [event.event_type for event in events] == ["scenario_opened"]
     assert events[0].scenario_id == SCENARIO_ID
     assert events[0].source == "browser"
+
+
+def test_two_step_website_flow_keeps_credentials_out_of_state(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    opened = client.get(f"/scenario/{SCENARIO_ID}")
+    session_id = opened.cookies.get("phisim_session")
+    assert session_id
+
+    username_step = client.post(
+        f"/scenario/{SCENARIO_ID}/username",
+        data={"username": "fictional-student"},
+        follow_redirects=False,
+    )
+    assert username_step.status_code == 303
+    assert username_step.headers["location"].endswith("/password")
+
+    password_page = client.get(f"/scenario/{SCENARIO_ID}/password")
+    assert password_page.status_code == 200
+    assert 'name="password"' in password_page.text
+
+    secret = "two-step-secret"
+    completed = client.post(
+        f"/scenario/{SCENARIO_ID}/password",
+        data={"password": secret},
+    )
+    assert completed.status_code == 200
+    assert secret not in completed.text
+    assert "training outcome" in completed.text
+
+    events = _list_events(test_engine, session_id)
+    assert [event.event_type for event in events] == [
+        "scenario_opened",
+        "credential_submission_attempted",
+        "scenario_completed",
+    ]
+    submission = events[1]
+    assert submission.metadata_["field_presence"] == {
+        "username": True,
+        "password": True,
+    }
+    assert secret not in json.dumps([event.metadata_ for event in events])
 
 
 def test_unknown_or_traversal_scenario_returns_404(
@@ -93,7 +138,7 @@ def test_credential_submission_emits_safe_event(
     )
 
     assert response.status_code == 200
-    assert "Simulation Complete" in response.text
+    assert "training outcome" in response.text
     assert "hunter2" not in response.text
     assert "student-42" not in response.text
 
@@ -101,9 +146,14 @@ def test_credential_submission_emits_safe_event(
     assert [event.event_type for event in events] == [
         "scenario_opened",
         "credential_submission_attempted",
+        "scenario_completed",
     ]
 
-    submission = events[-1]
+    submission = next(
+        event
+        for event in events
+        if event.event_type == "credential_submission_attempted"
+    )
     assert submission.session_id == session_id
     assert submission.scenario_id == SCENARIO_ID
     assert submission.source == "browser"
@@ -155,8 +205,11 @@ def test_missing_fields_produce_incomplete_event(
     assert response.status_code == 200
 
     events = _list_events(test_engine, session_id)
-    submission = events[-1]
-    assert submission.event_type == "credential_submission_attempted"
+    submission = next(
+        event
+        for event in events
+        if event.event_type == "credential_submission_attempted"
+    )
     assert submission.metadata_["interaction_result"] == "incomplete"
     assert submission.metadata_["field_presence"] == {
         "username": False,

@@ -21,7 +21,18 @@ def test_inbox_renders_and_lists_messages(client: TestClient) -> None:
     assert response.status_code == 200
     assert MESSAGE_ID in response.text
     assert ATTACHMENT_MESSAGE_ID in response.text
-    assert "Fictional Mailbox" in response.text
+    assert "Gemail" in response.text
+
+
+def test_inbox_search_filters_fictional_messages(
+    client: TestClient,
+) -> None:
+    response = client.get("/inbox", params={"q": "capstone"})
+
+    assert response.status_code == 200
+    assert "spear-phish-001" in response.text
+    assert "email-phish-001" not in response.text
+    assert "No fictional messages" not in response.text
 
 
 def test_email_view_assigns_session_and_emits_open(
@@ -32,7 +43,7 @@ def test_email_view_assigns_session_and_emits_open(
 
     assert response.status_code == 200
     assert "verify your mailbox" in response.text
-    assert "techno-main-sl-access.net" in response.text
+    assert "northstar.example" in response.text
 
     session_id = response.cookies.get("phisim_session")
     assert session_id
@@ -47,6 +58,13 @@ def test_email_view_assigns_session_and_emits_open(
     )
     assert events[0].metadata_["content"]
     assert events[0].metadata_["requests_credentials"] is True
+
+    inbox_again = client.get("/inbox")
+    marker = f'data-message-id="{MESSAGE_ID}"'
+    marker_index = inbox_again.text.index(marker)
+    row_start = inbox_again.text.rfind("<a", 0, marker_index)
+    row_end = inbox_again.text.index("</a>", marker_index)
+    assert "unread" not in inbox_again.text[row_start:row_end]
 
 
 def test_email_link_redirects_locally_and_emits_click(
@@ -91,8 +109,8 @@ def test_email_funnel_reaches_credential_site(client: TestClient) -> None:
 
     response = client.get(f"/inbox/{MESSAGE_ID}/link")
     assert response.status_code == 200
-    assert "Techno Main Salt Lake" in response.text
-    assert 'name="password"' in response.text
+    assert "UniSecure" in response.text
+    assert 'name="username"' in response.text
 
 
 def test_attachment_open_is_inert_and_emits_event(
@@ -132,13 +150,32 @@ def test_attachment_open_is_inert_and_emits_event(
     assert attachment.metadata_["content"]
 
 
+def test_attachment_preview_is_inert_and_structured(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    opened = client.get(f"/inbox/{ATTACHMENT_MESSAGE_ID}")
+    session_id = opened.cookies.get("phisim_session")
+    assert session_id
+
+    response = client.get(f"/inbox/{ATTACHMENT_MESSAGE_ID}/attachment/preview")
+
+    assert response.status_code == 200
+    assert "No file downloaded" in response.text
+    assert "Expense_Reimbursement_Form.pdf" in response.text
+    assert "executes" in response.text
+    events = _list_events(test_engine, session_id)
+    assert events[-1].event_type == "attachment_opened"
+    assert events[-1].metadata_["attachment_lure"] is True
+
+
 def test_link_spoofing_displays_distinct_destination(
     client: TestClient,
 ) -> None:
     response = client.get("/inbox/link-spoof-001")
 
     assert response.status_code == 200
-    assert "techno-main.edu/documents/shared" in response.text
+    assert "gemail.example/shared/document" in response.text
     assert "/inbox/link-spoof-001/link" in response.text
 
 

@@ -22,7 +22,7 @@ def test_prompt_page_renders_and_emits_displayed(
     response = client.get(f"/mfa/{SCENARIO_ID}/1")
 
     assert response.status_code == 200
-    assert "Approve sign-in request" in response.text
+    assert "New sign-in approval" in response.text
     assert "Step 1 of 3" in response.text
 
     session_id = response.cookies.get("phisim_session")
@@ -31,7 +31,7 @@ def test_prompt_page_renders_and_emits_displayed(
     events = _list_events(test_engine, session_id)
     assert [event.event_type for event in events] == ["mfa_prompt_displayed"]
     assert events[0].scenario_id == SCENARIO_ID
-    assert events[0].metadata_["channel"] == "website"
+    assert events[0].metadata_["channel"] == "mfa"
     assert events[0].metadata_["step"] == 1
     assert events[0].metadata_["total_steps"] == PROMPT_COUNT
     assert events[0].metadata_["content"]
@@ -57,15 +57,16 @@ def test_approving_prompts_models_fatigue(
         assert (
             response.history[0]
             .headers["location"]
-            .endswith(f"/mfa/{SCENARIO_ID}/{step + 1}")
+            .startswith(f"http://testserver/mfa/{SCENARIO_ID}/{step + 1}")
         )
+        assert "delay=short" in response.history[0].headers["location"]
 
     final = client.post(
         f"/mfa/{SCENARIO_ID}/{PROMPT_COUNT}",
         data={"action": "approve"},
     )
     assert final.status_code == 200
-    assert "Simulation Complete" in final.text
+    assert "MFA practice outcome" in final.text
     assert "MFA fatigue" in final.text
 
     events = _list_events(test_engine, session_id)
@@ -76,12 +77,18 @@ def test_approving_prompts_models_fatigue(
         "mfa_prompt_responded",
         "mfa_prompt_displayed",
         "mfa_prompt_responded",
+        "scenario_completed",
     ]
-    assert events[-1].metadata_["channel"] == "website"
-    assert events[-1].metadata_["step"] == PROMPT_COUNT
-    assert events[-1].metadata_["action"] == "approve"
-    assert events[-1].metadata_["mfa_fatigue"] is True
-    assert events[-1].metadata_["content"]
+    response_event = next(
+        event
+        for event in reversed(events)
+        if event.event_type == "mfa_prompt_responded"
+    )
+    assert response_event.metadata_["channel"] == "mfa"
+    assert response_event.metadata_["step"] == PROMPT_COUNT
+    assert response_event.metadata_["action"] == "approve"
+    assert response_event.metadata_["mfa_fatigue"] is True
+    assert response_event.metadata_["content"]
     assert all(event.session_id == session_id for event in events)
 
 
@@ -100,10 +107,15 @@ def test_denying_prompt_stops_flow(
     assert not response.history
 
     events = _list_events(test_engine, session_id)
-    assert events[-1].metadata_["channel"] == "website"
-    assert events[-1].metadata_["step"] == 1
-    assert events[-1].metadata_["action"] == "deny"
-    assert events[-1].metadata_["content"]
+    response_event = next(
+        event
+        for event in reversed(events)
+        if event.event_type == "mfa_prompt_responded"
+    )
+    assert response_event.metadata_["channel"] == "mfa"
+    assert response_event.metadata_["step"] == 1
+    assert response_event.metadata_["action"] == "deny"
+    assert response_event.metadata_["content"]
 
 
 def test_mfa_rejects_invalid_inputs(client: TestClient) -> None:

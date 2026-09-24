@@ -25,6 +25,20 @@ def _list_events(engine: Engine, session_id: str) -> list[Event]:
         return repository.list_by_session(session_id)
 
 
+def _target_scenario(artifact_id: str, channel: str) -> str:
+    if channel == "email":
+        return next(
+            message.target_scenario_id
+            for message in EMAIL_MESSAGES
+            if message.message_id == artifact_id
+        )
+    return next(
+        thread.target_scenario_id
+        for thread in SMS_THREADS
+        if thread.thread_id == artifact_id
+    )
+
+
 def test_index_lists_every_channel(client: TestClient) -> None:
     response = client.get("/simulation")
 
@@ -69,7 +83,8 @@ def test_every_message_artifact_opens_link_and_stays_local(
     assert followed.history[0].status_code == 302
     location = followed.history[0].headers["location"]
     assert location.startswith("http://testserver")
-    assert location.endswith("/scenario/credential-basic-001")
+    target_scenario_id = _target_scenario(artifact_id, channel)
+    assert location.endswith(f"/scenario/{target_scenario_id}")
 
     events = _list_events(test_engine, session_id)
     assert [event.event_type for event in events] == [
@@ -79,7 +94,9 @@ def test_every_message_artifact_opens_link_and_stays_local(
     ]
     assert events[1].scenario_id == artifact_id
     assert events[1].metadata_["channel"] == channel
-    assert events[1].metadata_["target_url"] == "/scenario/credential-basic-001"
+    assert (
+        events[1].metadata_["target_url"] == f"/scenario/{target_scenario_id}"
+    )
     assert events[1].metadata_["content"]
-    assert events[-1].scenario_id == "credential-basic-001"
+    assert events[-1].scenario_id == target_scenario_id
     assert all(event.session_id == session_id for event in events)

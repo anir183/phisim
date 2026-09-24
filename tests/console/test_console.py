@@ -5,14 +5,18 @@ def test_console_uses_safe_dom_rendering_and_api_contracts(
     client: TestClient,
 ) -> None:
     response = client.get("/console")
+    script = client.get("/static/console.js")
 
     assert response.status_code == 200
+    assert script.status_code == 200
     assert "innerHTML" not in response.text
-    assert "textContent" in response.text
-    assert "replaceChildren" in response.text
-    assert "/api/events/ws" in response.text
-    assert "/api/analysis/sessions/" in response.text
-    assert "Load latest session" in response.text
+    assert "innerHTML" not in script.text
+    assert "textContent" in script.text
+    assert "replaceChildren" in script.text
+    assert "/api/events/ws" in script.text
+    assert "/api/analysis/sessions/" in script.text
+    assert "Sessions" in response.text
+    assert "Event detail" in response.text
     assert "indicator" in response.text
 
 
@@ -39,7 +43,9 @@ def test_console_loads_latest_session_from_shared_api(
     assert session.status_code == 201
 
     response = client.get("/console")
+    script = client.get("/static/console.js")
 
     assert response.status_code == 200
-    assert "/api/sessions" in response.text
-    assert "Session ID" in response.text
+    assert script.status_code == 200
+    assert "/api/sessions" in script.text
+    assert "Session" in response.text
