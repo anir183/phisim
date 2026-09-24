@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from phisim.console.routes import router as console_router
 from phisim.infra.sqlite.connection import initialize_database
@@ -20,6 +22,18 @@ app = FastAPI(
     version="0.0.0",
     lifespan=lifespan,
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_error_handler(
+    _request: Request,
+    _exception: RequestValidationError,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "Invalid request payload."},
+    )
+
 
 app.include_router(scenario_router)
 app.include_router(session_router)

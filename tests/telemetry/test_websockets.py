@@ -1,42 +1,11 @@
-from collections.abc import Generator
+import asyncio
+from typing import cast
+from unittest.mock import AsyncMock
 
-import pytest
+from fastapi import WebSocket
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-from sqlalchemy.pool import StaticPool
 
-from phisim.infra.sqlite.connection import Base, get_session
-from phisim.main import app
-
-
-@pytest.fixture
-def test_engine():
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-
-    Base.metadata.create_all(engine)
-
-    yield engine
-
-    engine.dispose()
-
-
-@pytest.fixture
-def client(test_engine) -> Generator[TestClient]:
-    def override_get_session():
-        with Session(test_engine) as session:
-            yield session
-
-    app.dependency_overrides[get_session] = override_get_session
-
-    with TestClient(app) as test_client:
-        yield test_client
-
-    app.dependency_overrides.clear()
+from phisim.telemetry.websocket import EventConnectionManager
 
 
 def test_event_is_broadcast_to_websocket(
@@ -103,3 +72,51 @@ def test_event_is_broadcast_to_all_websocket_clients(
 
     assert received_one == received_two
     assert received_one["event_id"] == event["event_id"]
+
+
+def test_unsafe_event_metadata_is_not_broadcast(client: TestClient) -> None:
+    with client.websocket_connect("/api/events/ws") as websocket:
+        unsafe_response = client.post(
+            "/api/events",
+            json={
+                "event_id": "event-unsafe-websocket",
+                "session_id": "session-001",
+                "scenario_id": "credential-basic-001",
+                "event_type": "credential_submission_attempted",
+                "source": "browser",
+                "metadata": {"note": "simulated-secret-value"},
+            },
+        )
+        safe_response = client.post(
+            "/api/events",
+            json={
+                "event_id": "event-safe-websocket",
+                "session_id": "session-001",
+                "scenario_id": "credential-basic-001",
+                "event_type": "credential_submission_attempted",
+                "source": "browser",
+                "metadata": {"field_presence": {"password": True}},
+            },
+        )
+        received = websocket.receive_json()
+
+    assert unsafe_response.status_code == 422
+    assert safe_response.status_code == 201
+    assert received["event_id"] == "event-safe-websocket"
+
+
+def test_broadcast_removes_failed_client_and_continues() -> None:
+    connection_manager = EventConnectionManager()
+    failed_mock = AsyncMock()
+    failed_mock.send_json.side_effect = RuntimeError("client disconnected")
+    healthy_mock = AsyncMock()
+    failed_websocket = cast(WebSocket, failed_mock)
+    healthy_websocket = cast(WebSocket, healthy_mock)
+    connection_manager.connections.extend([failed_websocket, healthy_websocket])
+    event = {"event_id": "event-001"}
+
+    asyncio.run(connection_manager.broadcast(event))
+
+    assert len(connection_manager.connections) == 1
+    assert connection_manager.connections[0] is healthy_websocket
+    healthy_mock.send_json.assert_awaited_once_with(event)

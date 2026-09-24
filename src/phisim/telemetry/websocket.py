@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import WebSocket
+from fastapi import WebSocket, WebSocketDisconnect
 
 
 class EventConnectionManager:
@@ -17,7 +17,10 @@ class EventConnectionManager:
 
     async def broadcast(self, event: dict[str, Any]) -> None:
         for websocket in self.connections.copy():
-            await websocket.send_json(event)
+            try:
+                await websocket.send_json(event)
+            except RuntimeError, WebSocketDisconnect:
+                self.disconnect(websocket)
 
 
 manager = EventConnectionManager()

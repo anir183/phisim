@@ -1,13 +1,70 @@
 from datetime import UTC, datetime
 
+from pydantic import ValidationError
+
 from phisim.infra.sqlite.models.event import Event
 from phisim.infra.sqlite.repos.event import EventRepository
-from phisim.telemetry.schemas import EventCreate
+from phisim.telemetry.schemas import CredentialSubmissionMetadata, EventCreate
 from phisim.telemetry.websocket import EventConnectionManager
 
 
 class DuplicateEventError(Exception):
     pass
+
+
+class UnsafeEventMetadataError(Exception):
+    pass
+
+
+_FORBIDDEN_CREDENTIAL_KEYS = frozenset(
+    {
+        "credential",
+        "credentials",
+        "passwd",
+        "password",
+        "password_hash",
+        "passwordhash",
+        "pwd",
+        "raw_credential",
+        "raw_credentials",
+        "rawcredential",
+        "rawcredentials",
+        "user_name",
+        "username",
+    }
+)
+
+
+def _is_safe_field_presence(value: object) -> bool:
+    return isinstance(value, dict) and all(
+        isinstance(field_value, bool) for field_value in value.values()
+    )
+
+
+def _contains_forbidden_credential(value: object) -> bool:
+    if isinstance(value, dict):
+        for key, nested_value in value.items():
+            normalized_key = (
+                str(key).casefold().replace("-", "_").replace(" ", "_")
+            )
+
+            if normalized_key == "field_presence":
+                if not _is_safe_field_presence(nested_value):
+                    return True
+                continue
+
+            if normalized_key in _FORBIDDEN_CREDENTIAL_KEYS:
+                return True
+
+            if _contains_forbidden_credential(nested_value):
+                return True
+
+        return False
+
+    if isinstance(value, list):
+        return any(_contains_forbidden_credential(item) for item in value)
+
+    return False
 
 
 class TelemetryService:
@@ -20,6 +77,15 @@ class TelemetryService:
         self.broadcaster = broadcaster
 
     async def record_event(self, event_data: EventCreate) -> Event:
+        if _contains_forbidden_credential(event_data.metadata):
+            raise UnsafeEventMetadataError
+
+        if event_data.event_type == "credential_submission_attempted":
+            try:
+                CredentialSubmissionMetadata.model_validate(event_data.metadata)
+            except ValidationError:
+                raise UnsafeEventMetadataError from None
+
         if self.repository.get_by_event_id(event_data.event_id) is not None:
             raise DuplicateEventError(event_data.event_id)
 

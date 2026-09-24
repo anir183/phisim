@@ -27,7 +27,7 @@ class EventRepository:
         statement = (
             select(Event)
             .where(Event.session_id == session_id)
-            .order_by(Event.timestamp)
+            .order_by(Event.timestamp, Event.id)
         )
 
         return list(self.session.scalars(statement))
