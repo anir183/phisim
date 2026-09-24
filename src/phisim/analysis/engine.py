@@ -160,6 +160,22 @@ def analyze_event(event: EventResponse) -> list[Indicator]:
     # inferring intent from arbitrary user-provided prose.
     flag_rules = (
         (
+            "authority_impersonation",
+            "social_engineering",
+            "medium",
+            "The artifact presents itself as an authority or trusted role.",
+            "Attackers often impersonate trusted authorities to compel "
+            "compliance.",
+        ),
+        (
+            "urgent_language",
+            "social_engineering",
+            "medium",
+            "The artifact uses urgency or a deadline.",
+            "Urgent deadlines are commonly used to pressure users into making "
+            "hasty decisions.",
+        ),
+        (
             "personalization",
             "social_engineering",
             "medium",
