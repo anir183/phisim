@@ -39,10 +39,10 @@ unusual_mfa_request
 
 ## Phase 1
 
--   [ ] scenario-aware indicator rules
--   [ ] session-level aggregation
--   [ ] inspection/timeline explanation
--   [ ] console-ready analysis results
+-   [x] scenario-aware indicator rules
+-   [x] session-level aggregation
+-   [x] inspection/timeline explanation
+-   [x] console-ready analysis results
 
 ## Rules
 
