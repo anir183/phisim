@@ -1,40 +1,42 @@
-{% extends "base.html" %}
+{% extends "simulation/base.html" %}
 
-{% block title %}Fictional Mailbox{% endblock %}
+{% block title %}Gemail · Inbox{% endblock %}
 
-{% block content %}
-  <section class="card" aria-labelledby="mailbox-title">
-    <header class="login-header">
-      <div class="org-mark" aria-hidden="true">M</div>
-      <div>
-        <h1 id="mailbox-title" class="page-title">Fictional Mailbox</h1>
-        <p class="hint">Inbound messages for the local simulation</p>
+{% block page_class %}page-frame{% endblock %}
+
+{% block simulation_content %}
+  <section class="surface fake-app-layout" aria-labelledby="gemail-title">
+    <aside class="fake-sidebar" aria-label="Gemail folders">
+      <h2>Mailbox</h2>
+      <a href="{{ url_for('inbox') }}" aria-current="page">Inbox <span class="badge badge-accent">{{ messages|selectattr('unread')|list|length }}</span></a>
+      <a href="# starred">Starred</a>
+      <a href="# drafts">Drafts</a>
+      <a href="# archive">Archive</a>
+    </aside>
+    <div class="fake-content">
+      <div class="fake-toolbar">
+        <div>
+          <h1 id="gemail-title">Inbox</h1>
+          <p class="help-text">Northstar University · fictional Gemail workspace</p>
+        </div>
+        <form method="get" action="{{ url_for('inbox') }}" role="search">
+          <input class="search-box" type="search" name="q" value="{{ search_query }}" placeholder="Search mail" aria-label="Search fictional mail" />
+        </form>
       </div>
-    </header>
-
-    <div class="scenario-list">
-      {% for message in messages %}
-        <article class="scenario-row">
-          <div>
-            <h2 class="scenario-name">{{ message.subject }}</h2>
-            <p class="hint">
-              {{ message.sender_label }} &middot; {{ message.organization }}
-            </p>
-          </div>
-          <a
-            class="btn"
-            href="{{ url_for('email_view', message_id=message.message_id) }}"
-          >
-            Open
+      <div class="message-list">
+        {% for message in messages %}
+          <a class="message-row {% if message.unread %}unread{% endif %}" data-message-id="{{ message.message_id }}" href="{{ url_for('email_view', message_id=message.message_id) }}">
+            <span class="message-sender">{{ message.sender_label }}</span>
+            <span class="message-subject">{{ message.subject }}</span>
+            <span class="message-preview">{{ message.preview }}</span>
+            <span class="message-time">{{ message.timestamp[11:16] }} UTC</span>
           </a>
-        </article>
-      {% else %}
-        <p>No simulated messages.</p>
-      {% endfor %}
+        {% else %}
+          <div class="empty-state"><div><strong>Inbox zero</strong><p>No fictional messages are available.</p></div></div>
+        {% endfor %}
+      </div>
     </div>
   </section>
 {% endblock %}
 
-{% block footer %}
-  All messages shown here are fictional and delivered nowhere.
-{% endblock %}
+{% block simulation_footer %}Fictional Gemail training workspace · messages are rendered locally and delivered nowhere.{% endblock %}

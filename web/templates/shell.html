@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}PhiSim{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='phisim.css') }}" />
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand-lockup" href="{{ url_for('scenario_lab') }}">
+          <span class="brand-mark" aria-hidden="true">PS</span>
+          <span>
+            PhiSim
+            <span class="brand-subtitle">Local security lab</span>
+          </span>
+        </a>
+        <nav class="primary-nav" aria-label="Primary navigation">
+          <a href="{{ url_for('scenario_lab') }}" {% if active_page == 'lab' %}aria-current="page"{% endif %}>Scenario Lab</a>
+          <a href="{{ url_for('simulation_index') }}" {% if active_page == 'simulation' %}aria-current="page"{% endif %}>Simulations</a>
+          <a href="{{ url_for('console') }}" {% if active_page == 'console' %}aria-current="page"{% endif %}>Analyst Console</a>
+        </nav>
+      </header>
+      <div class="safety-strip">
+        <span aria-hidden="true">●</span>
+        Fictional local simulation · no credentials, delivery providers, or external targets
+      </div>
+      {% block content %}{% endblock %}
+    </div>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

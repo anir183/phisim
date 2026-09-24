@@ -1,428 +1,90 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PhiSim Security Console</title>
-    <style>
-      :root {
-        color-scheme: dark;
-        font-family: system-ui, sans-serif;
-        background: #111;
-        color: #eee;
-      }
+{% extends "shell.html" %}
 
-      body {
-        margin: 0;
-        background: #111;
-        color: #eee;
-      }
+{% block title %}Analyst Console · PhiSim{% endblock %}
 
-      header {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #333;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: 1.25rem;
-      }
-
-      .toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: end;
-        gap: 0.6rem;
-        margin-top: 1rem;
-      }
-
-      label {
-        display: grid;
-        gap: 0.25rem;
-        color: #bbb;
-        font-size: 0.8rem;
-      }
-
-      input {
-        min-width: 19rem;
-        padding: 0.5rem;
-        border: 1px solid #555;
-        border-radius: 4px;
-        background: #181818;
-        color: #eee;
-        font: inherit;
-      }
-
-      button {
-        padding: 0.55rem 0.8rem;
-        border: 1px solid #666;
-        border-radius: 4px;
-        background: #242424;
-        color: #eee;
-        cursor: pointer;
-        font: inherit;
-      }
-
-      button:hover,
-      button:focus-visible {
-        background: #333;
-      }
-
-      #status {
-        margin-top: 0.8rem;
-        color: #aaa;
-        font-size: 0.85rem;
-      }
-
-      #status[data-tone="error"] {
-        color: #ff9d9d;
-      }
-
-      #status[data-tone="success"] {
-        color: #9fe6a5;
-      }
-
-      main {
-        padding: 1rem 1.5rem 2rem;
-      }
-
-      #summary {
-        margin: 0 0 1rem;
-        color: #aaa;
-        font-size: 0.9rem;
-      }
-
-      #events {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      #empty {
-        margin: 2rem 0;
-        color: #888;
-      }
-
-      .event {
-        padding: 0.85rem;
-        border: 1px solid #3b3b3b;
-        border-radius: 6px;
-        background: #181818;
-      }
-
-      .event-header,
-      .context {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem 1.25rem;
-      }
-
-      .event-header {
-        justify-content: space-between;
-      }
-
-      .event-type {
-        font-weight: 650;
-      }
-
-      .timestamp,
-      .context,
-      #summary {
-        color: #999;
-        font-size: 0.8rem;
-      }
-
-      .context {
-        margin-top: 0.65rem;
-      }
-
-      .context strong {
-        color: #ccc;
-        font-weight: 500;
-      }
-
-      .indicators {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.4rem;
-        margin: 0.75rem 0 0;
-        padding: 0;
-        list-style: none;
-      }
-
-      .indicator {
-        padding: 0.25rem 0.45rem;
-        border: 1px solid #795b00;
-        border-radius: 999px;
-        color: #ffe08a;
-        font-size: 0.75rem;
-      }
-
-      pre {
-        margin: 0.75rem 0 0;
-        overflow-x: auto;
-        color: #bbb;
-        font-size: 0.78rem;
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1>PhiSim Security Console</h1>
-      <div class="toolbar">
-        <label for="session-id">
-          Session ID
-          <input id="session-id" name="session-id" autocomplete="off" />
-        </label>
-        <button id="load-session" type="button">Load session</button>
-        <button id="load-latest" type="button">Load latest session</button>
-        <button id="clear-events" type="button">Clear view</button>
+{% block content %}
+  <main class="page-frame analyst-frame">
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow">Analyst workspace</p>
+        <h1>What happened?</h1>
+        <p class="hero-copy">Review local training sessions, meaningful interactions, and explainable indicators without accessing the database directly.</p>
       </div>
-      <div id="status" role="status" aria-live="polite">Connecting…</div>
+      <div class="row" id="connection-state"><span class="badge badge-warning">Connecting…</span></div>
     </header>
-    <main>
-      <p id="summary">No session selected.</p>
-      <p id="empty">Waiting for telemetry…</p>
-      <section id="events" aria-live="polite" aria-label="Telemetry events"></section>
-    </main>
-    <script>
-      "use strict";
 
-      const status = document.getElementById("status");
-      const summary = document.getElementById("summary");
-      const empty = document.getElementById("empty");
-      const eventsElement = document.getElementById("events");
-      const sessionInput = document.getElementById("session-id");
-      const loadSessionButton = document.getElementById("load-session");
-      const loadLatestButton = document.getElementById("load-latest");
-      const clearButton = document.getElementById("clear-events");
+    <section class="surface analyst-toolbar" aria-label="Console filters">
+      <div class="form-field">
+        <label for="session-filter">Session</label>
+        <select id="session-filter">
+          <option value="">Choose a session</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="channel-filter">Channel</label>
+        <select id="channel-filter">
+          <option value="">All channels</option>
+          <option value="website">Website</option>
+          <option value="email">Email</option>
+          <option value="sms">SMS</option>
+          <option value="qr">QR</option>
+          <option value="mfa">MFA</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="indicator-filter">Indicator</label>
+        <select id="indicator-filter">
+          <option value="">All indicators</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button id="refresh-console" type="button">Refresh</button>
+        <button id="clear-console" class="button-secondary" type="button">Clear view</button>
+      </div>
+    </section>
 
-      const state = {
-        sessionId: "",
-        events: new Map(),
-        indicators: new Map(),
-        socket: null,
-        reconnectTimer: null,
-        retryAttempt: 0,
-        stopped: false,
-      };
+    <section class="analyst-layout" aria-label="Analyst event review">
+      <aside class="surface session-panel" aria-labelledby="sessions-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Live context</p>
+            <h2 id="sessions-heading">Sessions</h2>
+          </div>
+          <span id="session-count" class="badge">0</span>
+        </div>
+        <div id="session-list" class="session-list">
+          <div class="loading-state">Loading sessions…</div>
+        </div>
+      </aside>
 
-      function setStatus(message, tone) {
-        status.textContent = message;
-        status.dataset.tone = tone || "neutral";
-      }
+      <section class="surface timeline-panel" aria-labelledby="timeline-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Session-filtered Events</p>
+            <h2 id="timeline-heading">Timeline</h2>
+          </div>
+          <span id="event-count" class="badge">0 events</span>
+        </div>
+        <div id="timeline" class="timeline-list">
+          <div class="empty-state">Select a session to inspect its timeline.</div>
+        </div>
+      </section>
 
-      function text(value) {
-        if (typeof value === "string") return value;
-        if (value === null || value === undefined) return "";
-        return JSON.stringify(value);
-      }
+      <aside class="surface detail-panel" aria-labelledby="detail-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Evidence</p>
+            <h2 id="detail-heading">Event detail</h2>
+          </div>
+        </div>
+        <div id="event-detail" class="detail-content">
+          <div class="empty-state">Select an Event to see its evidence.</div>
+        </div>
+      </aside>
+    </section>
+  </main>
+{% endblock %}
 
-      function addText(parent, tagName, value, className) {
-        const element = document.createElement(tagName);
-        element.textContent = text(value);
-        if (className) element.className = className;
-        parent.appendChild(element);
-        return element;
-      }
-
-      function addContext(parent, label, value) {
-        const wrapper = document.createElement("span");
-        addText(wrapper, "strong", `${label}: `);
-        addText(wrapper, "span", value);
-        parent.appendChild(wrapper);
-      }
-
-      function validEvent(value) {
-        return (
-          value !== null &&
-          typeof value === "object" &&
-          typeof value.event_id === "string" &&
-          typeof value.event_type === "string" &&
-          typeof value.session_id === "string" &&
-          typeof value.scenario_id === "string"
-        );
-      }
-
-      function renderEvent(event, indicators) {
-        const article = document.createElement("article");
-        article.className = "event";
-
-        const header = document.createElement("div");
-        header.className = "event-header";
-        addText(header, "span", event.event_type, "event-type");
-        addText(header, "span", event.timestamp || "", "timestamp");
-        article.appendChild(header);
-
-        const context = document.createElement("div");
-        context.className = "context";
-        addContext(context, "Event", event.event_id || "");
-        addContext(context, "Scenario", event.scenario_id || "");
-        addContext(context, "Session", event.session_id || "");
-        addContext(context, "Source", event.source || "");
-        article.appendChild(context);
-
-        const indicatorList = document.createElement("ul");
-        indicatorList.className = "indicators";
-        for (const indicator of indicators) {
-          if (!indicator || typeof indicator.code !== "string") continue;
-          addText(indicatorList, "li", indicator.code, "indicator");
-        }
-        article.appendChild(indicatorList);
-
-        const metadata = document.createElement("pre");
-        metadata.textContent = JSON.stringify(event.metadata || {}, null, 2);
-        article.appendChild(metadata);
-        return article;
-      }
-
-      function renderEvents() {
-        eventsElement.replaceChildren();
-        const events = Array.from(state.events.values()).sort((left, right) => {
-          const leftTime = Date.parse(left.timestamp || "") || 0;
-          const rightTime = Date.parse(right.timestamp || "") || 0;
-          return rightTime - leftTime;
-        });
-        for (const event of events) {
-          const indicators = state.indicators.get(event.event_id) || event.indicators || [];
-          eventsElement.appendChild(renderEvent(event, indicators));
-        }
-        empty.hidden = events.length > 0;
-        if (state.sessionId) {
-          summary.textContent = `${events.length} event(s) for session ${state.sessionId}.`;
-        } else {
-          summary.textContent = `${events.length} live event(s); select a session to filter.`;
-        }
-      }
-
-      function rememberEvent(event) {
-        if (!validEvent(event)) return false;
-        if (state.sessionId && event.session_id !== state.sessionId) return false;
-        state.events.set(event.event_id, event);
-        if (Array.isArray(event.indicators)) {
-          state.indicators.set(event.event_id, event.indicators);
-        }
-        renderEvents();
-        return true;
-      }
-
-      async function getJson(url) {
-        const response = await fetch(url, { headers: { Accept: "application/json" } });
-        if (!response.ok) throw new Error(`Request failed (${response.status})`);
-        return response.json();
-      }
-
-      async function loadSession() {
-        const sessionId = sessionInput.value.trim();
-        if (!sessionId) {
-          setStatus("Enter a Session ID first.", "error");
-          return;
-        }
-        state.sessionId = sessionId;
-        state.events.clear();
-        state.indicators.clear();
-        setStatus("Loading session…");
-        try {
-          const encoded = encodeURIComponent(sessionId);
-          const [events, analysis] = await Promise.all([
-            getJson(`/api/events?session_id=${encoded}`),
-            getJson(`/api/analysis/sessions/${encoded}`),
-          ]);
-          if (!Array.isArray(events) || !analysis || !Array.isArray(analysis.timeline)) {
-            throw new Error("Unexpected response");
-          }
-          for (const entry of analysis.timeline) {
-            if (entry && typeof entry.event_id === "string") {
-              state.indicators.set(entry.event_id, entry.indicators || []);
-            }
-          }
-          for (const event of events) rememberEvent(event);
-          setStatus("Session loaded; live updates remain connected.", "success");
-        } catch (_error) {
-          setStatus("Unable to load that Session.", "error");
-        }
-      }
-
-      async function loadLatestSession() {
-        setStatus("Looking for the latest Session…");
-        try {
-          const sessions = await getJson("/api/sessions");
-          if (!Array.isArray(sessions) || sessions.length === 0) {
-            setStatus("No Sessions are available yet.", "error");
-            return;
-          }
-          const latest = sessions[sessions.length - 1];
-          sessionInput.value = latest.session_id || "";
-          await loadSession();
-        } catch (_error) {
-          setStatus("Unable to load Sessions.", "error");
-        }
-      }
-
-      function scheduleReconnect() {
-        if (state.stopped || state.reconnectTimer !== null) return;
-        if (state.retryAttempt >= 8) {
-          setStatus("Reconnect limit reached; use Reload to try again.", "error");
-          return;
-        }
-        const delay = Math.min(30000, 1000 * (2 ** state.retryAttempt));
-        state.retryAttempt += 1;
-        state.reconnectTimer = window.setTimeout(() => {
-          state.reconnectTimer = null;
-          connect();
-        }, delay);
-      }
-
-      function connect() {
-        if (state.stopped) return;
-        if (state.socket && (state.socket.readyState === WebSocket.OPEN || state.socket.readyState === WebSocket.CONNECTING)) return;
-        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        const socket = new WebSocket(`${protocol}//${window.location.host}/api/events/ws`);
-        state.socket = socket;
-        socket.addEventListener("open", () => {
-          state.retryAttempt = 0;
-          setStatus("Connected to live telemetry.", "success");
-        });
-        socket.addEventListener("message", (message) => {
-          try {
-            const event = JSON.parse(message.data);
-            if (!rememberEvent(event)) {
-              setStatus("Ignored an event for another Session or malformed payload.", "error");
-            }
-          } catch (_error) {
-            setStatus("Ignored a malformed WebSocket message.", "error");
-          }
-        });
-        socket.addEventListener("error", () => {
-          setStatus("WebSocket connection error; retrying when possible.", "error");
-        });
-        socket.addEventListener("close", () => {
-          if (state.socket === socket) state.socket = null;
-          setStatus("Disconnected; retrying when possible.", "error");
-          scheduleReconnect();
-        });
-      }
-
-      loadSessionButton.addEventListener("click", loadSession);
-      loadLatestButton.addEventListener("click", loadLatestSession);
-      clearButton.addEventListener("click", () => {
-        state.events.clear();
-        state.indicators.clear();
-        renderEvents();
-        setStatus("View cleared; live telemetry is still connected.");
-      });
-      sessionInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") loadSession();
-      });
-      window.addEventListener("beforeunload", () => {
-        state.stopped = true;
-        if (state.reconnectTimer !== null) window.clearTimeout(state.reconnectTimer);
-        if (state.socket) state.socket.close();
-      });
-
-      connect();
-    </script>
-  </body>
-</html>
+{% block scripts %}
+  <script src="{{ url_for('static', path='console.js') }}" defer></script>
+{% endblock %}

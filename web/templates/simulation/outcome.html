@@ -1,46 +1,37 @@
-{% extends "base.html" %}
+{% extends "simulation/base.html" %}
 
-{% block title %}Simulation Complete &middot; {{ scenario.organization }}{% endblock %}
+{% block title %}Training outcome · {{ scenario.brand }}{% endblock %}
 
-{% block content %}
-  <section class="card" aria-labelledby="outcome-title">
-    <header class="login-header">
-      <div class="org-mark ok-mark" aria-hidden="true">&check;</div>
+{% block simulation_content %}
+  <section class="surface outcome-card" aria-labelledby="outcome-title">
+    <div class="row-between">
       <div>
-        <h1 id="outcome-title" class="page-title">Simulation Complete</h1>
-        <p class="hint">Phishing awareness outcome</p>
+        <p class="eyebrow">Simulation complete</p>
+        <h1 id="outcome-title">You reached the training outcome</h1>
       </div>
-    </header>
-
-    <div class="ok-banner">
-      <strong>Nothing you typed here was stored or sent anywhere.</strong>
-      This page pretended to be <strong>{{ scenario.organization }}</strong> to
-      demonstrate how a phishing login page works. It is a fictional, local
-      simulation, and any credentials entered were discarded on submission.
+      <span class="badge badge-success">Safe local run</span>
     </div>
-
-    <h2 class="section-title">Why this page was suspicious</h2>
-    <ul class="indicator-list">
+    <div class="notice notice-success" style="margin-top: 1.25rem">
+      Nothing you typed was stored, sent, or added to an account. This
+      fictional {{ scenario.brand }} page demonstrated a {{ scenario.attack_type|replace('_', ' ') }} workflow.
+    </div>
+    <h2 style="margin-top: 1.5rem">Why this flow was suspicious</h2>
+    <ul class="evidence-list">
       {% for code in scenario.indicators %}
-        <li>
-          <strong>{{ code }}</strong> &mdash;
-          {{ indicator_info.get(code, "Unrecognized indicator.") }}
-        </li>
+        <li><strong>{{ code|replace('_', ' ')|title }}</strong>{{ indicator_info.get(code, "An additional training observation.") }}</li>
       {% endfor %}
     </ul>
-
-    <h2 class="section-title">Safe habits to keep</h2>
-    <ul class="steps">
-      <li>Check the browser address bar before signing in anywhere.</li>
-      <li>Open important links from the official site rather than a message.</li>
-      <li>Treat unsolicited urgency as a warning sign.</li>
-      <li>Report suspicious messages instead of acting on them.</li>
+    <h2 style="margin-top: 1.5rem">Safe habits</h2>
+    <ul class="evidence-list">
+      <li><strong>Check the destination</strong>Use the official app or site instead of a message link.</li>
+      <li><strong>Slow down urgency</strong>Deadlines and security warnings are common pressure tactics.</li>
+      <li><strong>Report safely</strong>Do not forward credentials or reply with sensitive information.</li>
     </ul>
-
-    <a class="btn" href="{{ url_for('simulation_index') }}">
-      Back to simulation list
-    </a>
+    <div class="form-actions" style="margin-top: 1.5rem">
+      <a class="button" href="{{ url_for('simulation_index') }}">Choose another scenario</a>
+      <a class="button button-secondary" href="{{ url_for('console') }}">Open analyst console</a>
+    </div>
   </section>
 {% endblock %}
 
-{% block footer %}{{ scenario.reminder }}{% endblock %}
+{% block simulation_footer %}{{ scenario.reminder }}{% endblock %}

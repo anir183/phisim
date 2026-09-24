@@ -1,45 +1,46 @@
-{% extends "base.html" %}
+{% extends "simulation/base.html" %}
 
-{% block title %}{{ thread.sender_label }} &middot; Fictional Messaging{% endblock %}
+{% block title %}{{ thread.sender_label }} · QuickChat{% endblock %}
 
-{% block content %}
-  <section class="card" aria-labelledby="thread-title">
-    <header class="login-header">
-      <div class="org-mark" aria-hidden="true">S</div>
-      <div>
-        <h1 id="thread-title" class="page-title">{{ thread.sender_label }}</h1>
-        <p class="hint">
-          {{ thread.sender_number }} &middot; {{ thread.organization }}
-        </p>
+{% block simulation_content %}
+  <section class="surface conversation-layout" aria-labelledby="thread-title">
+    <aside class="conversation-list" aria-label="QuickChat conversations">
+      <div class="conversation-list-header">
+        <a class="button button-quiet" href="{{ url_for('sms_inbox') }}">← All chats</a>
+        <h1 id="thread-title" style="margin-top: 0.8rem">QuickChat</h1>
       </div>
-    </header>
-
-    {% if thread.spoofed_url %}
-      <div class="urgency-banner" role="note">
-        <strong>Look closely before tapping.</strong>
-        The link shows {{ thread.spoofed_url }} but its real destination is a
-        local simulation route.
+      <a class="conversation-item" href="{{ url_for('sms_view', thread_id=thread.thread_id) }}" aria-current="page">
+        <div class="row-between"><strong>{{ thread.sender_label }}</strong><span class="kicker">{{ thread.timestamp[11:16] }}</span></div>
+        <span>{{ thread.sender_number }}</span>
+        <span>{{ thread.messages[-1] }}</span>
+      </a>
+    </aside>
+    <div class="chat-panel">
+      <header class="chat-header">
+        <div>
+          <h2>{{ thread.sender_label }}</h2>
+          <span class="help-text">{{ thread.sender_number }} · {{ thread.organization }}</span>
+        </div>
+        <span class="badge badge-success">Local chat</span>
+      </header>
+      <div class="chat-messages" role="log" aria-label="Message history">
+        {% for text in thread.messages %}
+          <div class="chat-bubble">
+            {{ text }}
+            <span class="chat-time">{{ thread.timestamp[11:16] }} UTC</span>
+          </div>
+        {% endfor %}
+        <div class="chat-bubble">
+          <a href="{{ url_for('sms_link', thread_id=thread.thread_id) }}">{{ thread.link_label }}</a>
+          <span class="chat-time">Local link</span>
+        </div>
+        {% if thread.typing_delay_ms %}<span class="typing-indicator">Sender is typing</span>{% endif %}
       </div>
-    {% endif %}
-
-    <div class="sms-thread">
-      {% for text in thread.messages %}
-        <div class="sms-bubble">{{ text }}</div>
-      {% endfor %}
-      <div class="sms-bubble">
-        <a
-          href="{{ url_for('sms_link', thread_id=thread.thread_id) }}"
-        >
-          {{ thread.link_label }}
-        </a>
+      <div style="border-top: 1px solid var(--line); padding: 0.9rem 1.2rem">
+        <div class="notice notice-warning">{{ thread.messages[0] }} This conversation is a local training artifact and sends nothing.</div>
       </div>
     </div>
-
-    <p class="hint">
-      The link above is a local simulation route; it never leaves this
-      machine.
-    </p>
   </section>
 {% endblock %}
 
-{% block footer %}{{ thread.reminder }}{% endblock %}
+{% block simulation_footer %}{{ thread.reminder }}{% endblock %}

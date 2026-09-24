@@ -1,61 +1,59 @@
-{% extends "base.html" %}
+{% extends "simulation/base.html" %}
 
-{% block title %}{{ message.subject }} &middot; {{ message.organization }}{% endblock %}
+{% block title %}{{ message.subject }} · Gemail{% endblock %}
 
-{% block content %}
-  <section class="card" aria-labelledby="email-title">
-    <header class="login-header">
-      <div class="org-mark" aria-hidden="true">@</div>
-      <div>
-        <h1 id="email-title" class="page-title">{{ message.subject }}</h1>
-        <p class="hint">
-          From: {{ message.sender_label }} &lt;{{ message.sender_address }}&gt;
-        </p>
-        <p class="hint">To: recipient &lt;yourname{{ '@' }}techno-main.edu&gt;</p>
+{% block simulation_content %}
+  <div class="fake-app-bar">
+    <div class="fake-app-brand"><span class="brand-mark" aria-hidden="true">G</span><span>Gemail</span></div>
+    <div class="inline-actions"><span class="badge badge-success">Local simulation</span><a class="button button-secondary" href="{{ url_for('inbox') }}">Back to inbox</a></div>
+  </div>
+  <article class="message-detail" style="margin-top: 1.25rem" aria-labelledby="email-subject">
+    <header class="message-detail-header">
+      <div class="row-between">
+        <span class="badge badge-accent">{{ message.attack_type|replace('_', ' ') }}</span>
+        <span class="kicker">{{ message.timestamp }}</span>
+      </div>
+      <h1 id="email-subject">{{ message.subject }}</h1>
+      <div class="message-meta">
+        <span><strong>From</strong> {{ message.sender_label }} &lt;{{ message.sender_address }}&gt;</span>
+        <span><strong>To</strong> {{ message.recipient }}</span>
+        <span><strong>Folder</strong> {{ message.folder }}</span>
       </div>
     </header>
 
     {% if message.spoofed_url %}
-      <div class="urgency-banner" role="note">
-        <strong>Look closely before clicking.</strong>
-        The link on this page shows
-        <span class="host-display">{{ message.spoofed_url }}</span> but the
-        real destination is a local simulation route.
+      <div class="notice notice-warning">
+        <strong>Link identity check:</strong>
+        the message displays <span class="host-display">{{ message.spoofed_url }}</span>,
+        but this training link resolves to a local {{ message.target_scenario_id }} route.
       </div>
     {% endif %}
 
-    <p class="message-body">{{ message.body }}</p>
+    <div class="message-body">{{ message.body }}</div>
 
     {% if message.attachment_name %}
-      <div class="attachment">
-        <p class="attachment-name">{{ message.attachment_name }}</p>
-        {% if message.attachment_preview %}
-          <p class="hint">{{ message.attachment_preview }}</p>
-        {% endif %}
-        <a
-          class="btn"
-          href="{{ url_for('email_attachment', message_id=message.message_id) }}"
-        >
-          Open attachment
-        </a>
-      </div>
+      <section class="attachment-card" aria-labelledby="attachment-title">
+        <div class="row">
+          <span class="attachment-icon" aria-hidden="true">DOC</span>
+          <div>
+            <div id="attachment-title" class="attachment-name">{{ message.attachment_name }}</div>
+            <div class="help-text">{{ message.attachment_preview }}</div>
+          </div>
+        </div>
+        <a class="button button-secondary" href="{{ url_for('email_attachment_preview', message_id=message.message_id) }}">Preview safely</a>
+      </section>
     {% endif %}
 
-    <div class="channel-row">
-      <a
-        class="btn"
-        href="{{ url_for('email_link', message_id=message.message_id) }}"
-      >
-        {{ message.link_label }}
-      </a>
+    <div class="message-actions">
+      <a class="button" href="{{ url_for('email_link', message_id=message.message_id) }}">{{ message.link_label }}</a>
+      <a class="button button-secondary" href="{{ url_for('inbox') }}">Return to inbox</a>
     </div>
 
-    <p class="hint link-hint">
-      The link above is a local simulation route; it never leaves this
-      machine. This simulated mailbox is served by:
-      <span class="host-display">{{ message.host }}</span>
-    </p>
-  </section>
+    <div class="notice">
+      This message is part of a fictional Gemail training workspace. The link
+      above remains on this local application and no account is contacted.
+    </div>
+  </article>
 {% endblock %}
 
-{% block footer %}{{ message.reminder }}{% endblock %}
+{% block simulation_footer %}{{ message.reminder }}{% endblock %}

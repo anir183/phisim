@@ -39,6 +39,8 @@ entrypoint = "phisim.main:app"
 only-include = [
     "src/phisim",
     "scripts",
+    "web",
+    "scenarios",
 ]
 sources = [
     "src",

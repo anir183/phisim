@@ -1,40 +1,29 @@
-{% extends "base.html" %}
+{% extends "simulation/base.html" %}
 
-{% block title %}Fictional Messaging{% endblock %}
+{% block title %}QuickChat · Conversations{% endblock %}
 
-{% block content %}
-  <section class="card" aria-labelledby="sms-title">
-    <header class="login-header">
-      <div class="org-mark" aria-hidden="true">S</div>
-      <div>
-        <h1 id="sms-title" class="page-title">Fictional Messaging</h1>
-        <p class="hint">Simulated text conversations</p>
+{% block simulation_content %}
+  <section class="surface conversation-layout" aria-labelledby="quickchat-title">
+    <aside class="conversation-list" aria-label="QuickChat conversations">
+      <div class="conversation-list-header">
+        <div class="row-between"><h1 id="quickchat-title">QuickChat</h1><span class="badge badge-accent">{{ threads|length }}</span></div>
+        <p class="help-text">Fictional conversations</p>
       </div>
-    </header>
-
-    <div class="scenario-list">
       {% for thread in threads %}
-        <article class="scenario-row">
-          <div>
-            <h2 class="scenario-name">{{ thread.sender_label }}</h2>
-            <p class="hint">
-              {{ thread.sender_number }} &middot; {{ thread.organization }}
-            </p>
-          </div>
-          <a
-            class="btn"
-            href="{{ url_for('sms_view', thread_id=thread.thread_id) }}"
-          >
-            Open conversation
-          </a>
-        </article>
+        <a class="conversation-item" data-thread-id="{{ thread.thread_id }}" href="{{ url_for('sms_view', thread_id=thread.thread_id) }}">
+          <div class="row-between"><strong>{{ thread.sender_label }}</strong><span class="kicker">{{ thread.timestamp[11:16] }}</span></div>
+          <span>{{ thread.sender_number }}</span>
+          <span>{{ thread.messages[-1] }}</span>
+          {% if thread.unread %}<span class="badge badge-accent">{{ thread.unread }} unread</span>{% endif %}
+        </a>
       {% else %}
-        <p>No simulated conversations.</p>
+        <div class="empty-state">No conversations.</div>
       {% endfor %}
+    </aside>
+    <div class="fake-content">
+      <div class="empty-state"><div><strong>Select a conversation</strong><p>Choose a fictional sender to view the local message history.</p></div></div>
     </div>
   </section>
 {% endblock %}
 
-{% block footer %}
-  All conversations shown here are fictional and sent nowhere.
-{% endblock %}
+{% block simulation_footer %}Fictional QuickChat training workspace · no phone number is contacted.{% endblock %}
