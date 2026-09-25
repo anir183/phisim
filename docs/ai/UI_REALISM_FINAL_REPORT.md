@@ -210,7 +210,9 @@ The work was split into atomic commits, in order:
 - `bd4122f` — victim applications own their product chrome;
 - `34ebff3` — terminal artifact details close safely;
 - `745aa2f` — portal layout, Lab contrast, and control hover fixes;
-- `d6b337d` and `88d97ce` — QuickChat typing removal and regression tests.
+- `d6b337d` and `88d97ce` — QuickChat typing removal and regression tests;
+- `b916694` — regression report update;
+- `9358c9e` — Gmail toolbar hover contrast follow-up.
 
 No push was performed.
 
