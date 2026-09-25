@@ -243,8 +243,8 @@ The work was split into atomic commits, in order:
 - `9358c9e` — Gmail toolbar hover contrast follow-up;
 - `68f39c0` — live Lab dashboard endpoint and refresh script;
 - `4ba9314` — resilient victim, Lab status, and Console polling;
-- destination-state follow-up — product destinations before explicit reveal,
-  expanded route coverage, and live Lab phase reporting.
+- `01afb1e` — destination-state follow-up: product destinations before
+  explicit reveal, expanded route coverage, and live Lab phase reporting.
 
 No push was performed.
 
