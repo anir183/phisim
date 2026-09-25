@@ -278,6 +278,36 @@ def _validate_target_role(summary: CatalogSummary, value: str) -> str:
     return value
 
 
+def _session_payload(session) -> dict[str, object]:
+    return {
+        "session_id": session.session_id,
+        "scenario_id": session.scenario_id,
+        "started_at": serialize_utc_datetime(session.started_at),
+        "completed_at": (
+            serialize_utc_datetime(session.completed_at)
+            if session.completed_at
+            else None
+        ),
+        "status": session.status,
+    }
+
+
+@router.get("/api/lab/dashboard")
+async def lab_dashboard(
+    database_session: Annotated[OrmSession, Depends(get_session)],
+) -> dict[str, object]:
+    """Return fresh Lab state without forcing a full-page refresh."""
+    attack_repository = SimulationAttackRepository(database_session)
+    for attack in attack_repository.list_recent(limit=5):
+        await _refresh_attack_delivery(database_session, attack)
+    attacks = attack_repository.list_recent(limit=5)
+    sessions = SessionRepository(database_session).list_recent(limit=5)
+    return {
+        "attacks": [_attack_payload(attack) for attack in attacks],
+        "sessions": [_session_payload(session) for session in sessions],
+    }
+
+
 @router.get("/api/lab/scenarios")
 def list_lab_scenarios(
     attack_type: str | None = Query(default=None, max_length=64),
@@ -375,7 +405,7 @@ async def launch_lab_scenario_api(
 
 
 @router.get("/lab", response_class=HTMLResponse)
-def scenario_lab(
+async def scenario_lab(
     request: Request,
     database_session: Annotated[OrmSession, Depends(get_session)],
     attack_type: str | None = Query(default=None, max_length=64),
@@ -392,10 +422,11 @@ def scenario_lab(
         summaries = tuple(
             summary for summary in summaries if summary.channel == channel
         )
+    attack_repository = SimulationAttackRepository(database_session)
+    for attack in attack_repository.list_recent(limit=5):
+        await _refresh_attack_delivery(database_session, attack)
+    active_attacks = attack_repository.list_recent(limit=5)
     recent_sessions = SessionRepository(database_session).list_recent(limit=5)
-    active_attacks = SimulationAttackRepository(database_session).list_recent(
-        limit=5
-    )
     active_attack_paths = {
         attack.attack_id: _victim_path(
             attack.channel,
