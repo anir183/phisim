@@ -33,7 +33,7 @@ Final result:
 ```text
 121 files already formatted
 0 errors, 0 warnings, 0 informations
-201 passed, 1 existing Starlette/httpx deprecation warning
+202 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The warning is the existing test-client deprecation warning:
@@ -134,8 +134,13 @@ standalone reveal. Lab status exposes the intermediate
 `AWAITING_MANUAL_END` phase.
 
 The destination matrix covers UniSecure, Amazaun, CloudBox, PayMate, Support,
-MAKExam, TechnoSphere, and NimbusID. Submitted values remain absent from the
-destination, state, events, and reveal.
+MAKExam, TechnoSphere, and NimbusID. Each case asserts a product-specific
+destination structure (calendar, shopping feed, files banner, ticket list,
+payment activity, exam grid, or course grid), not only a different heading.
+Submitted values remain absent from the destination, state, events, and reveal.
+
+The step-2 matrix also checks each verification shell and the centered,
+viewport-filling spacing contract.
 
 The baseline `/mail` and `/messages` routes are now covered as branded
 Gemail/QuickChat empty states, and the stylesheet regression checks cover the

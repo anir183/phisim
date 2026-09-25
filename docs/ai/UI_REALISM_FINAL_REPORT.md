@@ -28,7 +28,7 @@ The pass covers:
 - product-specific destination pages after meaningful actions, with an explicit
   `End simulation` transition to the training reveal.
 
-The final automated check passes with **201 tests**. One existing Starlette/
+The final automated check passes with **202 tests**. One existing Starlette/
 httpx test-client deprecation warning remains.
 
 ## Design architecture
@@ -126,7 +126,7 @@ Result:
 ```text
 121 files already formatted
 0 errors, 0 warnings, 0 informations
-201 passed, 1 existing Starlette/httpx deprecation warning
+202 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The dedicated route matrix is in
@@ -176,6 +176,14 @@ live empty states. The standalone product document, destination document,
 legacy application frame, and primary mailbox/messenger panes now flex to the
 available viewport height instead of ending at a short fixed card height.
 
+Destination pages now dispatch to product-specific compositions rather than a
+single recolored card grid. They include an Amazaun shopping feed, CloudBox
+files workspace, Northstar student calendar/dashboard, MAKExam schedule,
+TechnoSphere course home, support ticket list, PayMate invoice activity, and
+NimbusID security center. Each reuses the parent site's navigation, typography,
+palette, and component language.
+
+## Safety and privacy result
 
 - No real credentials or personal data were used.
 - No submitted values are persisted, logged, broadcast, or returned.

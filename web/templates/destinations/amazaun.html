@@ -1,0 +1,15 @@
+<section class="destination-page destination-amazaun amazaun-app" aria-labelledby="destination-title">
+  <header class="amazaun-topbar">
+    <a class="amazaun-wordmark" href="#overview"><span class="amazaun-smile" aria-hidden="true">a</span><span>Amazaun</span></a>
+    <form class="amazaun-search" method="get" action="#overview" role="search"><select aria-label="Search category"><option>All</option><option>Home</option><option>Electronics</option></select><input type="search" placeholder="Search Amazaun" aria-label="Search Amazaun" /><button type="submit" aria-label="Search">⌕</button></form>
+    <div class="amazaun-account"><span>Hello, fictional shopper</span><strong>Account &amp; Lists</strong><span>Returns</span><strong>Orders</strong><b>Cart · 0</b></div>
+  </header>
+  <nav class="amazaun-nav" aria-label="Amazaun categories"><span>☰ All</span><span>Today's deals</span><span>Customer Service</span><span>Registry</span><span>Gift Cards</span><span>Sell</span><strong>Shop deals in Electronics</strong></nav>
+  <main class="amazaun-main" id="overview">
+    <div class="amazaun-breadcrumb"><a href="#overview">Home</a><span>›</span><span>Your marketplace</span></div>
+    <header class="amazaun-destination-heading"><div><p class="amazaun-overline">WELCOME BACK</p><h1 id="destination-title">Your order is confirmed</h1><p>{{ scenario.message }} Your fictional order is now saved to your account.</p></div><a class="amazaun-destination-button" href="#order">View order #1042-991</a></header>
+    <section class="amazaun-destination-order" id="order"><header><div><span class="amazaun-overline">ORDER #1042-991</span><h2>Fictional household essentials</h2><p>Confirmation recorded · Local training order</p></div><span class="amazaun-destination-status">Confirmed</span></header><div class="amazaun-destination-timeline"><span class="done">✓</span><div><strong>Order placed</strong><small>Local marketplace record</small></div><span class="done">✓</span><div><strong>Delivery details saved</strong><small>Address review complete</small></div><span>3</span><div><strong>Ready for packing</strong><small>No carrier is contacted</small></div></div></section>
+    <section class="amazaun-destination-feed"><header><div><p class="amazaun-overline">RECOMMENDED FOR YOU</p><h2>Continue shopping</h2></div><a href="#catalog">See all</a></header><div class="amazaun-destination-products"><article><span class="amazaun-destination-product-art">⌂</span><strong>Home &amp; kitchen</strong><small>Local catalog preview</small><b>Explore →</b></article><article><span class="amazaun-destination-product-art">▣</span><strong>Office essentials</strong><small>Local catalog preview</small><b>Explore →</b></article><article><span class="amazaun-destination-product-art">◈</span><strong>Everyday tech</strong><small>Local catalog preview</small><b>Explore →</b></article></div></section>
+  </main>
+  <footer class="amazaun-footer"><span>© fictional Amazaun Marketplace · order state: {{ scenario.host }}</span>{% if end_url %}{% include "sites/end_control.html" %}{% endif %}</footer>
+</section>

@@ -183,6 +183,9 @@ def test_layout_regressions_keep_portal_chrome_and_light_lab_separate(
     assert ".victim-product-main" in stylesheet.text
     assert ".legacy-shell.mock-site .page-frame" in stylesheet.text
     assert ".destination-main" in stylesheet.text
+    assert ".university-auth-main" in stylesheet.text
+    assert "justify-content: center" in stylesheet.text
+    assert "margin-top: auto" in stylesheet.text
 
     console = client.get("/console")
     assert 'class="lab-body console-body"' in console.text

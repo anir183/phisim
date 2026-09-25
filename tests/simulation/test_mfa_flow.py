@@ -67,7 +67,8 @@ def test_approving_prompts_models_fatigue(
     )
     assert final.status_code == 200
     assert "Sign-in decision saved" in final.text
-    assert "MFA fatigue" not in final.text
+    assert "training-reveal" not in final.text
+    assert "What happened?" not in final.text
 
     completed = client.post(f"/mfa/{SCENARIO_ID}/end")
     assert completed.status_code == 200

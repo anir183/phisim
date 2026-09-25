@@ -8107,6 +8107,7 @@ body.mock-nimbusid,
 .victim-shell.product-document {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   flex-direction: column;
 }
 
@@ -8125,6 +8126,7 @@ body.mock-nimbusid,
 .legacy-shell.mock-site .page-frame {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   flex-direction: column;
 }
 
@@ -8183,5 +8185,1320 @@ body.mock-nimbusid,
   .university-app > .university-layout,
   .cloudbox-app > .cloudbox-layout {
     min-height: 0;
+  }
+}
+
+/* Verification steps keep the product chrome at the top and bottom while the
+   form workspace occupies the available vertical space. */
+.university-auth,
+.exam-auth,
+.support-auth,
+.course-auth,
+.payment-review,
+.amazaun-checkout,
+.cloudbox-verify {
+  display: flex;
+  min-height: 0;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
+.university-auth-main,
+.exam-auth-body,
+.support-auth-main,
+.course-auth-main,
+.payment-review-main,
+.cloudbox-verify-main {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.support-auth-main {
+  min-height: 0;
+}
+
+.amazaun-checkout-card,
+.cloudbox-verify-card {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+@media (max-width: 760px) {
+  .university-auth-main,
+  .exam-auth-body,
+  .support-auth-main,
+  .course-auth-main,
+  .payment-review-main,
+  .cloudbox-verify-main {
+    justify-content: flex-start;
+  }
+
+  .amazaun-checkout-card,
+  .cloudbox-verify-card {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Product-specific destination compositions. */
+.destination-amazaun {
+  background: #f1f2f4;
+}
+
+.amazaun-destination-heading,
+.exam-heading,
+.support-heading,
+.payment-heading,
+.course-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.amazaun-destination-heading {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.25rem;
+  background: #fff;
+}
+
+.amazaun-destination-heading h1 {
+  margin: 0.25rem 0 0;
+  color: #111827;
+  font-size: 1.65rem;
+  letter-spacing: -0.04em;
+}
+
+.amazaun-destination-heading p:not(.amazaun-overline) {
+  max-width: 680px;
+  margin: 0.45rem 0 0;
+  color: #6b7280;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.amazaun-destination-button,
+.exam-destination-status > a,
+.support-destination-actions a,
+.course-destination-welcome > a,
+.university-destination-welcome > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  border-radius: 4px;
+  padding: 0.55rem 0.8rem;
+  background: #fdbd2d;
+  color: #131e36;
+  font-size: 0.7rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.amazaun-destination-order {
+  margin-top: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.amazaun-destination-order > header,
+.amazaun-destination-feed > header,
+.exam-destination-card > header,
+.support-ticket-list > header,
+.support-destination-case > header,
+.payment-destination-overview > header,
+.nimbusid-destination-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+.amazaun-destination-order h2,
+.amazaun-destination-feed h2,
+.exam-destination-card h2,
+.support-ticket-list h2,
+.support-destination-case h2,
+.payment-destination-overview h2,
+.nimbusid-destination-card h2 {
+  margin: 0.25rem 0 0;
+  color: #111827;
+  font-size: 1rem;
+}
+
+.amazaun-destination-order header p,
+.amazaun-destination-order header small {
+  margin: 0.25rem 0 0;
+  color: #6b7280;
+  font-size: 0.7rem;
+}
+
+.amazaun-destination-status,
+.exam-window,
+.support-case-status,
+.payment-hold,
+.nimbusid-destination-status {
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.63rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.amazaun-destination-status {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.amazaun-destination-timeline {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem;
+  padding: 1rem;
+}
+
+.amazaun-destination-timeline > span {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 50%;
+  color: #9ca3af;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.amazaun-destination-timeline > span.done {
+  border-color: #10b981;
+  background: #d1fae5;
+  color: #047857;
+}
+
+.amazaun-destination-timeline div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.amazaun-destination-timeline strong {
+  color: #374151;
+  font-size: 0.7rem;
+}
+
+.amazaun-destination-timeline small {
+  color: #9ca3af;
+  font-size: 0.61rem;
+}
+
+.amazaun-destination-feed {
+  margin-top: 1rem;
+}
+
+.amazaun-destination-feed > header {
+  border: 0;
+  padding: 0.5rem 0;
+}
+
+.amazaun-destination-feed > header a,
+.exam-destination-card > header a,
+.support-ticket-list > header a,
+.payment-destination-overview > header a,
+.nimbusid-destination-card > header a,
+.university-destination-card > header a {
+  color: #2563eb;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.amazaun-destination-products {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.amazaun-destination-products article {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+  padding: 0.9rem;
+  background: #fff;
+}
+
+.amazaun-destination-product-art {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  margin-bottom: 0.35rem;
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-size: 1.35rem;
+}
+
+.amazaun-destination-products strong {
+  color: #111827;
+  font-size: 0.76rem;
+}
+
+.amazaun-destination-products small {
+  color: #6b7280;
+  font-size: 0.65rem;
+}
+
+.amazaun-destination-products b {
+  color: #2563eb;
+  font-size: 0.67rem;
+}
+
+.destination-cloudbox {
+  background: #f8fbff;
+}
+
+.cloudbox-destination-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 1rem 0;
+  border: 1px solid #cfe0f6;
+  border-radius: 9px;
+  padding: 0.85rem;
+  background: #edf5ff;
+}
+
+.cloudbox-destination-banner > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #d2e3fc;
+  color: #1967d2;
+  font-weight: 800;
+}
+
+.cloudbox-destination-banner div {
+  display: grid;
+  flex: 1;
+  gap: 0.15rem;
+}
+
+.cloudbox-destination-banner strong {
+  color: #174ea6;
+  font-size: 0.76rem;
+}
+
+.cloudbox-destination-banner p {
+  margin: 0;
+  color: #5f718a;
+  font-size: 0.68rem;
+}
+
+.cloudbox-destination-banner a {
+  color: #1967d2;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.destination-unisecure,
+.destination-makexam,
+.destination-technosphere {
+  background: #f5f7fb;
+}
+
+.university-destination-welcome,
+.exam-destination-status,
+.course-destination-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid #d6dde8;
+  border-radius: 10px;
+  padding: 1rem;
+  background: #fff;
+}
+
+.university-destination-welcome > div,
+.exam-destination-status > div,
+.course-destination-welcome > div {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.university-destination-welcome > div > div,
+.exam-destination-status > div > div,
+.course-destination-welcome > div > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.university-destination-welcome strong,
+.exam-destination-status h2,
+.course-destination-welcome h2 {
+  color: #263b73;
+  font-size: 0.9rem;
+}
+
+.university-destination-welcome p,
+.exam-destination-status p,
+.course-destination-welcome p {
+  margin: 0;
+  color: #718097;
+  font-size: 0.7rem;
+}
+
+.exam-destination-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #f8dbe3;
+  color: #9a3150;
+  font-size: 1.2rem;
+  font-weight: 850;
+}
+
+.exam-destination-status > a,
+.university-destination-welcome > a,
+.course-destination-welcome > a {
+  background: #3857c8;
+  color: #fff;
+}
+
+.university-destination-grid,
+.exam-destination-grid,
+.course-destination-grid,
+.support-destination-layout,
+.payment-destination-layout,
+.nimbusid-destination-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.university-destination-card,
+.exam-destination-card,
+.course-destination-card,
+.support-ticket-list,
+.support-destination-case,
+.support-destination-aside,
+.payment-destination-overview,
+.payment-destination-summary,
+.nimbusid-destination-card {
+  min-width: 0;
+  border: 1px solid #d6dde8;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.university-destination-card,
+.exam-destination-card,
+.course-destination-card,
+.nimbusid-destination-card {
+  padding: 0.95rem;
+}
+
+.university-destination-card header,
+.exam-destination-card header,
+.course-destination-card header,
+.nimbusid-destination-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 0;
+  padding: 0;
+}
+
+.university-destination-card header > span,
+.exam-destination-card header > span,
+.course-destination-card header > span,
+.nimbusid-destination-card header > span {
+  color: #3857c8;
+  font-size: 1.15rem;
+}
+
+.university-destination-card h2,
+.exam-destination-card h2,
+.course-destination-card h2,
+.nimbusid-destination-card h2 {
+  margin: 0.2rem 0 0;
+  color: #26334d;
+  font-size: 0.9rem;
+}
+
+.university-destination-value {
+  display: block;
+  margin-top: 1rem;
+  color: #3857c8;
+  font-size: 1.5rem;
+}
+
+.university-destination-card > p,
+.university-destination-card > a,
+.exam-destination-card > p,
+.course-destination-card > p,
+.nimbusid-destination-card > p {
+  color: #718097;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.university-destination-card > a,
+.exam-destination-card > a,
+.course-destination-card > a,
+.nimbusid-destination-card > a {
+  color: #3857c8;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.university-calendar-row,
+.exam-destination-row,
+.nimbusid-device-row,
+.nimbusid-activity-row,
+.payment-destination-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.55rem;
+  border-top: 1px solid #edf0f4;
+  padding: 0.7rem 0;
+}
+
+.university-calendar-row time,
+.exam-destination-row time {
+  display: grid;
+  place-items: center;
+  color: #3857c8;
+  font-size: 1rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.university-calendar-row time small,
+.exam-destination-row time small {
+  color: #8b96a8;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+}
+
+.university-calendar-row div,
+.exam-destination-row div,
+.nimbusid-device-row div,
+.nimbusid-activity-row div,
+.payment-destination-row div {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.university-calendar-row strong,
+.exam-destination-row strong,
+.nimbusid-device-row strong,
+.nimbusid-activity-row strong,
+.payment-destination-row strong {
+  color: #34425d;
+  font-size: 0.68rem;
+}
+
+.university-calendar-row span,
+.exam-destination-row span,
+.nimbusid-device-row small,
+.nimbusid-activity-row small,
+.payment-destination-row small {
+  color: #8b96a8;
+  font-size: 0.6rem;
+}
+
+.university-calendar-row b,
+.exam-destination-row b,
+.nimbusid-device-row b,
+.payment-destination-row b {
+  color: #19734a;
+  font-size: 0.61rem;
+  white-space: nowrap;
+}
+
+.university-service-status,
+.payment-summary-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-top: 1px solid #edf0f4;
+  padding: 0.55rem 0;
+  color: #718097;
+  font-size: 0.65rem;
+}
+
+.university-service-status i,
+.payment-summary-status i {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #22a06b;
+}
+
+.university-service-status b,
+.payment-summary-status b {
+  margin-left: auto;
+  color: #19734a;
+}
+
+.university-destination-notices,
+.exam-destination-notice,
+.course-destination-messages,
+.payment-destination-notice,
+.nimbusid-destination-note {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1rem;
+  border: 1px solid #dfe4ec;
+  border-radius: 9px;
+  padding: 0.8rem;
+  background: #fff;
+}
+
+.university-destination-notices > header {
+  display: grid;
+  flex: 1;
+  gap: 0.15rem;
+}
+
+.university-destination-notices h2 {
+  margin: 0;
+  color: #34425d;
+  font-size: 0.84rem;
+}
+
+.university-destination-notices > div,
+.exam-destination-notice,
+.course-destination-messages,
+.payment-destination-notice,
+.nimbusid-destination-note {
+  color: #718097;
+}
+
+.university-destination-notices > div > span,
+.exam-destination-notice > span,
+.course-destination-messages > span,
+.payment-destination-notice > span,
+.nimbusid-destination-note > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff5dc;
+  color: #9a6410;
+  font-weight: 850;
+}
+
+.university-destination-notices p,
+.exam-destination-notice p,
+.course-destination-messages p,
+.payment-destination-notice p,
+.nimbusid-destination-note p {
+  display: grid;
+  flex: 1;
+  gap: 0.15rem;
+  margin: 0;
+  font-size: 0.68rem;
+}
+
+.university-destination-notices strong,
+.exam-destination-notice strong,
+.course-destination-messages strong,
+.payment-destination-notice strong,
+.nimbusid-destination-note strong {
+  color: #34425d;
+}
+
+.university-destination-notices time {
+  color: #8b96a8;
+  font-size: 0.61rem;
+}
+
+.exam-destination-card {
+  grid-column: span 1;
+}
+
+.exam-destination-row b {
+  border-radius: 999px;
+  background: #e5f7ef;
+  padding: 0.28rem 0.45rem;
+  color: #19734a;
+}
+
+.exam-destination-notice {
+  border: 0;
+  border-top: 1px solid #edf0f4;
+  border-radius: 0;
+  padding: 0.7rem 0;
+}
+
+.exam-destination-notice > span {
+  width: 25px;
+  height: 25px;
+  background: #f8dbe3;
+  color: #9a3150;
+}
+
+.course-destination-welcome {
+  border-color: #d6cff5;
+  background: #fbfaff;
+}
+
+.course-destination-welcome h2 {
+  color: #51419a;
+}
+
+.course-destination-welcome p {
+  color: #7b73a5;
+}
+
+.course-destination-card header > span {
+  color: #51419a;
+}
+
+.course-destination-card article {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.55rem;
+  border-top: 1px solid #edf0f4;
+  padding: 0.65rem 0;
+}
+
+.course-destination-card article > div {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.course-destination-card article strong {
+  color: #413477;
+  font-size: 0.68rem;
+}
+
+.course-destination-card article small,
+.course-destination-card article b {
+  color: #8b84aa;
+  font-size: 0.6rem;
+}
+
+.course-destination-card article b {
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.course-destination-event {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 0.55rem;
+  border-top: 1px solid #edf0f4;
+  padding: 0.65rem 0;
+}
+
+.course-destination-event time {
+  color: #51419a;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.course-destination-event div {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.course-destination-event strong {
+  color: #514b70;
+  font-size: 0.68rem;
+}
+
+.course-destination-event small {
+  color: #8b84aa;
+  font-size: 0.6rem;
+}
+
+.course-destination-messages {
+  border-color: #d6cff5;
+  background: #fbfaff;
+}
+
+.course-destination-messages > span {
+  background: #e5e0fb;
+  color: #51419a;
+}
+
+.course-destination-messages a,
+.nimbusid-destination-note a,
+.payment-destination-notice a {
+  color: #3857c8;
+  font-size: 0.67rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.destination-support {
+  background: #f6fbfa;
+}
+
+.support-destination-layout {
+  grid-template-columns: minmax(230px, 0.75fr) minmax(0, 1.45fr) minmax(230px, 0.75fr);
+}
+
+.support-ticket-list,
+.support-destination-case,
+.support-destination-aside {
+  overflow: hidden;
+}
+
+.support-ticket-list > header,
+.support-destination-case > header,
+.support-destination-aside section {
+  padding: 0.9rem;
+}
+
+.support-ticket-list > header > span {
+  border-radius: 999px;
+  background: #e5f7ef;
+  padding: 0.3rem 0.45rem;
+  color: #19734a;
+  font-size: 0.6rem;
+  font-weight: 750;
+}
+
+.support-ticket-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  border-top: 1px solid #edf0f4;
+  padding: 0.8rem 0.9rem;
+}
+
+.support-ticket-list article.active {
+  background: #effaf7;
+}
+
+.support-ticket-list article > div {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.support-ticket-list article strong {
+  color: #345a58;
+  font-size: 0.68rem;
+}
+
+.support-ticket-list article small {
+  color: #82918f;
+  font-size: 0.6rem;
+}
+
+.support-ticket-list article b {
+  color: #39827c;
+  font-size: 0.6rem;
+  white-space: nowrap;
+}
+
+.support-ticket-list > a {
+  display: block;
+  border-top: 1px solid #edf0f4;
+  padding: 0.75rem 0.9rem;
+  color: #176b68;
+  font-size: 0.65rem;
+  font-weight: 750;
+}
+
+.support-destination-case > header {
+  border-bottom: 1px solid #edf0f4;
+  padding: 0;
+}
+
+.support-destination-case > header > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.support-destination-case h2 {
+  color: #1c5553;
+}
+
+.support-destination-case > header span:not(.support-priority):not(.support-ticket-id) {
+  color: #82918f;
+  font-size: 0.62rem;
+}
+
+.support-destination-case .support-case-message {
+  margin: 0 0.9rem;
+}
+
+.support-destination-timeline {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0.9rem;
+  padding: 0.9rem 0;
+}
+
+.support-destination-timeline > div {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #98a8a5;
+  font-size: 0.68rem;
+}
+
+.support-destination-timeline i {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border: 1px solid #d5e4e1;
+  border-radius: 50%;
+  font-style: normal;
+  font-size: 0.6rem;
+}
+
+.support-destination-timeline .done {
+  color: #416c68;
+}
+
+.support-destination-timeline .done i {
+  border-color: #22a06b;
+  background: #e5f7ef;
+  color: #19734a;
+}
+
+.support-destination-timeline span {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.support-destination-timeline small {
+  color: #98a8a5;
+  font-size: 0.6rem;
+}
+
+.support-destination-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-top: 1px solid #edf0f4;
+  padding: 0.9rem;
+}
+
+.support-destination-actions a {
+  background: #e5f7ef;
+  color: #176b68;
+}
+
+.support-destination-aside {
+  align-self: start;
+}
+
+.support-destination-aside section + section {
+  border-top: 1px solid #edf0f4;
+}
+
+.support-destination-aside h2 {
+  margin: 0;
+  color: #1c5553;
+  font-size: 0.82rem;
+}
+
+.support-destination-aside section > p {
+  margin: 0.55rem 0 0.7rem;
+  color: #71817f;
+  font-size: 0.67rem;
+  line-height: 1.5;
+}
+
+.support-destination-aside section > div {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #edf0f4;
+  padding-top: 0.55rem;
+  color: #82918f;
+  font-size: 0.61rem;
+}
+
+.support-destination-aside .support-knowledge a {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.45rem;
+  border-top: 1px solid #edf0f4;
+  padding: 0.6rem 0;
+}
+
+.support-destination-aside .support-knowledge a > span {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 5px;
+  background: #e5f7ef;
+  color: #176b68;
+}
+
+.support-destination-aside .support-knowledge a div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.support-destination-aside .support-knowledge strong {
+  color: #416c68;
+  font-size: 0.64rem;
+}
+
+.support-destination-aside .support-knowledge small {
+  color: #82918f;
+  font-size: 0.58rem;
+}
+
+.destination-paymate {
+  background: #f6fbf7;
+}
+
+.payment-destination-layout {
+  grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.55fr);
+}
+
+.payment-destination-overview,
+.payment-destination-summary {
+  overflow: hidden;
+}
+
+.payment-destination-overview > header,
+.payment-destination-summary {
+  padding: 0.95rem;
+}
+
+.payment-destination-overview > header {
+  border-bottom: 1px solid #edf0f4;
+  padding: 0;
+}
+
+.payment-destination-overview h2,
+.payment-destination-summary h2 {
+  margin: 0.25rem 0 0;
+  color: #1e5b3e;
+  font-size: 1rem;
+}
+
+.payment-destination-row {
+  grid-template-columns: 32px minmax(0, 1fr) auto 58px;
+  margin: 0 0.95rem;
+}
+
+.payment-destination-row.featured {
+  background: #f1faf4;
+}
+
+.payment-destination-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 6px;
+  background: #dff3e7;
+  color: #236b4b;
+  font-weight: 800;
+}
+
+.payment-destination-row time {
+  color: #82958b;
+  font-size: 0.6rem;
+  text-align: right;
+}
+
+.payment-destination-row b {
+  border-radius: 999px;
+  background: #fff5dc;
+  padding: 0.28rem 0.42rem;
+  color: #9a6410;
+}
+
+.payment-destination-row b.payment-complete {
+  background: #e5f7ef;
+  color: #19734a;
+}
+
+.payment-summary-total {
+  display: grid;
+  gap: 0.2rem;
+  margin: 1rem 0;
+  border-top: 1px solid #edf0f4;
+  border-bottom: 1px solid #edf0f4;
+  padding: 0.9rem 0;
+}
+
+.payment-summary-total span,
+.payment-summary-total small {
+  color: #82958b;
+  font-size: 0.63rem;
+}
+
+.payment-summary-total strong {
+  color: #1e5b3e;
+  font-size: 1.25rem;
+}
+
+.payment-destination-summary > a {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #236b4b;
+  font-size: 0.67rem;
+  font-weight: 750;
+}
+
+.payment-destination-notice {
+  border-color: #c4e5d1;
+  background: #effaf3;
+}
+
+.payment-destination-notice > span {
+  background: #dff3e7;
+  color: #236b4b;
+}
+
+.destination-nimbusid {
+  background: #f7f8fc;
+}
+
+.nimbusid-destination {
+  overflow: hidden;
+  border: 1px solid #d7dce8;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.nimbusid-destination-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #dce1eb;
+  background: #202b45;
+  padding: 0.8rem 1.1rem;
+  color: #fff;
+}
+
+.nimbusid-destination-topbar .nimbusid-brand {
+  color: #fff;
+}
+
+.nimbusid-destination-topbar .nimbusid-brand small {
+  color: #b9c4dc;
+}
+
+.nimbusid-destination-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.nimbusid-destination-nav a {
+  border-bottom: 3px solid transparent;
+  padding: 0.65rem 0.7rem;
+  color: #b9c4dc;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.nimbusid-destination-nav a:hover,
+.nimbusid-destination-nav a.active {
+  border-color: #8ea0ff;
+  color: #fff;
+}
+
+.nimbusid-destination-user {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 50%;
+  color: #dce4ff;
+  font-size: 0.65rem;
+}
+
+.nimbusid-destination-main {
+  width: min(1050px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.2rem 0 2.5rem;
+}
+
+.nimbusid-destination-breadcrumb {
+  margin-bottom: 1rem;
+  color: #8b96a8;
+  font-size: 0.68rem;
+}
+
+.nimbusid-destination-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.nimbusid-destination-heading h1 {
+  margin: 0.25rem 0 0;
+  color: #202b45;
+  font-size: 1.8rem;
+  letter-spacing: -0.04em;
+}
+
+.nimbusid-destination-heading p:not(.nimbusid-overline) {
+  margin: 0.45rem 0 0;
+  color: #6f7b91;
+  font-size: 0.8rem;
+}
+
+.nimbusid-destination-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #e5f7ef;
+  color: #19734a;
+}
+
+.nimbusid-destination-status i {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #22a06b;
+}
+
+.nimbusid-destination-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.nimbusid-destination-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.nimbusid-destination-card > header {
+  border-bottom: 1px solid #edf0f4;
+  padding: 0.9rem;
+}
+
+.nimbusid-destination-card > header a {
+  color: #566ddb;
+}
+
+.nimbusid-device-row,
+.nimbusid-activity-row {
+  margin: 0 0.9rem;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+}
+
+.nimbusid-device-icon,
+.nimbusid-activity-row > span {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border-radius: 7px;
+  background: #e7ebff;
+  color: #566ddb;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.nimbusid-destination-note {
+  border-color: #cbd5f7;
+  background: #f0f3ff;
+}
+
+.nimbusid-destination-note > span {
+  background: #dfe5ff;
+  color: #566ddb;
+}
+
+.nimbusid-destination-note a {
+  color: #566ddb;
+}
+
+.nimbusid-destination-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid #dce1eb;
+  padding: 0.8rem 1.1rem;
+  color: #8a95a8;
+  font-size: 0.63rem;
+}
+
+@media (max-width: 900px) {
+  .support-destination-layout,
+  .payment-destination-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .support-destination-aside,
+  .payment-destination-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .amazaun-destination-heading,
+  .exam-destination-status,
+  .course-destination-welcome,
+  .support-destination-case > header,
+  .nimbusid-destination-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .amazaun-destination-products,
+  .university-destination-grid,
+  .exam-destination-grid,
+  .course-destination-grid,
+  .nimbusid-destination-grid,
+  .support-destination-aside,
+  .payment-destination-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .amazaun-destination-timeline {
+    grid-template-columns: 26px minmax(0, 1fr);
+  }
+
+  .amazaun-destination-timeline > span:nth-of-type(2),
+  .amazaun-destination-timeline > div:nth-of-type(2) {
+    display: none;
+  }
+
+  .support-destination-aside,
+  .payment-destination-summary {
+    display: block;
+  }
+
+  .nimbusid-destination-nav {
+    display: none;
   }
 }

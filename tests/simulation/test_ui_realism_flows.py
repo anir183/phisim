@@ -186,27 +186,50 @@ def test_cloudbox_manual_route_walks_shared_file_to_debrief(
 
 
 @pytest.mark.parametrize(
-    ("scenario_id", "role", "expected_heading"),
+    ("scenario_id", "role", "expected_heading", "expected_selector"),
     [
-        ("credential-basic-001", "student", "Account access updated"),
+        (
+            "credential-basic-001",
+            "student",
+            "Account access updated",
+            "university-destination-calendar",
+        ),
         (
             "credential-shopping-001",
             "online shopper",
             "Your order is confirmed",
+            "amazaun-destination-products",
         ),
-        ("credential-cloud-001", "collaborator", "Your workspace is ready"),
+        (
+            "credential-cloud-001",
+            "collaborator",
+            "Your workspace is ready",
+            "cloudbox-destination-banner",
+        ),
         (
             "credential-payment-001",
             "billing administrator",
             "Payment review recorded",
+            "payment-destination-layout",
         ),
         (
             "support-portal-001",
             "university employee",
             "Case verification recorded",
+            "support-ticket-list",
         ),
-        ("mak-exam-001", "student", "Registration confirmed"),
-        ("technosphere-001", "faculty", "Course workspace unlocked"),
+        (
+            "mak-exam-001",
+            "student",
+            "Registration confirmed",
+            "exam-destination-grid",
+        ),
+        (
+            "technosphere-001",
+            "faculty",
+            "Course workspace unlocked",
+            "course-destination-grid",
+        ),
     ],
 )
 def test_each_product_flow_reaches_destination_before_manual_debrief(
@@ -215,6 +238,7 @@ def test_each_product_flow_reaches_destination_before_manual_debrief(
     scenario_id: str,
     role: str,
     expected_heading: str,
+    expected_selector: str,
 ) -> None:
     launch = _launch(client, scenario_id, role)
     token = launch["victim_path"].split("/")[2]
@@ -238,12 +262,43 @@ def test_each_product_flow_reaches_destination_before_manual_debrief(
     destination = client.get(finished.headers["location"])
     assert destination.status_code == 200
     assert expected_heading in destination.text
+    assert expected_selector in destination.text
     assert "End simulation" in destination.text
     assert "What happened?" not in destination.text
 
     completed = client.post(f"{target}/end")
     assert completed.status_code == 200
     assert "What happened?" in completed.text
+
+
+def test_step_two_surfaces_keep_roomy_product_shells(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    cases = [
+        ("credential-basic-001", "student", "university-auth"),
+        ("credential-shopping-001", "online shopper", "amazaun-checkout"),
+        ("credential-cloud-001", "collaborator", "cloudbox-verify"),
+        ("credential-payment-001", "billing administrator", "payment-review"),
+        ("support-portal-001", "university employee", "support-auth"),
+        ("mak-exam-001", "student", "exam-auth"),
+        ("technosphere-001", "faculty", "course-auth"),
+    ]
+    for scenario_id, role, expected_shell in cases:
+        launch = _launch(client, scenario_id, role)
+        token = launch["victim_path"].split("/")[2]
+        _make_due(test_engine, launch["attack_id"])
+        target = f"/v/{token}/site/{scenario_id}"
+        continued = client.post(
+            f"{target}/continue",
+            data={"identifier": "local-training-identifier"},
+            follow_redirects=False,
+        )
+        assert continued.status_code == 303
+        step_two = client.get(continued.headers["location"])
+        assert step_two.status_code == 200
+        assert expected_shell in step_two.text
+        assert "What happened?" not in step_two.text
 
 
 def test_qr_manual_route_exposes_destination_before_local_scan(
