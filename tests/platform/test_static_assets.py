@@ -11,6 +11,7 @@ def test_shared_static_assets_are_local_and_mounted(
     lab_script = client.get("/static/lab.js")
     lab_dashboard_script = client.get("/static/lab-dashboard.js")
     capture_script = client.get("/static/capture-validation.js")
+    flow_script = client.get("/static/flow-transition.js")
 
     assert css.status_code == 200
     assert console_script.status_code == 200
@@ -19,11 +20,12 @@ def test_shared_static_assets_are_local_and_mounted(
     assert lab_script.status_code == 200
     assert lab_dashboard_script.status_code == 200
     assert capture_script.status_code == 200
+    assert flow_script.status_code == 200
     assert "https://" not in css.text
     assert "http://" not in css.text
     assert "innerHTML" not in console_script.text
     assert "textContent" in console_script.text
-    assert "data-transition-ms" in simulation_script.text
+    assert "data-transition-ms" in flow_script.text
     assert "textContent" in victim_script.text
     assert "DOMParser" in victim_script.text
     assert "replaceChildren" in victim_script.text

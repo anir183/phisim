@@ -31,7 +31,7 @@ The pass covers:
   values on the Reveal and Console, stores non-secret values locally, and keeps
   only salted digests for secret-like fields.
 
-The final automated check passes with **205 tests**. One existing Starlette/
+The final automated check passes with **209 tests**. One existing Starlette/
 httpx test-client deprecation warning remains.
 
 ## Design architecture
@@ -120,6 +120,9 @@ persisting user-entered content.
 The optional sandbox capture is covered by
 `tests/simulation/test_sandbox_capture.py`, including domain validation,
 salted-digest persistence, Reveal/Console display, and rejection toasts.
+Scenario transition timing is covered by `tests/simulation/test_timing.py`
+and the UI regression matrix, including the `1800ms` ceiling and exclusions
+for Lab, Console, inbox, and messenger surfaces.
 
 The complete verification command passed:
 
@@ -132,9 +135,9 @@ uv run check
 Result:
 
 ```text
-125 files already formatted
+126 files already formatted
 0 errors, 0 warnings, 0 informations
-205 passed, 1 existing Starlette/httpx deprecation warning
+209 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The dedicated route matrix is in

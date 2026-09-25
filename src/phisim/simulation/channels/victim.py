@@ -50,6 +50,7 @@ from phisim.simulation.evidence import (
 )
 from phisim.simulation.lifecycle import complete_simulation_session
 from phisim.simulation.site_themes import get_site_theme
+from phisim.simulation.timing import transition_delay_ms
 from phisim.utils.datetime import serialize_utc_datetime
 
 router = APIRouter(tags=["victim-environment"])
@@ -590,6 +591,11 @@ async def victim_email(
             "message": message,
             "folder": folder,
             "read_only": read_only,
+            "transition_kind": "link",
+            "transition_delay_ms": transition_delay_ms(
+                "link",
+                _attack_delay_profile(attack),
+            ),
             "active_page": "victim",
         },
     )
@@ -785,6 +791,13 @@ def _site_theme_for_scenario(scenario):
     return get_site_theme(scenario.scenario_id, scenario.channel)
 
 
+def _attack_delay_profile(attack, fallback: str = "short") -> str:
+    value = attack.state.get("delay_profile")
+    if value in {"instant", "short", "standard"}:
+        return str(value)
+    return fallback
+
+
 def _site_context(
     database_session: OrmSession,
     attack,
@@ -793,12 +806,25 @@ def _site_context(
     step: int = 1,
     capture_error: str | None = None,
 ) -> dict[str, object]:
+    transition_kind = "step"
+    if step == 2:
+        transition_kind = (
+            "payment"
+            if scenario.scenario_id
+            in {"credential-shopping-001", "credential-payment-001"}
+            else "verification"
+        )
     return {
         "attack": attack,
         "scenario": scenario,
         "site_theme": _site_theme_for_scenario(scenario),
         "end_url": _site_end_path(attack, scenario.scenario_id),
         "step": step,
+        "transition_kind": transition_kind,
+        "transition_delay_ms": transition_delay_ms(
+            transition_kind,
+            _attack_delay_profile(attack, scenario.delay_profile),
+        ),
         "capture_enabled": sandbox_capture_enabled(),
         "capture_error": capture_error,
         "active_page": "victim",
@@ -882,6 +908,11 @@ def _destination_response(
             "site_theme": _site_theme_for_scenario(scenario),
             "end_url": end_url,
             "mfa_action": mfa_action,
+            "transition_kind": "end",
+            "transition_delay_ms": transition_delay_ms(
+                "end",
+                _attack_delay_profile(attack, scenario.delay_profile),
+            ),
             "active_page": "victim",
         },
     )
@@ -1065,6 +1096,11 @@ async def victim_message(
             "site_theme": _site_theme_for_attack(attack),
             "thread": thread,
             "read_only": read_only,
+            "transition_kind": "link",
+            "transition_delay_ms": transition_delay_ms(
+                "link",
+                _attack_delay_profile(attack),
+            ),
             "active_page": "victim",
         },
     )
@@ -1516,6 +1552,11 @@ async def victim_qr(
             ),
             "qr_data_uri": f"data:image/png;base64,{qr_data}",
             "scan_url": scan_url,
+            "transition_kind": "qr",
+            "transition_delay_ms": transition_delay_ms(
+                "qr",
+                _attack_delay_profile(attack, scenario.delay_profile),
+            ),
             "active_page": "victim",
         },
     )
@@ -1622,6 +1663,11 @@ async def victim_mfa(
             "scenario": scenario,
             "site_theme": get_site_theme(scenario.scenario_id, "mfa"),
             "step": step,
+            "transition_kind": "mfa",
+            "transition_delay_ms": transition_delay_ms(
+                "mfa",
+                _attack_delay_profile(attack, scenario.delay_profile),
+            ),
             "active_page": "victim",
         },
     )

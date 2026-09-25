@@ -36,7 +36,7 @@
       {% endif %}
       <div class="gmail-signature">Northstar University · fictional local mailbox<br />This message was not delivered to a real inbox.</div>
       {% if message.is_attack and not read_only %}
-        <div class="gmail-message-actions"><a class="button" href="{{ url_for('victim_email_link', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id }}">Open message link</a><button class="button button-secondary" type="button">Reply</button><button class="button button-secondary" type="button">Forward</button></div>
+        <div class="gmail-message-actions"><a class="button" data-transition-ms="{{ transition_delay_ms|default(0) }}" href="{{ url_for('victim_email_link', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id }}">Open message link</a><button class="button button-secondary" type="button">Reply</button><button class="button button-secondary" type="button">Forward</button></div>
       {% elif read_only %}
         <div class="gmail-read-only-footer">This message remains available for review, but its training actions are closed.</div>
       {% endif %}

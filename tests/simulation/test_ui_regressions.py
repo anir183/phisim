@@ -1,3 +1,4 @@
+import re
 from datetime import UTC, datetime
 
 import pytest
@@ -198,3 +199,46 @@ def test_layout_regressions_keep_portal_chrome_and_light_lab_separate(
         "grid-template-columns: 32px minmax(0, 1fr) auto 52px"
         in stylesheet.text
     )
+
+
+def test_scenario_transition_buffers_exclude_non_flow_surfaces(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    launch = _launch(
+        client,
+        "credential-shopping-001",
+        "online shopper",
+    )
+    token = launch["victim_path"].split("/")[2]
+    _make_due(test_engine, launch["attack_id"])
+    target = f"/v/{token}/site/credential-shopping-001"
+
+    order = client.get(target)
+    order_delays = [
+        int(value)
+        for value in re.findall(r'data-transition-ms="(\d+)"', order.text)
+    ]
+    assert order_delays
+    assert all(140 <= value <= 320 for value in order_delays)
+
+    continued = client.post(
+        f"{target}/continue",
+        data={"identifier": "local-training-address"},
+        follow_redirects=False,
+    )
+    checkout = client.get(continued.headers["location"])
+    payment_delays = [
+        int(value)
+        for value in re.findall(
+            r'data-transition-ms="(\d+)"',
+            checkout.text,
+        )
+    ]
+    assert payment_delays
+    assert all(750 <= value <= 1200 for value in payment_delays)
+
+    for path in ("/mail", "/messages", "/console", "/lab"):
+        surface = client.get(path)
+        assert surface.status_code == 200
+        assert "data-transition-ms" not in surface.text

@@ -64,6 +64,7 @@ async def mfa_prompt(
             site_theme=get_site_theme(scenario.scenario_id, "mfa"),
             step=current_step,
             active_page="simulation",
+            transition_kind="mfa",
         ),
     )
     session_id = ensure_simulation_session(
@@ -318,6 +319,7 @@ async def mfa_end(
             ),
             mfa_action=state.get("mfa_decision"),
             active_page="simulation",
+            transition_kind="end",
             sandbox_capture_enabled=sandbox_capture_enabled(),
             sandbox_captures=list_sandbox_captures(session, session_id),
         ),

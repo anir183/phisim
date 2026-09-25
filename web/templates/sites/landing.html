@@ -51,7 +51,7 @@
       </div>
       <p class="mock-action-message">{{ scenario.message }}</p>
       {% if form_action %}
-        <form method="post" action="{{ form_action }}" class="mock-site-form">
+        <form method="post" action="{{ form_action }}" class="mock-site-form" data-transition-ms="{{ transition_delay_ms|default(0) }}">
           <div class="form-field">
             <label for="mock-identifier">{{ identifier_label|default("Account identifier") }}</label>
             <input id="mock-identifier" name="{{ identifier_name|default('identifier') }}" type="{{ identifier_type|default('text') }}" autocomplete="off" required autofocus />

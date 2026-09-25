@@ -30,7 +30,7 @@ def test_attack_lifecycle_and_delay_profiles_are_bounded() -> None:
     } <= ATTACK_STATUSES
     assert delivery_delay_ms("instant") == 0
     assert delivery_delay_ms("short") == 1200
-    assert delivery_delay_ms("standard") == 2400
+    assert delivery_delay_ms("standard") == 1800
     assert delivery_delay_ms("unknown") == 1200
 
 

@@ -21,6 +21,7 @@ from phisim.simulation.channels.common import (
 from phisim.simulation.evidence import sms_evidence, sms_link_evidence
 from phisim.simulation.lifecycle import ensure_simulation_session
 from phisim.simulation.site_themes import get_site_theme
+from phisim.simulation.timing import timing_for_request, transition_delay_ms
 
 router = APIRouter(tags=["simulation"])
 
@@ -58,12 +59,18 @@ async def sms_view(
     thread = get_sms_thread(thread_id)
     if thread is None:
         raise HTTPException(status_code=404, detail="Conversation not found.")
+    delay_profile, _ = timing_for_request(request)
     response = templates.TemplateResponse(
         request=request,
         name="simulation/sms_thread.html",
         context={
             "thread": thread,
             "site_theme": get_site_theme(thread.thread_id, "sms"),
+            "transition_kind": "link",
+            "transition_delay_ms": transition_delay_ms(
+                "link",
+                delay_profile,
+            ),
             "active_page": "simulation",
         },
     )

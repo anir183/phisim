@@ -33,9 +33,9 @@ uv run check
 Final result:
 
 ```text
-125 files already formatted
+126 files already formatted
 0 errors, 0 warnings, 0 informations
-205 passed, 1 existing Starlette/httpx deprecation warning
+209 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The warning is the existing test-client deprecation warning:
@@ -50,6 +50,11 @@ The UI realism route matrix is implemented in
 manual-verification surfaces plus all seven website product destinations, SMS
 handoff, and the full QR handoff. Each successful action is asserted to land on
 a product destination before the explicit manual debrief transition.
+
+The timing regression coverage in `tests/simulation/test_timing.py` and
+`tests/simulation/test_ui_regressions.py` verifies randomized bounded scenario
+buffers, the longer payment range, the `1800ms` ceiling, and the absence of
+transition delays on Lab, Console, inbox, and messenger surfaces.
 
 ## Manual route verification
 

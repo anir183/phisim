@@ -52,6 +52,7 @@ _ALLOWED_STATE_KEYS = frozenset(
         "delivered_thread_ids",
         "read_thread_ids",
         "current_step",
+        "delay_profile",
         "last_action",
         "notification_seen",
         "website_viewed",
@@ -138,6 +139,14 @@ def _safe_state(state: dict[str, Any]) -> dict[str, Any]:
         if value is not None and not isinstance(value, bool):
             raise SimulationAttackError("Invalid notification state.")
 
+    delay_profile = safe_state.get("delay_profile")
+    if delay_profile is not None and delay_profile not in {
+        "instant",
+        "short",
+        "standard",
+    }:
+        raise SimulationAttackError("Invalid attack delay profile.")
+
     last_action = safe_state.get("last_action")
     if last_action is not None and last_action not in _ALLOWED_ACTIONS:
         raise SimulationAttackError("Invalid attack action.")
@@ -176,6 +185,7 @@ class SimulationAttackService:
                     "read_message_ids": [],
                     "delivered_thread_ids": [],
                     "read_thread_ids": [],
+                    "delay_profile": delay_profile,
                     "last_action": "attack_armed",
                 }
             ),

@@ -25,6 +25,7 @@ from phisim.simulation.evidence import (
 )
 from phisim.simulation.lifecycle import ensure_simulation_session
 from phisim.simulation.site_themes import get_site_theme
+from phisim.simulation.timing import timing_for_request, transition_delay_ms
 
 router = APIRouter(tags=["simulation"])
 
@@ -75,12 +76,18 @@ async def email_view(
     message = get_email_message(message_id)
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found.")
+    delay_profile, _ = timing_for_request(request)
     response = templates.TemplateResponse(
         request=request,
         name="simulation/email.html",
         context={
             "message": message,
             "site_theme": get_site_theme(message.message_id, "email"),
+            "transition_kind": "link",
+            "transition_delay_ms": transition_delay_ms(
+                "link",
+                delay_profile,
+            ),
             "active_page": "simulation",
         },
     )

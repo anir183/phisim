@@ -21,6 +21,7 @@ from phisim.simulation.channels.common import (
 from phisim.simulation.evidence import qr_evidence
 from phisim.simulation.lifecycle import ensure_simulation_session
 from phisim.simulation.site_themes import get_site_theme
+from phisim.simulation.timing import timing_for_request, transition_delay_ms
 
 router = APIRouter(tags=["simulation"])
 
@@ -43,6 +44,7 @@ async def qr_view(
     if scenario is None or scenario.channel != "qr":
         raise HTTPException(status_code=404, detail="Scenario not found.")
     scan_url = str(request.url_for("qr_scan", scenario_id=scenario.scenario_id))
+    delay_profile, _ = timing_for_request(request)
     response = templates.TemplateResponse(
         request=request,
         name="simulation/qr.html",
@@ -54,6 +56,11 @@ async def qr_view(
             ),
             "qr_data_uri": _qr_data_uri(scan_url),
             "scan_url": scan_url,
+            "transition_kind": "qr",
+            "transition_delay_ms": transition_delay_ms(
+                "qr",
+                delay_profile,
+            ),
             "active_page": "simulation",
         },
     )

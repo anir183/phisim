@@ -17,7 +17,7 @@
     {% else %}
       <p class="mock-hero-body">Your fictional account request is ready for the next local step.</p>
     {% endif %}
-    <form method="post" action="{{ url_for('victim_result', token=attack.victim_token, scenario_id=scenario.scenario_id) }}">
+    <form method="post" action="{{ url_for('victim_result', token=attack.victim_token, scenario_id=scenario.scenario_id) }}" data-transition-ms="{{ transition_delay_ms|default(0) }}">
       <button type="submit">Open training debrief</button>
     </form>
     {% if end_url %}{% include "sites/end_control.html" %}{% endif %}

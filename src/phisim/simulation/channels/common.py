@@ -15,7 +15,10 @@ from phisim.simulation.lifecycle import (
     ensure_simulation_session,
 )
 from phisim.simulation.state import SimulationStateError, SimulationStateService
-from phisim.simulation.timing import timing_for_request
+from phisim.simulation.timing import (
+    timing_for_request,
+    transition_delay_ms,
+)
 from phisim.telemetry.service import DuplicateEventError
 from phisim.utils.paths import TEMPLATES_DIR
 
@@ -130,8 +133,14 @@ def redirect_to_credential_site(
 
 def timing_context(request: Request, **context: Any) -> dict[str, Any]:
     delay_profile, delay_ms = timing_for_request(request)
+    transition_kind = str(context.pop("transition_kind", "step"))
     return {
         **context,
         "delay_profile": delay_profile,
         "delay_ms": delay_ms,
+        "transition_kind": transition_kind,
+        "transition_delay_ms": transition_delay_ms(
+            transition_kind,
+            delay_profile,
+        ),
     }

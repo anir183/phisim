@@ -28,8 +28,23 @@ from phisim.simulation.lifecycle import (
     ensure_simulation_session,
 )
 from phisim.simulation.site_themes import get_site_theme
+from phisim.simulation.timing import (
+    timing_for_request,
+    transition_delay_ms,
+)
 
 router = APIRouter(tags=["simulation"])
+
+
+def _transition_kind(scenario: Scenario, *, final_step: bool = False) -> str:
+    if final_step and scenario.scenario_id in {
+        "credential-shopping-001",
+        "credential-payment-001",
+    }:
+        return "payment"
+    if final_step:
+        return "verification"
+    return "step"
 
 
 def _capture_context(
@@ -63,6 +78,7 @@ async def _complete_credential_submission(
         if username_present and bool(password_value)
         else "incomplete"
     )
+    delay_profile, _ = timing_for_request(request)
     response = templates.TemplateResponse(
         request=request,
         name="victim_destination.html",
@@ -73,6 +89,11 @@ async def _complete_credential_submission(
             ),
             "end_url": request.url_for(
                 "scenario_end", scenario_id=scenario.scenario_id
+            ),
+            "transition_kind": "end",
+            "transition_delay_ms": transition_delay_ms(
+                "end",
+                delay_profile,
             ),
             "active_page": "simulation",
         },
@@ -332,6 +353,7 @@ async def scenario_password(
             site_theme=get_site_theme(scenario.scenario_id, scenario.channel),
             active_page="simulation",
             capture_enabled=sandbox_capture_enabled(),
+            transition_kind=_transition_kind(scenario, final_step=True),
         ),
     )
     session_id = ensure_simulation_session(

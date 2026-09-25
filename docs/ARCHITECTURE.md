@@ -238,6 +238,15 @@ The browser should transition to a product-specific destination. The
 participant then explicitly ends the simulation to reach the educational
 outcome/reveal.
 
+### Scenario transition timing
+
+Scenario-flow forms and handoff links receive a fresh bounded random delay
+from `simulation.timing`. Payment/order confirmation uses the longest range, and
+all transition values are capped at `1800ms`. The delay is applied in the
+browser so direct route tests and API behavior remain deterministic. Operator,
+Console, inbox, messenger, and analytics surfaces do not opt into these
+transition controls.
+
 ### Email simulation
 
 Email is represented as an inert simulated message inside a local PhiSim

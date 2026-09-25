@@ -13,7 +13,7 @@
       </div>
     </div>
     <p class="mock-auth-intro">{{ verification_body|default(scenario.message) }}</p>
-    <form method="post" action="{{ form_action }}" class="mock-site-form">
+    <form method="post" action="{{ form_action }}" class="mock-site-form" data-transition-ms="{{ transition_delay_ms|default(0) }}">
       <div class="form-field">
         <label for="mock-verification-field">{{ field_label|default("Verification detail") }}</label>
         <input id="mock-verification-field" name="{{ field_name|default('confirmation') }}" type="{{ field_type|default('text') }}" autocomplete="off" required autofocus />
