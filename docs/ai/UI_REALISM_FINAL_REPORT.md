@@ -190,7 +190,8 @@ The work was split into atomic commits, in order:
 - `a4da961` — standalone training reveal;
 - `50325bc` — six-flow UI test matrix;
 - `547f0af` and `39ade3b` — compatibility/readability fixes;
-- `21cca42` — legacy outcome moved to the standalone reveal.
+- `21cca42` — legacy outcome moved to the standalone reveal;
+- `bd4122f` — victim applications own their product chrome.
 
 No push was performed.
 
