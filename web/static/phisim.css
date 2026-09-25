@@ -3210,6 +3210,32 @@ body.mock-nimbusid,
   font-size: 0.72rem;
 }
 
+.university-alert-steps {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.65rem 0 0 2.85rem;
+  color: #806d38;
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+.university-alert-steps .step-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 2px solid #c9a84e;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.university-alert-steps .step-label {
+  white-space: nowrap;
+}
+
+.university-alert-steps .step-dot + .step-label {
+  margin-right: 0.45rem;
+}
+
 .university-alert form {
   display: flex;
   flex: 0 1 340px;
@@ -3550,7 +3576,48 @@ body.mock-nimbusid,
 
 /* Faculty course workspace */
 .course-topbar { background: #fbfaff; }
-.course-nav { background: #f5f2ff; }
+.course-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  overflow-x: auto;
+  border-bottom: 1px solid #d6dde8;
+  background: #f5f2ff;
+  padding: 0 1rem;
+}
+.course-nav a {
+  flex: 0 0 auto;
+  border-bottom: 3px solid transparent;
+  padding: 0.8rem 0.75rem;
+  color: #65738a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.course-nav a:hover,
+.course-nav a.active {
+  border-color: #51419a;
+  color: #413477;
+}
+.course-nav a b {
+  display: inline-grid;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  margin-left: 0.2rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #e5e0fb;
+  color: #51419a;
+  font-size: 0.58rem;
+}
+.course-access-card > .course-access-icon {
+  min-width: 38px;
+  flex: 0 0 38px;
+}
+.course-access-card > div:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
 .course-mark { background: #51419a; }
 .course-main { background: #fbfaff; }
 .course-overline { color: #766bb0; }
@@ -6434,12 +6501,18 @@ body.mock-nimbusid,
 }
 
 .training-page {
-  width: min(1060px, calc(100% - 2rem));
+  display: flex;
+  width: min(1060px, calc(100vw - 2rem));
+  max-width: none;
+  flex-direction: column;
+  align-items: center;
   margin: 0 auto;
   padding: 1.5rem 0 2rem;
 }
 
 .training-reveal {
+  width: 100%;
+  margin-inline: auto;
   overflow: hidden;
   border: 1px solid #d5dce8;
   border-radius: 14px;
@@ -7358,5 +7431,190 @@ body.mock-nimbusid,
   }
   .console-boundary {
     margin-left: 2.1rem;
+  }
+}
+
+/* The Lab is an operator surface, but it shares the light workspace language
+   of the rest of PhiSim. The analyst Console retains its darker evidence UI. */
+.lab-body {
+  min-height: 100vh;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+.lab-body .app-shell {
+  min-height: 100vh;
+  background: var(--canvas);
+}
+
+.lab-body .topbar {
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.lab-body .brand-lockup {
+  color: var(--ink);
+}
+
+.lab-body .brand-mark {
+  background: var(--accent);
+  color: #fff;
+}
+
+.lab-body .brand-subtitle,
+.lab-body .primary-nav a {
+  color: var(--muted);
+}
+
+.lab-body .primary-nav a:hover,
+.lab-body .primary-nav a[aria-current="page"] {
+  color: var(--accent-dark);
+}
+
+.lab-body .safety-strip {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-soft);
+  color: var(--ink-soft);
+}
+
+.lab-body .operator-kicker {
+  color: var(--accent-dark);
+}
+
+.lab-body .operator-heading h1,
+.lab-body .operator-panel-heading h2,
+.lab-body .operator-section-heading h2,
+.lab-body .operator-scenario-card h3 {
+  color: var(--ink);
+}
+
+.lab-body .operator-heading p:not(.operator-kicker),
+.lab-body .operator-section-heading > p {
+  color: var(--ink-soft);
+}
+
+.lab-body .operator-status,
+.lab-body .operator-connection-label {
+  color: var(--ink-soft);
+}
+
+.lab-body .operator-metric,
+.lab-body .operator-flow,
+.lab-body .operator-panel,
+.lab-body .operator-scenario-card,
+.lab-body .operator-safety-note {
+  border-color: var(--line);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.lab-body .operator-metric span,
+.lab-body .operator-metric small,
+.lab-body .operator-flow,
+.lab-body .operator-count,
+.lab-body .operator-scenario-card p,
+.lab-body .operator-scenario-card footer > span,
+.lab-body .operator-safety-note {
+  color: var(--muted);
+}
+
+.lab-body .operator-metric strong,
+.lab-body .operator-table td strong,
+.lab-body .operator-table td a,
+.lab-body .operator-table code {
+  color: var(--ink);
+}
+
+.lab-body .operator-table-wrap,
+.lab-body .operator-table th,
+.lab-body .operator-table td {
+  border-color: var(--line);
+}
+
+.lab-body .operator-table th {
+  background: var(--surface-soft);
+  color: var(--muted);
+}
+
+.lab-body .operator-table td {
+  color: var(--ink-soft);
+}
+
+.lab-body .operator-channel {
+  border-color: var(--line-strong);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.lab-body .operator-empty {
+  border-color: var(--line-strong);
+  color: var(--muted);
+}
+
+.lab-body .operator-empty > span {
+  color: var(--accent);
+}
+
+.lab-body .operator-empty strong {
+  color: var(--ink-soft);
+}
+
+.lab-body .operator-scenario-type {
+  color: var(--accent-dark);
+}
+
+.lab-body .operator-safety-note {
+  background: var(--warning-soft);
+}
+
+.lab-body .operator-safety-note strong {
+  color: var(--warning);
+}
+
+/* Keep secondary mail actions readable and keep the row controls compact. */
+.gmail-message-toolbar button,
+.gmail-message-toolbar button:hover {
+  border: 1px solid #dadce0;
+  background: #fff;
+  color: #5f6368;
+  transform: none;
+}
+
+.gmail-star-action,
+.gmail-star-action button {
+  width: 22px;
+  height: 28px;
+  min-width: 22px;
+  max-width: 22px;
+}
+
+.gmail-star-action button,
+.gmail-star-action button:hover {
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #fbbc05;
+  transform: none;
+}
+
+.gmail-star-action button:hover {
+  background: #fff8e1;
+}
+
+.nimbusid-actions .nimbusid-deny,
+.nimbusid-actions .nimbusid-deny:hover {
+  border: 1px solid #cfd6e2;
+  background: #fff;
+  color: #59667c;
+  transform: none;
+}
+
+@media (max-width: 520px) {
+  .university-alert-steps {
+    margin-left: 0;
   }
 }
