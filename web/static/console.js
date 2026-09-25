@@ -29,6 +29,12 @@ const sandboxCaptureState = document.getElementById("sandbox-capture-state");
 const connectionState = document.getElementById("connection-state");
 const refreshButton = document.getElementById("refresh-console");
 const clearButton = document.getElementById("clear-console");
+const captureEventTypes = new Set([
+  "credential_submission_attempted",
+  "victim_action_completed",
+  "mfa_prompt_responded",
+  "qr_scan_simulated",
+]);
 
 function text(value) {
   if (typeof value === "string") return value;
@@ -102,6 +108,71 @@ function renderSandboxCaptures() {
     record.appendChild(fields);
     sandboxCaptures.appendChild(record);
   }
+}
+
+function renderEventCapture(event) {
+  if (!captureEventTypes.has(event.event_type)) return;
+  const section = document.createElement("section");
+  section.className = "console-event-capture";
+  section.appendChild(element("h3", "Synthetic sandbox capture"));
+  section.appendChild(
+    element(
+      "p",
+      "These accepted demo values are kept separate from normal Event metadata. The credential_submission_attempted JSON intentionally shows field_presence only.",
+    ),
+  );
+
+  if (!state.captureEnabled) {
+    section.appendChild(
+      element(
+        "p",
+        "Capture is disabled for this run. Set PHISIM_SANDBOX_CAPTURE=true, use a loopback development host, and restart the app.",
+      ),
+    );
+    detail.appendChild(section);
+    return;
+  }
+
+  const captures = state.captures.filter(
+    (capture) => capture.scenario_id === event.scenario_id,
+  );
+  if (captures.length === 0) {
+    section.appendChild(
+      element(
+        "p",
+        "No accepted sandbox capture is associated with this event yet. Values may be unavailable when the active session cache has expired.",
+      ),
+    );
+    detail.appendChild(section);
+    return;
+  }
+
+  for (const capture of captures) {
+    const record = document.createElement("article");
+    record.className = "console-event-capture-record";
+    const heading = document.createElement("header");
+    heading.appendChild(element("strong", `Step ${capture.step || "—"}`));
+    heading.appendChild(element("span", capture.channel || "local"));
+    record.appendChild(heading);
+    const fields = document.createElement("dl");
+    for (const field of capture.fields || []) {
+      const row = document.createElement("div");
+      row.appendChild(element("dt", field.name || "value"));
+      const value = document.createElement("dd");
+      value.textContent =
+        field.value === null || field.value === undefined
+          ? "Active-session value unavailable"
+          : String(field.value);
+      if (field.storage === "active-session") {
+        value.className = "sandbox-active-value";
+      }
+      row.appendChild(value);
+      fields.appendChild(row);
+    }
+    record.appendChild(fields);
+    section.appendChild(record);
+  }
+  detail.appendChild(section);
 }
 
 async function getJson(url) {
@@ -279,6 +350,7 @@ function renderDetail() {
       detail.appendChild(block);
     }
   }
+  renderEventCapture(event);
   const metadata = document.createElement("pre");
   metadata.textContent = JSON.stringify(event.metadata || {}, null, 2);
   detail.appendChild(metadata);

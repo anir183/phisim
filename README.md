@@ -22,11 +22,12 @@ cp .env.example .env
 uv run dev
 ```
 
-To enable the opt-in synthetic sandbox capture for the local training demo, set
-`PHISIM_SANDBOX_CAPTURE=true` in `.env`. It accepts only allowlisted demo
-values: emails ending in `@example.com` or `@gemail.com`, fictional payment
-options, and training-prefixed secret fields such as `sandbox-password`.
+The example environment enables the opt-in synthetic sandbox capture used by
+the local training demo. It accepts only allowlisted demo values: emails
+ending in `@example.com` or `@gemail.com`, fictional payment options, and
+training-prefixed secret fields such as `sandbox-password` or `test-pass`.
 Rejected values produce an accessible toast and are not advanced or stored.
+Set `PHISIM_SANDBOX_CAPTURE=false` for a telemetry-only demo.
 
 Open the local address printed by Uvicorn. The safe default is `127.0.0.1:8000`.
 

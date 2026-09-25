@@ -51,13 +51,13 @@ def test_synthetic_capture_is_visible_in_reveal_and_console_api(
 
     continued = client.post(
         f"{target}/continue",
-        data={"identifier": "student@gemail.com"},
+        data={"identifier": "student@example.com"},
         follow_redirects=False,
     )
     assert continued.status_code == 303
     finished = client.post(
         f"{target}/finish",
-        data={"password": "sandbox-password"},
+        data={"password": "test-pass"},
         follow_redirects=False,
     )
     assert finished.status_code == 303
@@ -65,8 +65,8 @@ def test_synthetic_capture_is_visible_in_reveal_and_console_api(
 
     assert completed.status_code == 200
     assert "SYNTHETIC SANDBOX CAPTURE" in completed.text
-    assert "student@gemail.com" in completed.text
-    assert "sandbox-password" in completed.text
+    assert "student@example.com" in completed.text
+    assert "test-pass" in completed.text
 
     response = client.get(
         "/api/sandbox/captures",
@@ -82,8 +82,8 @@ def test_synthetic_capture_is_visible_in_reveal_and_console_api(
     ]
     assert {field["name"] for field in fields} == {"identifier", "password"}
     assert {field["value"] for field in fields} == {
-        "student@gemail.com",
-        "sandbox-password",
+        "student@example.com",
+        "test-pass",
     }
 
     with Session(test_engine) as database_session:
@@ -91,9 +91,9 @@ def test_synthetic_capture_is_visible_in_reveal_and_console_api(
             launch["session_id"]
         )
         assert len(records) == 2
-        assert records[0].values == {"identifier": "student@gemail.com"}
+        assert records[0].values == {"identifier": "student@example.com"}
         assert records[1].values == {}
-        assert "sandbox-password" not in str(records[1].secret_digests)
+        assert "test-pass" not in str(records[1].secret_digests)
         assert (
             records[1].secret_digests["password"].startswith("pbkdf2_sha256$")
         )
@@ -145,7 +145,10 @@ def test_console_exposes_the_capture_endpoint_and_safe_dom_rendering(
 
     assert page.status_code == 200
     assert "Synthetic sandbox values" in page.text
+    assert "beside the matching Event" in page.text
     assert script.status_code == 200
     assert "/api/sandbox/captures" in script.text
     assert "innerHTML" not in script.text
     assert "renderSandboxCaptures" in script.text
+    assert "renderEventCapture" in script.text
+    assert "credential_submission_attempted" in script.text

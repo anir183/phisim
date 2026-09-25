@@ -7604,6 +7604,83 @@ body.mock-nimbusid,
   border-color: #2b3e60;
 }
 
+.console-event-capture {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  border: 1px solid #cbd9f4;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #f5f8ff;
+}
+
+.console-event-capture h3 {
+  margin: 0;
+  color: #3857a8;
+  font-size: 0.82rem;
+}
+
+.console-event-capture > p {
+  margin: 0;
+  color: #718097;
+  font-size: 0.65rem;
+  line-height: 1.5;
+}
+
+.console-event-capture-record {
+  display: grid;
+  gap: 0.4rem;
+  border-top: 1px solid #dbe4f5;
+  padding-top: 0.55rem;
+}
+
+.console-event-capture-record header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: #52627c;
+  font-size: 0.64rem;
+}
+
+.console-event-capture-record header span {
+  color: #8a95a8;
+  font-size: 0.59rem;
+}
+
+.console-event-capture-record dl {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.console-event-capture-record dl div {
+  display: grid;
+  grid-template-columns: minmax(90px, 0.35fr) minmax(0, 1fr);
+  gap: 0.5rem;
+}
+
+.console-event-capture-record dt,
+.console-event-capture-record dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.65rem;
+}
+
+.console-event-capture-record dt {
+  color: #8a95a8;
+  font-weight: 700;
+}
+
+.console-event-capture-record dd {
+  color: #34425d;
+  font-weight: 700;
+}
+
+.console-event-capture-record dd.sandbox-active-value {
+  color: #19734a;
+}
+
 @media (max-width: 1180px) {
   .console-layout {
     grid-template-columns: 220px minmax(0, 1fr);

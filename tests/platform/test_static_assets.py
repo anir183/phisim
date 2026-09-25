@@ -41,6 +41,7 @@ def test_shared_static_assets_are_local_and_mounted(
     assert 'cache: "no-store"' in victim_script.text
     assert "previousSelection" in console_script.text
     assert "rememberLiveSession" in console_script.text
+    assert "renderEventCapture" in console_script.text
     assert "setInterval(() => loadSessions" in console_script.text
     assert ".step-label" in css.text
     assert ".step-dot" in css.text
