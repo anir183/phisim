@@ -286,14 +286,31 @@ def _email_messages_for_history(
     return messages
 
 
-def _sms_threads_for_history(attacks: list) -> list[dict[str, object]]:
+def _sms_threads_for_history(
+    attacks: list,
+    *,
+    query: str = "",
+) -> list[dict[str, object]]:
     threads: list[dict[str, object]] = []
+    normalized_query = query.casefold().strip()
     for attack in attacks:
         if attack.channel != "sms":
             continue
         for thread_id in attack.state.get("delivered_thread_ids", []):
             attack_thread = get_sms_thread(thread_id)
             if attack_thread is None:
+                continue
+            if (
+                normalized_query
+                and normalized_query
+                not in " ".join(
+                    (
+                        attack_thread.sender_label,
+                        attack_thread.sender_number,
+                        *attack_thread.messages,
+                    )
+                ).casefold()
+            ):
                 continue
             threads.append(
                 {
@@ -309,6 +326,7 @@ def _sms_threads_for_history(attacks: list) -> list[dict[str, object]]:
                         thread_id not in attack.state.get("read_thread_ids", [])
                         and bool(attack_thread.unread)
                     ),
+                    "typing": bool(attack_thread.typing_delay_ms),
                     "is_attack": True,
                 }
             )
@@ -379,6 +397,7 @@ async def baseline_mail(
 async def baseline_messages(
     request: Request,
     database_session: Annotated[OrmSession, Depends(get_session)],
+    q: str | None = Query(default=None, max_length=64),
 ) -> HTMLResponse:
     cookie_response = Response()
     environment = get_or_create_victim_environment(
@@ -399,7 +418,8 @@ async def baseline_messages(
             context={
                 "attack": display_attack,
                 "site_theme": get_site_theme(None, "sms"),
-                "threads": _sms_threads_for_history(history),
+                "threads": _sms_threads_for_history(history, query=q or ""),
+                "search_query": q or "",
                 "active_page": "victim",
             },
         )
@@ -806,6 +826,7 @@ async def victim_messages(
     request: Request,
     token: str,
     database_session: Annotated[OrmSession, Depends(get_session)],
+    q: str | None = Query(default=None, max_length=64),
 ) -> HTMLResponse:
     _get_environment(database_session, token)
     history = await _refresh_attack_history(database_session, token)
@@ -827,7 +848,8 @@ async def victim_messages(
         context={
             "attack": display_attack,
             "site_theme": get_site_theme(None, "sms"),
-            "threads": _sms_threads_for_history(history),
+            "threads": _sms_threads_for_history(history, query=q or ""),
+            "search_query": q or "",
             "active_page": "victim",
         },
     )

@@ -451,6 +451,36 @@ def test_gemail_supports_mailbox_folders_search_and_message_actions(
         ]
 
 
+def test_quickchat_supports_conversation_search_and_message_view(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    launch = _launch(client, "sms-parcel-001", "online shopper")
+    token = launch["victim_path"].split("/")[2]
+    _set_due(test_engine, launch["attack_id"], datetime.now(UTC))
+
+    page = client.get(f"/v/{token}/messages")
+    assert page.status_code == 200
+    assert "quickchat-thread" in page.text
+    assert "Search conversations" in page.text
+
+    filtered = client.get(
+        f"/v/{token}/messages",
+        params={"q": "parcel"},
+    )
+    assert "sms-parcel-001" in filtered.text
+    assert "sms-tech-support-001" not in filtered.text
+
+    conversation = client.get(
+        f"/v/{token}/messages/sms-parcel-001",
+        params={"delivery_id": launch["attack_id"]},
+    )
+    assert conversation.status_code == 200
+    assert "Message a local conversation" in conversation.text
+    assert "Composer is read-only" in conversation.text
+    assert "Open local message link" in conversation.text
+
+
 def test_end_simulation_completes_without_credentials(
     client: TestClient,
     test_engine: Engine,

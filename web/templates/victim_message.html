@@ -4,31 +4,26 @@
 {% block app_name %}QuickChat{% endblock %}
 
 {% block victim_content %}
-  <section class="surface conversation-layout" aria-labelledby="victim-thread-title">
-    <aside class="conversation-list" aria-label="QuickChat conversations">
-      <div class="conversation-list-header">
-        <a class="button button-quiet" href="{{ url_for('victim_messages', token=attack.victim_token) }}">← All chats</a>
-        <h1 id="victim-thread-title" style="margin-top: 0.8rem">QuickChat</h1>
-      </div>
-      <a class="conversation-item" data-delivery-id="{{ thread.delivery_id }}" href="{{ url_for('victim_message', token=attack.victim_token, thread_id=thread.thread_id) }}?delivery_id={{ thread.delivery_id }}" aria-current="page">
-        <strong>{{ thread.sender_label }}</strong>
-        <span>{{ thread.sender_number }}</span>
-        <span>{{ thread.messages[-1] }}</span>
-      </a>
-    </aside>
-    <div class="chat-panel">
-      <header class="chat-header">
-        <div><h2>{{ thread.sender_label }}</h2><span class="help-text">{{ thread.sender_number }}</span></div>
-        {% if thread.is_attack %}<span class="badge badge-warning">New message</span>{% endif %}
-      </header>
-      <div class="chat-messages" role="log" aria-label="Message history">
-        {% for text in thread.messages %}
-          <div class="chat-bubble">{{ text }}<span class="chat-time">{{ thread.timestamp[11:19] }}</span></div>
-        {% endfor %}
-        {% if thread.is_attack %}
-          <div class="chat-bubble"><a href="{{ url_for('victim_message_link', token=attack.victim_token, thread_id=thread.thread_id) }}?delivery_id={{ thread.delivery_id }}">Open message link</a><span class="chat-time">Local link</span></div>
-        {% endif %}
-      </div>
+  <section class="quickchat-conversation" aria-labelledby="quickchat-contact-title">
+    <header class="quickchat-topbar">
+      <a class="quickchat-brand" href="{{ url_for('victim_messages', token=attack.victim_token) }}"><span class="quickchat-brand-mark" aria-hidden="true">Q</span><span>QuickChat</span></a>
+      <a class="quickchat-back" href="{{ url_for('victim_messages', token=attack.victim_token) }}">← All chats</a>
+      <div class="quickchat-top-actions"><button type="button" aria-label="Conversation search">⌕</button><button type="button" aria-label="More">•••</button><span class="quickchat-profile">NS</span></div>
+    </header>
+    <div class="quickchat-conversation-layout">
+      <aside class="quickchat-conversation-list" aria-label="Conversation shortcuts"><a class="active" href="{{ url_for('victim_messages', token=attack.victim_token) }}">← Chats</a><a href="#media">Media</a><a href="#links">Links</a><a href="#settings">Settings</a></aside>
+      <main class="quickchat-chat-panel">
+        <header class="quickchat-contact-header"><span class="quickchat-contact-avatar">{{ thread.sender_label[:1] }}</span><div><h1 id="quickchat-contact-title">{{ thread.sender_label }}</h1><span>{{ thread.sender_number }} · local conversation</span></div><span class="quickchat-contact-status"><i></i> Active</span><button type="button" aria-label="Conversation options">•••</button></header>
+        <div class="quickchat-day-divider"><span>Today</span></div>
+        <div class="quickchat-message-history" role="log" aria-label="Message history">
+          {% for text in thread.messages %}
+            <div class="quickchat-bubble-row incoming"><span class="quickchat-bubble-avatar">{{ thread.sender_label[:1] }}</span><div class="quickchat-bubble"><p>{{ text }}</p><time>{{ thread.timestamp[11:16] }} · {{ thread.sender_label }}</time></div></div>
+          {% endfor %}
+          {% if thread.typing %}<div class="quickchat-typing-row"><span class="quickchat-bubble-avatar">{{ thread.sender_label[:1] }}</span><div class="quickchat-typing-bubble">typing<span>•••</span></div></div>{% endif %}
+          {% if thread.is_attack %}<div class="quickchat-bubble-row incoming link-row"><span class="quickchat-bubble-avatar">{{ thread.sender_label[:1] }}</span><div class="quickchat-bubble quickchat-link-bubble"><a href="{{ url_for('victim_message_link', token=attack.victim_token, thread_id=thread.thread_id) }}?delivery_id={{ thread.delivery_id }}">Open local message link</a><time>External service not contacted</time></div></div>{% endif %}
+        </div>
+        <div class="quickchat-composer" aria-label="Local composer preview"><button type="button" aria-label="Add attachment">＋</button><input type="text" placeholder="Message a local conversation" disabled /><button type="button" class="quickchat-send" disabled aria-label="Send message">➤</button><small>Composer is read-only in this local simulation.</small></div>
+      </main>
     </div>
   </section>
 {% endblock %}
