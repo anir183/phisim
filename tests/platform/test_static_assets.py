@@ -9,12 +9,14 @@ def test_shared_static_assets_are_local_and_mounted(
     simulation_script = client.get("/static/simulation.js")
     victim_script = client.get("/static/victim.js")
     lab_script = client.get("/static/lab.js")
+    lab_dashboard_script = client.get("/static/lab-dashboard.js")
 
     assert css.status_code == 200
     assert console_script.status_code == 200
     assert simulation_script.status_code == 200
     assert victim_script.status_code == 200
     assert lab_script.status_code == 200
+    assert lab_dashboard_script.status_code == 200
     assert "https://" not in css.text
     assert "http://" not in css.text
     assert "innerHTML" not in console_script.text
@@ -28,6 +30,12 @@ def test_shared_static_assets_are_local_and_mounted(
     assert "payload.events" in lab_script.text
     assert "connectLiveEvents" in lab_script.text
     assert "replaceChildren" in lab_script.text
+    assert "innerHTML" not in lab_dashboard_script.text
+    assert "setInterval(refresh" in lab_dashboard_script.text
+    assert 'cache: "no-store"' in lab_dashboard_script.text
+    assert "quickchat-thread-list" in victim_script.text
+    assert 'cache: "no-store"' in victim_script.text
+    assert "previousSelection" in console_script.text
     assert "rememberLiveSession" in console_script.text
     assert "setInterval(() => loadSessions" in console_script.text
     assert ".step-label" in css.text

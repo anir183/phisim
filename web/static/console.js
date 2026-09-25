@@ -11,6 +11,7 @@ const state = {
   retryAttempt: 0,
   stopped: false,
   sessionsInitialized: false,
+  sessionsRefreshInFlight: false,
 };
 
 const sessionFilter = document.getElementById("session-filter");
@@ -47,7 +48,10 @@ function showEmpty(parent, message) {
 }
 
 async function getJson(url) {
-  const response = await fetch(url, { headers: { Accept: "application/json" } });
+  const response = await fetch(url, {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
   if (!response.ok) throw new Error(`Request failed (${response.status})`);
   return response.json();
 }
@@ -224,6 +228,8 @@ function renderDetail() {
 }
 
 async function loadSessions(force = false) {
+  if (state.sessionsRefreshInFlight) return;
+  state.sessionsRefreshInFlight = true;
   try {
     const sessions = await getJson("/api/sessions");
     if (!Array.isArray(sessions)) throw new Error("Unexpected Session response");
@@ -245,12 +251,14 @@ async function loadSessions(force = false) {
     const shouldRefreshSelection =
       force || !state.sessionsInitialized || !previousSelection;
     state.sessionsInitialized = true;
-    if (shouldRefreshSelection && state.selectedSession) {
+    if (state.selectedSession && (shouldRefreshSelection || previousSelection)) {
       await selectSession(state.selectedSession, !force && !!previousSelection);
     }
   } catch (_error) {
     showEmpty(sessionList, "Unable to load Sessions.");
     setConnection("API error", "danger");
+  } finally {
+    state.sessionsRefreshInFlight = false;
   }
 }
 

@@ -13,6 +13,7 @@ if (frame) {
   const abandonButton = document.getElementById("abandon-attack");
   const victimLink = document.getElementById("victim-link");
   let lastEventsFingerprint = "";
+  let refreshInFlight = false;
   let socket = null;
   let reconnectTimer = null;
   let stopped = false;
@@ -70,10 +71,16 @@ if (frame) {
   }
 
   async function refresh() {
+    if (refreshInFlight) return;
+    refreshInFlight = true;
     try {
-      const response = await fetch(`/api/lab/attacks/${encodeURIComponent(attackId)}`, {
-        headers: { Accept: "application/json" },
-      });
+      const response = await fetch(
+        `/api/lab/attacks/${encodeURIComponent(attackId)}?_=${Date.now()}`,
+        {
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        },
+      );
       if (!response.ok) throw new Error("Status request failed");
       const payload = await response.json();
       status.textContent = text(payload.status);
@@ -95,6 +102,8 @@ if (frame) {
       }
     } catch (_error) {
       status.textContent = "Status unavailable";
+    } finally {
+      refreshInFlight = false;
     }
   }
 
