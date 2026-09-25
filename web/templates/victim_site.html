@@ -14,9 +14,9 @@
       {% include "apps/amazaun/home.html" %}
     {% else %}
       {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
-      {% set field_label = "Delivery address" %}
-      {% set field_name = "confirmation" %}
-      {% set submit_label = "Confirm order" %}
+      {% set field_label = "Payment method" %}
+      {% set field_name = "payment_method" %}
+      {% set submit_label = "Confirm payment" %}
       {% include "apps/amazaun/checkout.html" %}
     {% endif %}
   {% elif site_theme.key == "cloudbox" %}

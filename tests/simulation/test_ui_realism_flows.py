@@ -117,10 +117,13 @@ def test_amazaun_manual_route_walks_order_to_debrief(
     checkout = client.get(continued.headers["location"])
     assert checkout.status_code == 200
     assert "amazaun-checkout" in checkout.text
+    assert "Payment method" in checkout.text
+    assert "Delivery address" not in checkout.text
+    assert 'name="payment_method"' in checkout.text
 
     finished = client.post(
         f"{target}/finish",
-        data={"confirmation": "local-training-confirmation"},
+        data={"payment_method": "Fictional card ending 4242"},
         follow_redirects=False,
     )
     assert finished.status_code == 303
@@ -253,9 +256,14 @@ def test_each_product_flow_reaches_destination_before_manual_debrief(
         follow_redirects=False,
     )
     assert continued.status_code == 303
+    finish_data = (
+        {"payment_method": "Fictional card ending 4242"}
+        if scenario_id == "credential-shopping-001"
+        else {"confirmation": "local-training-confirmation"}
+    )
     finished = client.post(
         f"{target}/finish",
-        data={"confirmation": "local-training-confirmation"},
+        data=finish_data,
         follow_redirects=False,
     )
     assert finished.status_code == 303

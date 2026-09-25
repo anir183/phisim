@@ -4240,6 +4240,7 @@ body.mock-nimbusid,
 }
 
 .amazaun-form input,
+.amazaun-form select,
 .cloudbox-form input {
   width: 100%;
   border: 1px solid #cfd5df;
@@ -4248,6 +4249,41 @@ body.mock-nimbusid,
   background: #fff;
   color: #111827;
   font-size: 0.8rem;
+}
+
+.amazaun-form select {
+  appearance: auto;
+}
+
+.amazaun-payment-note {
+  color: #6b7280;
+  font-size: 0.63rem;
+  line-height: 1.45;
+}
+
+.amazaun-checkout-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1rem 0;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.85rem 0;
+}
+
+.amazaun-checkout-summary div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.amazaun-checkout-summary span {
+  color: #9ca3af;
+  font-size: 0.62rem;
+}
+
+.amazaun-checkout-summary strong {
+  color: #374151;
+  font-size: 0.7rem;
 }
 
 .amazaun-form button,

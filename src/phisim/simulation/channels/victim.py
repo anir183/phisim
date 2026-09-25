@@ -1173,7 +1173,15 @@ async def victim_site_finish(
         )
     await _record_website_viewed(database_session, attack, scenario)
     form = await request.form()
-    value = form.get("password", form.get("confirmation", ""))
+    value = form.get("password", "")
+    if not value:
+        value = form.get("confirmation", form.get("payment_method", ""))
+    payment_method_present = "payment_method" in form
+    non_credential_action = (
+        "payment_method_selected"
+        if payment_method_present
+        else "confirmation_submitted"
+    )
     service = _attack_service(database_session)
     service.update_state(
         attack,
@@ -1209,8 +1217,11 @@ async def victim_site_finish(
             source="victim",
             metadata={
                 "channel": "website",
-                "action": "confirmation_submitted",
-                "field_presence": {"confirmation": bool(value)},
+                "action": non_credential_action,
+                "field_presence": {
+                    "confirmation": bool(value),
+                    "payment_method": payment_method_present and bool(value),
+                },
                 "attack_id": attack.attack_id,
             },
         )
@@ -1232,7 +1243,7 @@ async def victim_site_finish(
         scenario,
         action="credential_submission_attempted"
         if credential_flow
-        else "confirmation_submitted",
+        else non_credential_action,
     )
     return RedirectResponse(
         f"/v/{attack.victim_token}/site/{scenario_id}/result",

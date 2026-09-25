@@ -540,7 +540,7 @@ def test_end_simulation_completes_without_credentials(
     assert "Simulation ended" in repeated.text
 
 
-def test_shopping_flow_uses_confirmation_instead_of_password(
+def test_shopping_flow_uses_payment_method_instead_of_password(
     client: TestClient,
     test_engine: Engine,
 ) -> None:
@@ -553,9 +553,12 @@ def test_shopping_flow_uses_confirmation_instead_of_password(
         follow_redirects=False,
     )
     assert continued.status_code == 303
+    checkout = client.get(continued.headers["location"])
+    assert "Payment method" in checkout.text
+    assert "Delivery address" not in checkout.text
     processing = client.post(
         f"{site_path}/finish",
-        data={"confirmation": "12 Example Street"},
+        data={"payment_method": "Fictional card ending 4242"},
         follow_redirects=False,
     )
     assert processing.status_code == 303
@@ -577,6 +580,15 @@ def test_shopping_flow_uses_confirmation_instead_of_password(
         )
         event_types = [event.event_type for event in events]
         assert "victim_action_completed" in event_types
+        action_event = next(
+            event
+            for event in events
+            if event.event_type == "victim_action_completed"
+        )
+        assert action_event.metadata_["action"] == "payment_method_selected"
+        assert (
+            action_event.metadata_["field_presence"]["payment_method"] is True
+        )
         assert "destination_reached" in event_types
         assert "attack_completed" in event_types
         assert "credential_submission_attempted" not in event_types

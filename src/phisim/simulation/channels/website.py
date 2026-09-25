@@ -269,6 +269,8 @@ async def scenario_password_submit(
         raise HTTPException(status_code=404, detail="Scenario not found.")
     form = await request.form()
     password_value = form.get("password", "")
+    if not password_value and scenario.scenario_id == "credential-shopping-001":
+        password_value = form.get("payment_method", "")
     cookie_response = Response()
     session_id = ensure_simulation_session(
         request,
@@ -307,12 +309,15 @@ async def scenario_submit(
     if scenario is None or scenario.channel != "website":
         raise HTTPException(status_code=404, detail="Scenario not found.")
     form = await request.form()
+    password_value = form.get("password", "")
+    if not password_value and scenario.scenario_id == "credential-shopping-001":
+        password_value = form.get("payment_method", "")
     return await _complete_credential_submission(
         request,
         scenario,
         session,
         username_present=bool(form.get("username", "")),
-        password_value=form.get("password", ""),
+        password_value=password_value,
     )
 
 
