@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('static', path='phisim.css') }}" />
   </head>
   {% set active_theme = site_theme|default(None) %}
+  {% set context_token = attack.victim_token if attack is defined and attack else environment.victim_token if environment is defined else "" %}
   <body class="victim-body product-victim{% if active_theme %} mock-site mock-{{ active_theme.key }}{% endif %}">
-    <div class="victim-shell product-document" data-victim-token="{{ attack.victim_token }}" data-attack-id="{{ attack.attack_id }}">
+    <div class="victim-shell product-document" data-victim-token="{{ context_token }}"{% if attack %} data-attack-id="{{ attack.attack_id }}"{% endif %}>
       {% block site_chrome %}{% endblock %}
       <main class="victim-product-main">
         {% block victim_content %}{% endblock %}

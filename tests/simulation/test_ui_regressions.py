@@ -179,6 +179,10 @@ def test_layout_regressions_keep_portal_chrome_and_light_lab_separate(
     stylesheet = client.get("/static/phisim.css")
     assert ".gmail-star-action button:hover" in stylesheet.text
     assert ".nimbusid-actions .nimbusid-deny:hover" in stylesheet.text
+    assert ".product-document" in stylesheet.text
+    assert ".victim-product-main" in stylesheet.text
+    assert ".legacy-shell.mock-site .page-frame" in stylesheet.text
+    assert ".destination-main" in stylesheet.text
 
     console = client.get("/console")
     assert 'class="lab-body console-body"' in console.text

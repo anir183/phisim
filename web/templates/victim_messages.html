@@ -4,15 +4,16 @@
 {% block app_name %}QuickChat{% endblock %}
 
 {% block victim_content %}
+  {% set context_token = attack.victim_token if attack is defined and attack else environment.victim_token %}
   <section class="quickchat-app" aria-labelledby="quickchat-chats-title">
     <header class="quickchat-topbar">
-      <a class="quickchat-brand" href="{{ url_for('victim_messages', token=attack.victim_token) }}"><span class="quickchat-brand-mark" aria-hidden="true">Q</span><span>QuickChat</span></a>
-      <form class="quickchat-search" method="get" action="{{ url_for('victim_messages', token=attack.victim_token) }}" role="search"><input type="search" name="q" value="{{ search_query }}" placeholder="Search conversations" aria-label="Search conversations" /><button type="submit" aria-label="Search">⌕</button></form>
+      <a class="quickchat-brand" href="{{ url_for('victim_messages', token=context_token) }}"><span class="quickchat-brand-mark" aria-hidden="true">Q</span><span>QuickChat</span></a>
+      <form class="quickchat-search" method="get" action="{{ url_for('victim_messages', token=context_token) }}" role="search"><input type="search" name="q" value="{{ search_query }}" placeholder="Search conversations" aria-label="Search conversations" /><button type="submit" aria-label="Search">⌕</button></form>
       <div class="quickchat-top-actions"><button type="button" aria-label="Help">?</button><button type="button" aria-label="Settings">⚙</button><span class="quickchat-profile">NS</span></div>
     </header>
     <div class="quickchat-layout">
       <aside class="quickchat-rail" aria-label="QuickChat sections">
-        <a class="active" href="{{ url_for('victim_messages', token=attack.victim_token) }}"><span>◉</span>Chats</a>
+        <a class="active" href="{{ url_for('victim_messages', token=context_token) }}"><span>◉</span>Chats</a>
         <a href="#status"><span>◌</span>Status</a>
         <a href="#calls"><span>⌕</span>Calls</a>
         <a href="#saved"><span>☆</span>Saved</a>
@@ -23,7 +24,7 @@
         <div class="quickchat-filter-row"><span class="active">All</span><span>Unread</span><span>Recent</span></div>
         <div class="quickchat-thread-list">
           {% for thread in threads %}
-            <a class="quickchat-thread {% if thread.unread %}unread{% endif %}" data-thread-id="{{ thread.thread_id }}" data-delivery-id="{{ thread.delivery_id }}" href="{{ url_for('victim_message', token=attack.victim_token, thread_id=thread.thread_id) }}?delivery_id={{ thread.delivery_id }}">
+            <a class="quickchat-thread {% if thread.unread %}unread{% endif %}" data-thread-id="{{ thread.thread_id }}" data-delivery-id="{{ thread.delivery_id }}" href="{{ url_for('victim_message', token=context_token, thread_id=thread.thread_id) }}?delivery_id={{ thread.delivery_id }}">
               <span class="quickchat-thread-avatar">{{ thread.sender_label[:1] }}</span>
               <span class="quickchat-thread-copy"><strong>{{ thread.sender_label }}</strong><span>{{ thread.messages[-1] }}</span></span>
               <time>{{ thread.timestamp[11:16] }}</time>

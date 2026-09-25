@@ -397,10 +397,13 @@ async def baseline_mail(
     else:
         response = templates.TemplateResponse(
             request=request,
-            name="environment_mail.html",
+            name="victim_mail.html",
             context={
                 "environment": {"victim_token": environment.token},
+                "site_theme": get_site_theme(None, "email"),
                 "messages": [],
+                "folder": folder,
+                "search_query": q or "",
                 "active_page": "victim",
             },
         )
@@ -441,10 +444,12 @@ async def baseline_messages(
     else:
         response = templates.TemplateResponse(
             request=request,
-            name="environment_messages.html",
+            name="victim_messages.html",
             context={
                 "environment": {"victim_token": environment.token},
+                "site_theme": get_site_theme(None, "sms"),
                 "threads": [],
+                "search_query": q or "",
                 "active_page": "victim",
             },
         )
@@ -483,10 +488,13 @@ async def victim_mail(
     if display_attack is None:
         return templates.TemplateResponse(
             request=request,
-            name="environment_mail.html",
+            name="victim_mail.html",
             context={
                 "environment": {"victim_token": token},
+                "site_theme": get_site_theme(None, "email"),
                 "messages": [],
+                "folder": folder,
+                "search_query": q or "",
                 "active_page": "victim",
             },
         )
@@ -916,10 +924,12 @@ async def victim_messages(
     if display_attack is None:
         return templates.TemplateResponse(
             request=request,
-            name="environment_messages.html",
+            name="victim_messages.html",
             context={
                 "environment": {"victim_token": token},
+                "site_theme": get_site_theme(None, "sms"),
                 "threads": [],
+                "search_query": q or "",
                 "active_page": "victim",
             },
         )

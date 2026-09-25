@@ -8100,3 +8100,88 @@ body.mock-nimbusid,
     flex-direction: column;
   }
 }
+
+/* Keep standalone product documents and their product panes filled to the
+   viewport instead of leaving a short card floating in the page canvas. */
+.product-document,
+.victim-shell.product-document {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.victim-product-main {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.victim-product-main > section,
+.legacy-shell.mock-site .page-frame > section {
+  flex: 1 0 auto;
+}
+
+.legacy-shell.mock-site .page-frame {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.product-document > .destination-page {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.destination-main {
+  flex: 1 0 auto;
+}
+
+.product-local-marker {
+  flex: 0 0 auto;
+}
+
+.gmail-shell,
+.gmail-message-shell,
+.quickchat-app,
+.quickchat-conversation,
+.document-viewer,
+.nimbusid-device,
+.university-app,
+.support-app,
+.payment-app,
+.amazaun-app,
+.cloudbox-app {
+  display: flex;
+  flex-direction: column;
+}
+
+.gmail-layout,
+.quickchat-layout,
+.quickchat-conversation-layout,
+.document-viewer-layout,
+.nimbusid-device-body,
+.university-app > .university-layout,
+.university-app > .university-main,
+.university-app > .exam-main,
+.university-app > .course-main,
+.support-app > .support-main,
+.support-app > .support-layout,
+.payment-app > .payment-main,
+.amazaun-app > .amazaun-main,
+.cloudbox-app > .cloudbox-layout {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+@media (max-width: 760px) {
+  .gmail-layout,
+  .quickchat-layout,
+  .quickchat-conversation-layout,
+  .university-app > .university-layout,
+  .cloudbox-app > .cloudbox-layout {
+    min-height: 0;
+  }
+}

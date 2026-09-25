@@ -168,7 +168,14 @@ The live delivery paths now avoid stale browser state:
 `tests/simulation/test_live_updates.py` covers the endpoint and polling
 contracts.
 
-## Safety and privacy result
+## Baseline and viewport follow-up
+
+The no-attack `/mail` and `/messages` entry points now render the same branded
+Gemail and QuickChat documents as their attack-backed routes, including their
+live empty states. The standalone product document, destination document,
+legacy application frame, and primary mailbox/messenger panes now flex to the
+available viewport height instead of ending at a short fixed card height.
+
 
 - No real credentials or personal data were used.
 - No submitted values are persisted, logged, broadcast, or returned.

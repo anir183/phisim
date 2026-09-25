@@ -59,12 +59,23 @@ def test_preopened_mailbox_is_the_environment_used_by_operator_launch(
 ) -> None:
     baseline = client.get("/mail")
     assert baseline.status_code == 200
+    assert "gmail-shell" in baseline.text
+    assert "gmail-topbar" in baseline.text
+    assert "fake-app-layout" not in baseline.text
     assert "Inbox zero" in baseline.text
     assert "ordinary-001" not in baseline.text
     assert "email-phish-001" not in baseline.text
     assert "Scenario Lab" not in baseline.text
     token = client.cookies.get("phisim_victim_context")
     assert token
+    explicit_mail = client.get(f"/v/{token}/mail")
+    assert explicit_mail.status_code == 200
+    assert "gmail-shell" in explicit_mail.text
+    assert "fake-app-layout" not in explicit_mail.text
+    explicit_messages = client.get(f"/v/{token}/messages")
+    assert explicit_messages.status_code == 200
+    assert "quickchat-app" in explicit_messages.text
+    assert "conversation-layout" not in explicit_messages.text
     assert client.get(f"/v/{token}/mail/ordinary-001").status_code == 404
     assert (
         client.get(f"/v/{token}/messages/ordinary-sms-001").status_code == 404
@@ -689,6 +700,9 @@ def test_preopened_quickchat_receives_only_the_launched_thread(
 ) -> None:
     baseline = client.get("/messages")
     assert baseline.status_code == 200
+    assert "quickchat-app" in baseline.text
+    assert "quickchat-topbar" in baseline.text
+    assert "conversation-layout" not in baseline.text
     assert "No conversations" in baseline.text
     assert "ordinary-sms-001" not in baseline.text
     assert "sms-parcel-001" not in baseline.text

@@ -137,6 +137,11 @@ The destination matrix covers UniSecure, Amazaun, CloudBox, PayMate, Support,
 MAKExam, TechnoSphere, and NimbusID. Submitted values remain absent from the
 destination, state, events, and reveal.
 
+The baseline `/mail` and `/messages` routes are now covered as branded
+Gemail/QuickChat empty states, and the stylesheet regression checks cover the
+viewport-filling product document and destination layout rules.
+
+
 ## Additional application checks
 
 The following route checks also passed:
