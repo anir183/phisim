@@ -6358,6 +6358,12 @@ body.mock-nimbusid,
   .document-page { min-height: 420px; padding: 1rem; }
 }
 
+/* Application templates provide their own product chrome; keep the shared
+   victim frame limited to the local safety strip. */
+.victim-body.mock-site .victim-topbar {
+  display: none;
+}
+
 /* Training reveal is intentionally outside the victim application shell. */
 .training-reveal-body {
   min-height: 100vh;
