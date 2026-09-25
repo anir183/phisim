@@ -6662,13 +6662,20 @@ body.mock-nimbusid,
 .training-reveal-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+  align-items: stretch;
   gap: 1rem;
   padding: 1.2rem 1.5rem;
 }
 
-.training-reveal-grid main {
+.training-reveal-grid > main {
   display: grid;
+  min-width: 0;
+  align-content: start;
   gap: 0.75rem;
+  border: 1px solid #d9e1f0;
+  border-radius: 10px;
+  padding: 0.9rem;
+  background: #fff;
 }
 
 .training-story {
@@ -6854,11 +6861,18 @@ body.mock-nimbusid,
 }
 
 .training-evidence {
-  align-self: start;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-self: stretch;
   border: 1px solid #d9e1f0;
   border-radius: 10px;
   padding: 0.9rem;
   background: #f8faff;
+}
+
+.training-evidence > .sandbox-capture-panel {
+  margin-top: 0.9rem;
 }
 
 .training-indicator-list {

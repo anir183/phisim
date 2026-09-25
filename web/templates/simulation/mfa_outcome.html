@@ -42,7 +42,6 @@
             </ul>
           </div>
         </section>
-        {% if sandbox_capture_enabled %}{% include "sandbox_capture_panel.html" %}{% endif %}
       </main>
       <aside class="training-evidence">
         <p class="training-kicker">LOCAL RUN SUMMARY</p>
@@ -55,6 +54,7 @@
           {% endif %}
         </div>
         <p class="training-evidence-note"><strong>Next step</strong><br />Return to the environment and review the recorded evidence.</p>
+        {% if sandbox_capture_enabled %}{% include "sandbox_capture_panel.html" %}{% endif %}
         <div class="form-actions">
           <a class="button" href="{{ url_for('scenario_lab') }}">Choose another scenario</a>
           <a class="button button-secondary" href="{{ url_for('console') }}">Open analyst console</a>

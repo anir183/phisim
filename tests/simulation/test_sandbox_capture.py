@@ -67,6 +67,11 @@ def test_synthetic_capture_is_visible_in_reveal_and_console_api(
     assert "SYNTHETIC SANDBOX CAPTURE" in completed.text
     assert "student@example.com" in completed.text
     assert "test-pass" in completed.text
+    evidence_index = completed.text.index("Evidence captured")
+    capture_index = completed.text.index("SYNTHETIC SANDBOX CAPTURE")
+    left_column_end = completed.text.index("</main>")
+    assert left_column_end < capture_index
+    assert evidence_index < capture_index
 
     response = client.get(
         "/api/sandbox/captures",
