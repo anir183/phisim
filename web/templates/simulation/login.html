@@ -3,27 +3,28 @@
 {% block title %}{{ site_theme.display_name }} · {{ scenario.title }}{% endblock %}
 
 {% block simulation_content %}
+  {% set home_action = url_for("scenario_login", scenario_id=scenario.scenario_id) %}
+  {% set form_action = url_for("scenario_username", scenario_id=scenario.scenario_id) %}
+  {% set identifier_name = "username" %}
+  {% set end_url = url_for("scenario_end", scenario_id=scenario.scenario_id) %}
   {% if site_theme.key == "amazaun" %}
-    {% set identifier_label = "Delivery address" %}
-    {% set identifier_name = "username" %}
-    {% set form_action = url_for("scenario_username", scenario_id=scenario.scenario_id) %}
-    {% set home_action = url_for("scenario_login", scenario_id=scenario.scenario_id) %}
-    {% set end_url = url_for("scenario_end", scenario_id=scenario.scenario_id) %}
-    {% include "apps/amazaun/home.html" %}
+    {% set identifier_label = "Delivery address" %}{% include "apps/amazaun/home.html" %}
   {% elif site_theme.key == "cloudbox" %}
-    {% set identifier_label = "Work email" %}
-    {% set identifier_name = "username" %}
-    {% set form_action = url_for("scenario_username", scenario_id=scenario.scenario_id) %}
-    {% set home_action = url_for("scenario_login", scenario_id=scenario.scenario_id) %}
-    {% set end_url = url_for("scenario_end", scenario_id=scenario.scenario_id) %}
-    {% include "apps/cloudbox/home.html" %}
+    {% set identifier_label = "Work email" %}{% include "apps/cloudbox/home.html" %}
+  {% elif site_theme.key == "unisecure" %}
+    {% set identifier_label = "Student ID" %}{% include "apps/university/account_home.html" %}
+  {% elif site_theme.key == "makexam" %}
+    {% set identifier_label = "Exam registration ID" %}{% include "apps/university/exam_home.html" %}
+  {% elif site_theme.key == "technosphere" %}
+    {% set identifier_label = "Course code" %}{% include "apps/university/course_home.html" %}
+  {% elif site_theme.key == "support" %}
+    {% set identifier_label = "Employee ID" %}{% include "apps/support/home.html" %}
+  {% elif site_theme.key == "paymate" %}
+    {% set identifier_label = "Billing email" %}{% include "apps/payment/home.html" %}
   {% else %}
     {% set identifier_label = "Email or username" %}
-    {% set identifier_name = "username" %}
     {% set identifier_type = "text" %}
-    {% set form_action = url_for("scenario_username", scenario_id=scenario.scenario_id) %}
     {% set secondary_action = "#mock-action-title" %}
-    {% set end_url = url_for("scenario_end", scenario_id=scenario.scenario_id) %}
     {% include "sites/landing.html" %}
   {% endif %}
 {% endblock %}

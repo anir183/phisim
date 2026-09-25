@@ -5,6 +5,7 @@
 
 {% block victim_content %}
   {% set home_action = url_for("victim_site", token=attack.victim_token, scenario_id=scenario.scenario_id) ~ '?step=1' %}
+  {% set end_url = url_for("victim_end_simulation", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
   {% if site_theme.key == "amazaun" %}
     {% set identifier_label = "Delivery address" %}
     {% set identifier_name = "identifier" %}
@@ -31,10 +32,82 @@
       {% set submit_label = "Verify shared file" %}
       {% include "apps/cloudbox/verify.html" %}
     {% endif %}
+  {% elif site_theme.key == "unisecure" %}
+    {% if step == 1 %}
+      {% set identifier_label = "Student ID" %}
+      {% set identifier_name = "identifier" %}
+      {% set form_action = url_for("victim_site_continue", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% include "apps/university/account_home.html" %}
+    {% else %}
+      {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% set verification_title = "Verify your identity" %}
+      {% set verification_body = "Complete the final verification step for this fictional university account." %}
+      {% set field_label = "Password" %}
+      {% set field_name = "password" %}
+      {% set field_type = "password" %}
+      {% set submit_label = "Verify account" %}
+      {% include "apps/university/account_verify.html" %}
+    {% endif %}
+  {% elif site_theme.key == "makexam" %}
+    {% if step == 1 %}
+      {% set identifier_label = "Exam registration ID" %}
+      {% set identifier_name = "identifier" %}
+      {% set form_action = url_for("victim_site_continue", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% include "apps/university/exam_home.html" %}
+    {% else %}
+      {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% set field_label = "Registration password" %}
+      {% set field_name = "password" %}
+      {% set field_type = "password" %}
+      {% set submit_label = "Complete registration" %}
+      {% include "apps/university/exam_verify.html" %}
+    {% endif %}
+  {% elif site_theme.key == "technosphere" %}
+    {% if step == 1 %}
+      {% set identifier_label = "Course code" %}
+      {% set identifier_name = "identifier" %}
+      {% set form_action = url_for("victim_site_continue", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% include "apps/university/course_home.html" %}
+    {% else %}
+      {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% set field_label = "Course password" %}
+      {% set field_name = "password" %}
+      {% set field_type = "password" %}
+      {% set submit_label = "Open workspace" %}
+      {% include "apps/university/course_verify.html" %}
+    {% endif %}
+  {% elif site_theme.key == "support" %}
+    {% if step == 1 %}
+      {% set identifier_label = "Employee ID" %}
+      {% set identifier_name = "identifier" %}
+      {% set form_action = url_for("victim_site_continue", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% include "apps/support/home.html" %}
+    {% else %}
+      {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% set field_label = "Verification code" %}
+      {% set field_name = "confirmation" %}
+      {% set field_type = "text" %}
+      {% set submit_label = "Verify case" %}
+      {% include "apps/support/verify.html" %}
+    {% endif %}
+  {% elif site_theme.key == "paymate" %}
+    {% if step == 1 %}
+      {% set identifier_label = "Billing email" %}
+      {% set identifier_name = "identifier" %}
+      {% set form_action = url_for("victim_site_continue", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% include "apps/payment/home.html" %}
+    {% else %}
+      {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% set field_label = "Payment confirmation" %}
+      {% set field_name = "confirmation" %}
+      {% set field_type = "text" %}
+      {% set submit_label = "Approve payment" %}
+      {% include "apps/payment/review.html" %}
+    {% endif %}
   {% elif step == 1 %}
-    {% set identifier_label = "Student ID" if "student_id" in scenario.workflow else "Exam registration ID" if "registration_id" in scenario.workflow else "Course code" if "course_code" in scenario.workflow else "Employee ID" if "employee_id" in scenario.workflow else "Delivery address" if "address" in scenario.workflow else "Billing email" if "payment" in scenario.workflow else "Work email" if "email" in scenario.workflow else "Account identifier" %}
-    {% set form_action = url_for("victim_site_continue", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+    {% set identifier_label = "Account identifier" %}
     {% set identifier_name = "identifier" %}
+    {% set form_action = url_for("victim_site_continue", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
     {% include "sites/landing.html" %}
   {% else %}
     {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
@@ -52,20 +125,6 @@
       {% set field_name = "confirmation" %}
       {% set field_type = "text" %}
       {% set submit_label = "Confirm order" %}
-    {% elif "payment" in scenario.workflow %}
-      {% set verification_title = "Review payment confirmation" %}
-      {% set verification_body = "Review the fictional payment request before confirming it." %}
-      {% set field_label = "Payment confirmation" %}
-      {% set field_name = "confirmation" %}
-      {% set field_type = "text" %}
-      {% set submit_label = "Approve payment" %}
-    {% elif "verification" in scenario.workflow %}
-      {% set verification_title = "Complete support verification" %}
-      {% set verification_body = "Complete the fictional support verification requested by the service desk." %}
-      {% set field_label = "Verification code" %}
-      {% set field_name = "confirmation" %}
-      {% set field_type = "text" %}
-      {% set submit_label = "Verify case" %}
     {% else %}
       {% set verification_title = "Continue verification" %}
       {% set verification_body = scenario.message %}
