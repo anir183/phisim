@@ -220,7 +220,7 @@ def test_scenario_transition_buffers_exclude_non_flow_surfaces(
         for value in re.findall(r'data-transition-ms="(\d+)"', order.text)
     ]
     assert order_delays
-    assert all(140 <= value <= 320 for value in order_delays)
+    assert all(600 <= value <= 900 for value in order_delays)
 
     continued = client.post(
         f"{target}/continue",
@@ -236,7 +236,7 @@ def test_scenario_transition_buffers_exclude_non_flow_surfaces(
         )
     ]
     assert payment_delays
-    assert all(750 <= value <= 1200 for value in payment_delays)
+    assert all(1400 <= value <= 2200 for value in payment_delays)
 
     for path in ("/mail", "/messages", "/console", "/lab"):
         surface = client.get(path)

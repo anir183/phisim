@@ -26,6 +26,9 @@ def test_shared_static_assets_are_local_and_mounted(
     assert "innerHTML" not in console_script.text
     assert "textContent" in console_script.text
     assert "data-transition-ms" in flow_script.text
+    assert "flow-transition-loading" in flow_script.text
+    assert "flow-transition-spinner" in flow_script.text
+    assert 'setAttribute("aria-busy", "true")' in flow_script.text
     assert "textContent" in victim_script.text
     assert "DOMParser" in victim_script.text
     assert "replaceChildren" in victim_script.text
@@ -37,6 +40,8 @@ def test_shared_static_assets_are_local_and_mounted(
     assert "innerHTML" not in lab_dashboard_script.text
     assert "setInterval(refresh" in lab_dashboard_script.text
     assert "training-only value" in capture_script.text
+    assert ".flow-transition-spinner" in css.text
+    assert ".console-body .sandbox-console-record dd" in css.text
     assert "https://" not in capture_script.text
     assert 'cache: "no-store"' in lab_dashboard_script.text
     assert "quickchat-thread-list" in victim_script.text

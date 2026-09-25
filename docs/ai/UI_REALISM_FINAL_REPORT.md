@@ -121,7 +121,7 @@ The optional sandbox capture is covered by
 `tests/simulation/test_sandbox_capture.py`, including domain validation,
 salted-digest persistence, Reveal/Console display, and rejection toasts.
 Scenario transition timing is covered by `tests/simulation/test_timing.py`
-and the UI regression matrix, including the `1800ms` ceiling and exclusions
+and the UI regression matrix, including the `600ms` floor, `2500ms` ceiling, and exclusions
 for Lab, Console, inbox, and messenger surfaces.
 
 The complete verification command passed:

@@ -6,7 +6,7 @@ from typing import Literal, cast
 from fastapi import Request
 
 DelayProfile = Literal["instant", "short", "standard"]
-MAX_TRANSITION_DELAY_MS = 1800
+MAX_TRANSITION_DELAY_MS = 2500
 
 _DELAY_MS: dict[DelayProfile, int] = {
     "instant": 0,
@@ -24,38 +24,38 @@ _DELIVERY_DELAY_MS: dict[DelayProfile, int] = {
 # per-route sleep.
 _TRANSITION_RANGES: dict[str, dict[DelayProfile, tuple[int, int]]] = {
     "step": {
-        "short": (140, 320),
-        "standard": (220, 480),
+        "short": (600, 900),
+        "standard": (750, 1200),
         "instant": (0, 0),
     },
     "verification": {
-        "short": (300, 650),
-        "standard": (450, 900),
+        "short": (700, 1200),
+        "standard": (900, 1600),
         "instant": (0, 0),
     },
     "link": {
-        "short": (120, 280),
-        "standard": (220, 450),
+        "short": (600, 900),
+        "standard": (700, 1200),
         "instant": (0, 0),
     },
     "mfa": {
-        "short": (250, 550),
-        "standard": (400, 800),
+        "short": (700, 1100),
+        "standard": (900, 1500),
         "instant": (0, 0),
     },
     "qr": {
-        "short": (280, 600),
-        "standard": (420, 900),
+        "short": (700, 1200),
+        "standard": (900, 1600),
         "instant": (0, 0),
     },
     "payment": {
-        "short": (750, 1200),
-        "standard": (1000, 1600),
+        "short": (1400, 2200),
+        "standard": (1800, 2500),
         "instant": (0, 0),
     },
     "end": {
-        "short": (220, 500),
-        "standard": (350, 700),
+        "short": (600, 1000),
+        "standard": (750, 1200),
         "instant": (0, 0),
     },
 }

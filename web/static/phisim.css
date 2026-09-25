@@ -1079,6 +1079,54 @@ tr:last-child td {
   transition: opacity 120ms ease;
 }
 
+.flow-transition-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  background: rgb(23 32 51 / 24%);
+  color: #fff;
+  cursor: wait;
+  pointer-events: auto;
+}
+
+.flow-transition-spinner {
+  display: inline-block;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid rgb(255 255 255 / 58%);
+  border-top-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.35rem rgb(255 255 255 / 12%);
+  animation: flow-transition-spin 700ms linear infinite;
+}
+
+.flow-transition-label {
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 999px;
+  padding: 0.55rem 0.85rem;
+  background: rgb(23 32 51 / 82%);
+  box-shadow: 0 0.75rem 1.5rem rgb(15 23 42 / 18%);
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+@keyframes flow-transition-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-transition-spinner {
+    animation-duration: 1.4s;
+  }
+}
+
 .victim-toast {
   position: fixed;
   right: 1rem;
@@ -8090,6 +8138,46 @@ body.mock-nimbusid,
 
 .console-body .evidence-list {
   border-color: var(--line);
+}
+
+.console-body .sandbox-capture-console-panel {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.console-body .sandbox-capture-console-content .console-empty {
+  color: var(--muted);
+}
+
+.console-body .sandbox-console-record {
+  border-top-color: var(--line);
+}
+
+.console-body .sandbox-console-record header {
+  color: var(--ink);
+}
+
+.console-body .sandbox-console-record header span,
+.console-body .sandbox-console-record dt {
+  color: var(--ink-soft);
+}
+
+.console-body .sandbox-console-record dd {
+  color: var(--ink);
+}
+
+.console-body .sandbox-console-record dd.sandbox-active-value {
+  color: var(--success);
+}
+
+.console-body .sandbox-capture-console-panel .operator-kicker {
+  color: var(--ink-soft);
+}
+
+.console-body .sandbox-capture-console-panel .operator-count {
+  border-color: var(--line);
+  color: var(--ink-soft);
 }
 
 /* Product pages own their complete document chrome. */

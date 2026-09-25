@@ -53,7 +53,7 @@ a product destination before the explicit manual debrief transition.
 
 The timing regression coverage in `tests/simulation/test_timing.py` and
 `tests/simulation/test_ui_regressions.py` verifies randomized bounded scenario
-buffers, the longer payment range, the `1800ms` ceiling, and the absence of
+buffers, the longer payment range, the `600ms` floor, `2500ms` ceiling, and the absence of
 transition delays on Lab, Console, inbox, and messenger surfaces.
 
 ## Manual route verification

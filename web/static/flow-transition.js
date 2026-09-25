@@ -1,6 +1,23 @@
 "use strict";
 
-const MAX_RENDERED_TRANSITION_MS = 1800;
+const MAX_RENDERED_TRANSITION_MS = 2500;
+let loadingIndicator = null;
+
+function showLoadingIndicator() {
+  if (loadingIndicator) return;
+  loadingIndicator = document.createElement("div");
+  loadingIndicator.className = "flow-transition-loading";
+  loadingIndicator.setAttribute("role", "status");
+  loadingIndicator.setAttribute("aria-live", "polite");
+  const spinner = document.createElement("span");
+  spinner.className = "flow-transition-spinner";
+  spinner.setAttribute("aria-hidden", "true");
+  const label = document.createElement("span");
+  label.className = "flow-transition-label";
+  label.textContent = "Loading local simulation…";
+  loadingIndicator.append(spinner, label);
+  document.body.appendChild(loadingIndicator);
+}
 
 function transitionDelay(element) {
   const value = Number(element.dataset.transitionMs || "0");
@@ -26,6 +43,7 @@ function submitAfterTransition(event) {
   if (!delay) return;
   event.preventDefault();
   markPending(form, true);
+  showLoadingIndicator();
   for (const control of form.querySelectorAll(
     'button[type="submit"], input[type="submit"]',
   )) {
@@ -52,6 +70,7 @@ function followAfterTransition(event) {
   if (!delay) return;
   event.preventDefault();
   markPending(link, true);
+  showLoadingIndicator();
   window.setTimeout(() => window.location.assign(link.href), delay);
 }
 

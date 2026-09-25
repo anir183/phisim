@@ -242,7 +242,8 @@ outcome/reveal.
 
 Scenario-flow forms and handoff links receive a fresh bounded random delay
 from `simulation.timing`. Payment/order confirmation uses the longest range, and
-all transition values are capped at `1800ms`. The delay is applied in the
+all transition values are capped at `2500ms` and non-instant flows start at
+`600ms`. The delay is applied in the
 browser so direct route tests and API behavior remain deterministic. Operator,
 Console, inbox, messenger, and analytics surfaces do not opt into these
 transition controls.

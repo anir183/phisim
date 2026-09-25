@@ -119,7 +119,7 @@ docs/               project documentation
 
 Simulation code emits safe events; it does not know how events are stored or displayed. Browser code consumes API/event contracts and does not access SQLAlchemy models directly.
 
-Scenario-flow controls use bounded randomized client-side transition buffers. Payment and order confirmation receives the longest range; the global transition ceiling is `1800ms`. Lab, Console, inbox, messaging, and analytics surfaces do not use these buffers.
+Scenario-flow controls use bounded randomized client-side transition buffers. Payment and order confirmation receives the longest range; the global transition ceiling is `2500ms` and non-instant flows start at `600ms`. Lab, Console, inbox, messaging, and analytics surfaces do not use these buffers.
 
 ## Safety invariants
 
