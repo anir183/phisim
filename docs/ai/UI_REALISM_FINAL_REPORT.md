@@ -15,8 +15,8 @@ The pass covers:
 
 - Gemail mailbox, folders/search, message reader, local message actions, and
   inert attachment previews;
-- QuickChat conversation list, search, contact view, typing state, link bubble,
-  and read-only composer;
+- QuickChat conversation list, search, contact view, last-message previews,
+  unread state, link bubble, and read-only composer;
 - Amazaun order detail, delivery timeline, address confirmation, and checkout;
 - CloudBox file browser, shared files, storage/activity context, and sharing
   verification;
@@ -26,7 +26,7 @@ The pass covers:
   approval, and QR destination preview;
 - a distinct operator Lab, analyst Console, and training Reveal.
 
-The final automated check passes with **182 tests**. One existing Starlette/
+The final automated check passes with **187 tests**. One existing Starlette/
 httpx test-client deprecation warning remains.
 
 ## Design architecture
@@ -117,15 +117,31 @@ uv run check
 Result:
 
 ```text
-119 files already formatted
+120 files already formatted
 0 errors, 0 warnings, 0 informations
-182 passed, 1 existing Starlette/httpx deprecation warning
+187 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The dedicated route matrix is in
 `tests/simulation/test_ui_realism_flows.py`. It covers Gemail, QuickChat,
 Amazaun, CloudBox, QR, and MFA end to end. Full evidence is recorded in
 `docs/ai/UI_REALISM_TEST_REPORT.md`.
+
+## Regression follow-up
+
+The follow-up pass addressed the reported visual and lifecycle issues:
+
+- terminal email/SMS lists remain readable, while message/conversation detail
+  and action links return `410 Gone` instead of reopening a completed artifact;
+- account verification progress is outside the alert content;
+- training reveal is explicitly centered;
+- TechnoSphere navigation and course-access layout no longer overlap;
+- the Lab uses the light workspace treatment again;
+- Gemail secondary actions, star controls, and MFA Deny have explicit contrast
+  and hover states;
+- QuickChat uses the last message in the inbox and removes typing indicators.
+
+`tests/simulation/test_ui_regressions.py` covers these behaviors.
 
 ## Safety and privacy result
 
@@ -191,7 +207,10 @@ The work was split into atomic commits, in order:
 - `50325bc` — six-flow UI test matrix;
 - `547f0af` and `39ade3b` — compatibility/readability fixes;
 - `21cca42` — legacy outcome moved to the standalone reveal;
-- `bd4122f` — victim applications own their product chrome.
+- `bd4122f` — victim applications own their product chrome;
+- `34ebff3` — terminal artifact details close safely;
+- `745aa2f` — portal layout, Lab contrast, and control hover fixes;
+- `d6b337d` and `88d97ce` — QuickChat typing removal and regression tests.
 
 No push was performed.
 

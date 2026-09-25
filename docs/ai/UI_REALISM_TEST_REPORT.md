@@ -31,9 +31,9 @@ uv run check
 Final result:
 
 ```text
-119 files already formatted
+120 files already formatted
 0 errors, 0 warnings, 0 informations
-182 passed, 1 existing Starlette/httpx deprecation warning
+187 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The warning is the existing test-client deprecation warning:
@@ -57,7 +57,7 @@ checks.
 | Flow | Route walk | Verified states and structure | Result |
 |---|---|---|---|
 | Gemail | `/v/{token}/mail` → message detail → message state POST → starred folder | Empty baseline, delivered row, unread state, search, detail, star/archive state, local link, attachment entry | PASS |
-| QuickChat | `/v/{token}/messages` → conversation detail → message link | Empty baseline, delivered conversation, unread marker, search, contact header, bubbles, typing state, read-only composer | PASS |
+| QuickChat | `/v/{token}/messages` → conversation detail → message link | Empty baseline, delivered conversation, unread marker, last-message preview, search, contact header, bubbles, read-only composer | PASS |
 | Amazaun | `/v/{token}/site/credential-shopping-001` → continue → checkout → finish → debrief | Marketplace header, order number, pending delivery, address confirmation, order timeline, completion reveal | PASS |
 | CloudBox | `/v/{token}/site/credential-cloud-001` → continue → verification → finish → debrief | File sidebar, shared files, storage meter, activity, sharing action, verification state, completion reveal | PASS |
 | QR | `/v/{token}/qr/qr-phish-001` → scan → local destination | Message context, local QR image, destination preview, scan transition, target application handoff | PASS |
@@ -79,7 +79,7 @@ checks.
 - `web/templates/victim_messages.html` renders a conversation index, search,
   unread markers, and a selected-conversation empty state.
 - `web/templates/victim_message.html` renders contact context, message history,
-  typing state, a local link bubble, and a disabled read-only composer.
+  a last-message preview, a local link bubble, and a disabled read-only composer.
 - The disabled composer is intentional: it preserves believable interaction
   affordances without accepting or persisting free-form user content.
 
@@ -135,6 +135,19 @@ The following route checks also passed:
 - Training reveal uses `reveal_base.html`, not the victim application shell.
 - Empty, delivered, unread, read, pending, verification-required, success, and
   completion states are represented in the relevant route families.
+
+## Regression follow-up
+
+`tests/simulation/test_ui_regressions.py` additionally verifies:
+
+- completed and abandoned email/SMS lists remain visible while detail and
+  action links return `410 Gone`;
+- account verification progress is outside the alert content;
+- TechnoSphere has separated navigation and course-access structure;
+- the Lab renders with the light workspace class;
+- Gemail and MFA contrast/hover selectors are present;
+- QuickChat shows the last message, removes typing indicators, and clears its
+  unread marker after opening.
 
 ## Safety verification
 
