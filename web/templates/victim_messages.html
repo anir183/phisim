@@ -25,7 +25,7 @@
           {% for thread in threads %}
             <a class="quickchat-thread {% if thread.unread %}unread{% endif %}" data-thread-id="{{ thread.thread_id }}" data-delivery-id="{{ thread.delivery_id }}" href="{{ url_for('victim_message', token=attack.victim_token, thread_id=thread.thread_id) }}?delivery_id={{ thread.delivery_id }}">
               <span class="quickchat-thread-avatar">{{ thread.sender_label[:1] }}</span>
-              <span class="quickchat-thread-copy"><strong>{{ thread.sender_label }}</strong><span>{% if thread.typing %}<em>typing…</em>{% else %}{{ thread.messages[-1] }}{% endif %}</span></span>
+              <span class="quickchat-thread-copy"><strong>{{ thread.sender_label }}</strong><span>{{ thread.messages[-1] }}</span></span>
               <time>{{ thread.timestamp[11:16] }}</time>
               {% if thread.unread %}<i class="quickchat-unread-dot" aria-label="Unread"><span class="sr-only">UNREAD</span></i>{% endif %}
             </a>
