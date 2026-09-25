@@ -117,7 +117,7 @@ uv run check
 Result:
 
 ```text
-117 files already formatted
+119 files already formatted
 0 errors, 0 warnings, 0 informations
 182 passed, 1 existing Starlette/httpx deprecation warning
 ```
@@ -189,7 +189,8 @@ The work was split into atomic commits, in order:
 - `4b65827` — legacy mail/chat and attachment flows;
 - `a4da961` — standalone training reveal;
 - `50325bc` — six-flow UI test matrix;
-- `547f0af` and `39ade3b` — compatibility/readability fixes.
+- `547f0af` and `39ade3b` — compatibility/readability fixes;
+- `21cca42` — legacy outcome moved to the standalone reveal.
 
 No push was performed.
 

@@ -31,7 +31,7 @@ uv run check
 Final result:
 
 ```text
-117 files already formatted
+119 files already formatted
 0 errors, 0 warnings, 0 informations
 182 passed, 1 existing Starlette/httpx deprecation warning
 ```
