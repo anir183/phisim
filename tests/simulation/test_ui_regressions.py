@@ -64,7 +64,7 @@ def _complete(engine: Engine, attack_id: str) -> None:
         ),
     ],
 )
-def test_terminal_attack_keeps_artifact_list_but_closes_detail_links(
+def test_terminal_attack_keeps_artifact_list_and_opens_read_only_details(
     client: TestClient,
     test_engine: Engine,
     scenario_id: str,
@@ -89,7 +89,12 @@ def test_terminal_attack_keeps_artifact_list_but_closes_detail_links(
         f"/v/{token}/{detail_path}",
         params={"delivery_id": launch["attack_id"]},
     )
-    assert detail.status_code == 410
+    assert detail.status_code == 200
+    assert "read-only" in detail.text
+    assert (
+        "Action required: verify your mailbox" in detail.text
+        or "Reply or confirm now" in detail.text
+    )
 
 
 def test_abandoned_attack_keeps_mail_and_conversation_lists_readable(
@@ -112,7 +117,9 @@ def test_abandoned_attack_keeps_mail_and_conversation_lists_readable(
         f"/v/{token}/mail/email-phish-001",
         params={"delivery_id": launch["attack_id"]},
     )
-    assert closed.status_code == 410
+    assert closed.status_code == 200
+    assert "Action required: verify your mailbox" in closed.text
+    assert "read-only" in closed.text
 
 
 def test_quickchat_list_uses_last_message_and_clears_unread_after_open(
@@ -172,3 +179,7 @@ def test_layout_regressions_keep_portal_chrome_and_light_lab_separate(
     stylesheet = client.get("/static/phisim.css")
     assert ".gmail-star-action button:hover" in stylesheet.text
     assert ".nimbusid-actions .nimbusid-deny:hover" in stylesheet.text
+
+    console = client.get("/console")
+    assert 'class="lab-body console-body"' in console.text
+    assert ".console-body .operator-console-panel" in stylesheet.text

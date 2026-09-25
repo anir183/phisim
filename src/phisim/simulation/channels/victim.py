@@ -154,10 +154,18 @@ def _require_context(attack) -> None:
 
 
 def _require_artifact_context(attack) -> None:
-    """Allow terminal contexts to be listed, but not opened or acted on."""
+    """Allow terminal contexts to be listed, but not acted on."""
     _require_context(attack)
     if attack.status == "COMPLETED":
         raise HTTPException(status_code=410, detail="Victim context is closed.")
+
+
+def _require_artifact_view_context(attack) -> None:
+    """Allow read-only artifact viewing after a run reaches a terminal state."""
+    if attack.status in {"DRAFT", "ARMED", "LAUNCHING"}:
+        raise HTTPException(
+            status_code=404, detail="Victim context is not ready."
+        )
 
 
 def _require_target(attack, scenario_id: str) -> None:
@@ -523,29 +531,37 @@ async def victim_email(
     )
     if attack is None:
         raise HTTPException(status_code=404, detail="Message not found.")
-    _require_artifact_context(attack)
+    _require_artifact_view_context(attack)
     attack_message = get_email_message(message_id)
     if attack_message is None:
         raise HTTPException(status_code=404, detail="Message not found.")
-    _engage(database_session, attack)
-    service = _attack_service(database_session)
-    read_ids = set(attack.state.get("read_message_ids", []))
-    read_ids.add(message_id)
-    service.update_state(
-        attack,
-        {
-            "read_message_ids": sorted(read_ids),
-            "last_action": "message_opened",
-        },
-    )
-    await emit_simulation_event(
-        database_session,
-        attack.operator_session_id,
-        scenario_id=attack.scenario_id,
-        event_type="message_opened",
-        source="victim",
-        metadata=email_evidence(attack_message) | _delivery_metadata(attack),
-    )
+    read_only = attack.status in {
+        "COMPLETED",
+        "ABANDONED",
+        "EXPIRED",
+        "BLOCKED",
+    }
+    if not read_only:
+        _engage(database_session, attack)
+        service = _attack_service(database_session)
+        read_ids = set(attack.state.get("read_message_ids", []))
+        read_ids.add(message_id)
+        service.update_state(
+            attack,
+            {
+                "read_message_ids": sorted(read_ids),
+                "last_action": "message_opened",
+            },
+        )
+        await emit_simulation_event(
+            database_session,
+            attack.operator_session_id,
+            scenario_id=attack.scenario_id,
+            event_type="message_opened",
+            source="victim",
+            metadata=email_evidence(attack_message)
+            | _delivery_metadata(attack),
+        )
     message = _message_payload(attack_message, attack=True)
     message["delivery_id"] = attack.attack_id
     message["timestamp"] = serialize_utc_datetime(
@@ -559,6 +575,7 @@ async def victim_email(
             "site_theme": _site_theme_for_attack(attack),
             "message": message,
             "folder": folder,
+            "read_only": read_only,
             "active_page": "victim",
         },
     )
@@ -884,7 +901,7 @@ async def victim_message(
     )
     if attack is None:
         raise HTTPException(status_code=404, detail="Conversation not found.")
-    _require_artifact_context(attack)
+    _require_artifact_view_context(attack)
     thread = next(
         (
             item
@@ -896,7 +913,13 @@ async def victim_message(
     )
     if thread is None:
         raise HTTPException(status_code=404, detail="Conversation not found.")
-    if thread["is_attack"]:
+    read_only = attack.status in {
+        "COMPLETED",
+        "ABANDONED",
+        "EXPIRED",
+        "BLOCKED",
+    }
+    if thread["is_attack"] and not read_only:
         _engage(database_session, attack)
         service = _attack_service(database_session)
         read_ids = set(attack.state.get("read_thread_ids", []))
@@ -926,6 +949,7 @@ async def victim_message(
             "attack": attack,
             "site_theme": _site_theme_for_attack(attack),
             "thread": thread,
+            "read_only": read_only,
             "active_page": "victim",
         },
     )

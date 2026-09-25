@@ -620,7 +620,7 @@ def test_replaying_a_completed_email_creates_a_new_delivery_instance(
         f"/v/{token}/mail/email-phish-001",
         params={"delivery_id": first["attack_id"]},
     )
-    assert first_detail.status_code == 410
+    assert first_detail.status_code == 200
     second_detail = client.get(
         f"/v/{token}/mail/email-phish-001",
         params={"delivery_id": second["attack_id"]},
@@ -664,7 +664,7 @@ def test_replaying_a_completed_sms_creates_a_new_delivery_instance(
         f"/v/{token}/messages/sms-parcel-001",
         params={"delivery_id": first["attack_id"]},
     )
-    assert first_detail.status_code == 410
+    assert first_detail.status_code == 200
     second_detail = client.get(
         f"/v/{token}/messages/sms-parcel-001",
         params={"delivery_id": second["attack_id"]},

@@ -12,11 +12,15 @@
     </header>
     <div class="gmail-message-toolbar">
       <a href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=' ~ folder }}">←</a>
-      <form method="post" action="{{ url_for('victim_email_state', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}"><input type="hidden" name="action" value="{% if message.starred %}unstar{% else %}star{% endif %}" /><button type="submit">{% if message.starred %}★ Starred{% else %}☆ Star{% endif %}</button></form>
-      <form method="post" action="{{ url_for('victim_email_state', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}"><input type="hidden" name="action" value="{% if message.archived %}unarchive{% else %}archive{% endif %}" /><button type="submit">{% if message.archived %}Unarchive{% else %}Archive{% endif %}</button></form>
-      <form method="post" action="{{ url_for('victim_email_state', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}"><input type="hidden" name="action" value="{% if message.deleted %}restore{% else %}delete{% endif %}" /><button type="submit">{% if message.deleted %}Restore{% else %}Delete{% endif %}</button></form>
-      <span class="gmail-toolbar-spacer"></span>
-      <button type="button">Reply</button><button type="button">Forward</button>
+      {% if read_only %}
+        <span class="gmail-read-only-state">Simulation closed · read-only</span>
+      {% else %}
+        <form method="post" action="{{ url_for('victim_email_state', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}"><input type="hidden" name="action" value="{% if message.starred %}unstar{% else %}star{% endif %}" /><button type="submit">{% if message.starred %}★ Starred{% else %}☆ Star{% endif %}</button></form>
+        <form method="post" action="{{ url_for('victim_email_state', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}"><input type="hidden" name="action" value="{% if message.archived %}unarchive{% else %}archive{% endif %}" /><button type="submit">{% if message.archived %}Unarchive{% else %}Archive{% endif %}</button></form>
+        <form method="post" action="{{ url_for('victim_email_state', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}"><input type="hidden" name="action" value="{% if message.deleted %}restore{% else %}delete{% endif %}" /><button type="submit">{% if message.deleted %}Restore{% else %}Delete{% endif %}</button></form>
+        <span class="gmail-toolbar-spacer"></span>
+        <button type="button">Reply</button><button type="button">Forward</button>
+      {% endif %}
     </div>
     <article class="gmail-message-view">
       <header class="gmail-message-header">
@@ -28,11 +32,13 @@
         <div class="gmail-link-warning"><strong>Link preview</strong><span>{{ message.spoofed_url }} · local destination {{ message.target_scenario_id }}</span></div>
       {% endif %}
       {% if message.attachment_name %}
-        <section class="gmail-attachment-row"><span class="gmail-attachment-icon">▧</span><div><strong>{{ message.attachment_name }}</strong><span>{{ message.attachment_preview }}</span></div><a class="button button-secondary" href="{{ url_for('victim_attachment', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id }}">Preview attachment</a></section>
+        <section class="gmail-attachment-row"><span class="gmail-attachment-icon">▧</span><div><strong>{{ message.attachment_name }}</strong><span>{{ message.attachment_preview }}</span></div>{% if read_only %}<span class="gmail-read-only-state">Preview closed</span>{% else %}<a class="button button-secondary" href="{{ url_for('victim_attachment', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id }}">Preview attachment</a>{% endif %}</section>
       {% endif %}
       <div class="gmail-signature">Northstar University · fictional local mailbox<br />This message was not delivered to a real inbox.</div>
-      {% if message.is_attack %}
+      {% if message.is_attack and not read_only %}
         <div class="gmail-message-actions"><a class="button" href="{{ url_for('victim_email_link', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id }}">Open message link</a><button class="button button-secondary" type="button">Reply</button><button class="button button-secondary" type="button">Forward</button></div>
+      {% elif read_only %}
+        <div class="gmail-read-only-footer">This message remains available for review, but its training actions are closed.</div>
       {% endif %}
     </article>
   </section>
