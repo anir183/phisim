@@ -143,7 +143,7 @@ def test_quickchat_list_uses_last_message_and_clears_unread_after_open(
     assert "UNREAD" not in after_open.text[row_start:row_end]
 
 
-def test_layout_regressions_keep_account_steps_course_nav_and_light_lab_separate(
+def test_layout_regressions_keep_portal_chrome_and_light_lab_separate(
     client: TestClient,
     test_engine: Engine,
 ) -> None:
