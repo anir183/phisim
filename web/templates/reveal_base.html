@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}PhiSim training debrief{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='phisim.css') }}" />
+  </head>
+  <body class="training-reveal-body">
+    <div class="training-shell">
+      <header class="training-topbar"><a class="training-brand" href="{{ url_for('scenario_lab') }}"><span class="training-mark">PS</span><span><strong>PhiSim</strong><small>Training debrief</small></span></a><span class="training-boundary">LOCAL / CONTROLLED</span></header>
+      <div class="training-safety-strip"><span aria-hidden="true">●</span> Fictional training debrief · no submitted values were retained</div>
+      <main class="training-page">{% block reveal_content %}{% endblock %}</main>
+      <footer class="training-footer"><span>PhiSim operator-controlled simulation</span><span>Review the evidence, then return to the environment.</span></footer>
+    </div>
+  </body>
+</html>

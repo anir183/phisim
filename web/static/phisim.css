@@ -6358,6 +6358,354 @@ body.mock-nimbusid,
   .document-page { min-height: 420px; padding: 1rem; }
 }
 
+/* Training reveal is intentionally outside the victim application shell. */
+.training-reveal-body {
+  min-height: 100vh;
+  background: #edf1f7;
+  color: #26334d;
+}
+
+.training-shell {
+  min-height: 100vh;
+}
+
+.training-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #d5dce8;
+  background: #fff;
+  padding: 0.75rem 1.2rem;
+}
+
+.training-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #26334d;
+}
+
+.training-brand > span:last-child {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.training-brand strong {
+  font-size: 0.9rem;
+}
+
+.training-brand small {
+  color: #7c8799;
+  font-size: 0.62rem;
+}
+
+.training-mark {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 7px;
+  background: #263b73;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 850;
+}
+
+.training-boundary {
+  color: #7c8799;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.training-safety-strip {
+  border-bottom: 1px solid #d5dce8;
+  background: #f8faff;
+  padding: 0.55rem 1.2rem;
+  color: #7c8799;
+  font-size: 0.68rem;
+}
+
+.training-page {
+  width: min(1060px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.5rem 0 2rem;
+}
+
+.training-reveal {
+  overflow: hidden;
+  border: 1px solid #d5dce8;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 16px 42px rgb(38 51 77 / 9%);
+}
+
+.training-reveal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #e3e8f0;
+  padding: 1.3rem 1.5rem;
+  background: #f8faff;
+}
+
+.training-kicker {
+  margin: 0 0 0.35rem;
+  color: #73809a;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.training-reveal-header h1 {
+  margin: 0;
+  color: #26334d;
+  font-size: 1.65rem;
+  letter-spacing: -0.04em;
+}
+
+.training-reveal-header p:last-child {
+  margin: 0.35rem 0 0;
+  color: #718097;
+  font-size: 0.78rem;
+}
+
+.training-complete-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e7f6ed;
+  color: #19734a;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.training-reveal-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+  gap: 1rem;
+  padding: 1.2rem 1.5rem;
+}
+
+.training-reveal-grid main {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.training-story {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 0.7rem;
+  border-bottom: 1px solid #edf0f4;
+  padding: 0.35rem 0 0.9rem;
+}
+
+.training-story:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.training-story-number {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 8px;
+  background: #eaf0ff;
+  color: #3857c8;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.training-story h2,
+.training-evidence h2 {
+  margin: 0;
+  color: #34425d;
+  font-size: 0.9rem;
+}
+
+.training-story p {
+  margin: 0.35rem 0 0;
+  color: #718097;
+  font-size: 0.76rem;
+  line-height: 1.6;
+}
+
+.training-workflow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.training-workflow span {
+  border: 1px solid #d9e1f0;
+  border-radius: 999px;
+  padding: 0.3rem 0.45rem;
+  background: #f8faff;
+  color: #52627c;
+  font-size: 0.61rem;
+  font-weight: 700;
+}
+
+.training-response-list {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.training-response-list li {
+  display: grid;
+  gap: 0.12rem;
+  border-left: 2px solid #3857c8;
+  padding-left: 0.55rem;
+}
+
+.training-response-list strong {
+  color: #465a78;
+  font-size: 0.7rem;
+}
+
+.training-response-list span {
+  color: #8a95a8;
+  font-size: 0.65rem;
+}
+
+.training-evidence {
+  align-self: start;
+  border: 1px solid #d9e1f0;
+  border-radius: 10px;
+  padding: 0.9rem;
+  background: #f8faff;
+}
+
+.training-indicator-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+
+.training-indicator-list article {
+  display: grid;
+  grid-template-columns: 23px minmax(0, 1fr);
+  gap: 0.45rem;
+  border-top: 1px solid #e3e8f0;
+  padding-top: 0.55rem;
+}
+
+.training-indicator-icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff0d8;
+  color: #9a6410;
+  font-size: 0.65rem;
+  font-weight: 850;
+}
+
+.training-indicator-list article div {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.training-indicator-list strong {
+  color: #52627c;
+  font-size: 0.67rem;
+}
+
+.training-indicator-list p {
+  margin: 0;
+  color: #8a95a8;
+  font-size: 0.62rem;
+  line-height: 1.45;
+}
+
+.training-evidence-note {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 0.8rem;
+  border-top: 1px solid #dfe5f0;
+  padding-top: 0.65rem;
+}
+
+.training-evidence-note strong {
+  color: #3857a8;
+  font-size: 0.65rem;
+}
+
+.training-evidence-note span {
+  color: #8a95a8;
+  font-size: 0.61rem;
+  line-height: 1.45;
+}
+
+.training-reveal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border-top: 1px solid #e3e8f0;
+  padding: 0.85rem 1.5rem;
+}
+
+.training-primary-action,
+.training-secondary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 36px;
+  border-radius: 6px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+
+.training-primary-action {
+  background: #3857c8;
+  color: #fff;
+}
+
+.training-primary-action:hover {
+  background: #263d9a;
+  color: #fff;
+}
+
+.training-secondary-action {
+  border: 1px solid #cfd8e6;
+  color: #52627c;
+}
+
+.training-secondary-action:hover {
+  background: #edf1fa;
+  color: #263b73;
+}
+
+.training-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(1060px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0 0 1.5rem;
+  color: #8a95a8;
+  font-size: 0.62rem;
+}
+
+@media (max-width: 760px) {
+  .training-reveal-grid { grid-template-columns: 1fr; padding: 1rem; }
+  .training-reveal-header { padding: 1rem; }
+  .training-reveal-actions { flex-wrap: wrap; padding: 0.8rem 1rem; }
+  .training-footer { flex-direction: column; }
+}
+
 /* Operator-only control plane. This intentionally does not share victim app chrome. */
 .operator-body {
   min-height: 100vh;
