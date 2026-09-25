@@ -1343,7 +1343,9 @@ async def victim_end_simulation(
                 "site_theme": _site_theme_for_scenario(scenario),
                 "indicator_info": INDICATOR_INFO,
                 "return_path": victim_return_path(attack),
-                "ended_early": True,
+                "ended_early": not bool(
+                    attack.state.get("destination_reached")
+                ),
                 "active_page": "victim",
             },
         )
