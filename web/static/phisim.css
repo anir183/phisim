@@ -7573,6 +7573,8 @@ body.mock-nimbusid,
 }
 
 /* Keep secondary mail actions readable and keep the row controls compact. */
+.gmail-toolbar-actions button,
+.gmail-toolbar-actions button:hover,
 .gmail-message-toolbar button,
 .gmail-message-toolbar button:hover {
   border: 1px solid #dadce0;
