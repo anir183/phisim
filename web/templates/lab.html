@@ -1,161 +1,28 @@
 {% extends "shell.html" %}
 
 {% block title %}Scenario Lab · PhiSim{% endblock %}
+{% block body_class %}operator-body{% endblock %}
 
 {% block content %}
-  <main class="page-frame">
-    <header class="page-heading">
-      <div>
-        <p class="eyebrow">Operator workspace</p>
-        <h1>Scenario Lab</h1>
-        <p class="hero-copy">
-          Launch a bounded, fictional training experience. Choose a scenario,
-          select a safe target preset, and follow the trainee workflow.
-        </p>
-      </div>
-      <span class="badge badge-accent">Local only</span>
+  <main class="page-frame operator-lab">
+    <header class="operator-heading">
+      <div><p class="operator-kicker">OPERATOR CONTROL PLANE</p><h1>Scenario Lab</h1><p>Launch bounded fictional runs, observe delivery state, and keep the trainee experience separate from the evidence surface.</p></div>
+      <div class="operator-heading-actions"><span class="operator-status"><i></i> Local runtime ready</span><a class="operator-console-link" href="{{ url_for('console') }}">Open analyst console <span>→</span></a></div>
     </header>
 
-    <section class="notice lab-demo-notice" aria-label="Victim environment setup">
-      <strong>Two-tab demonstration:</strong>
-      open the <a href="{{ url_for('baseline_mail') }}">fictional mailbox</a> or
-      <a href="{{ url_for('baseline_messages') }}">QuickChat</a> first, then
-      launch an attack here. The environment stays baseline until delivery.
-    </section>
+    <section class="operator-overview" aria-label="Operator run overview"><div class="operator-metric"><span>Active runs</span><strong>{{ active_attacks|length }}</strong><small>delivery instances in flight</small></div><div class="operator-metric"><span>Catalogue</span><strong>{{ summaries|length }}</strong><small>local scenario definitions</small></div><div class="operator-metric"><span>Recent sessions</span><strong>{{ recent_sessions|length }}</strong><small>available for analysis</small></div><div class="operator-flow"><span>Lab</span><i>→</i><span>Session</span><i>→</i><span>Delivery</span><i>→</i><span>Telemetry</span><i>→</i><span>Console</span></div></section>
 
-    <section class="surface lab-filter-section" aria-labelledby="filters-title">
-      <div class="fake-content">
-        <div class="fake-toolbar">
-          <h2 id="filters-title">Browse scenarios</h2>
-          <span class="kicker">{{ summaries|length }} available</span>
-        </div>
-        <form class="form-grid" method="get" action="{{ url_for('scenario_lab') }}">
-          <div class="grid grid-3">
-            <div class="form-field">
-              <label for="attack_type">Attack type</label>
-              <select id="attack_type" name="attack_type">
-                <option value="">All attack types</option>
-                {% for value in attack_types %}
-                  <option value="{{ value }}" {% if value == selected_attack_type %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="form-field">
-              <label for="channel">Delivery channel</label>
-              <select id="channel" name="channel">
-                <option value="">All channels</option>
-                {% for value in ['website', 'email', 'sms', 'qr', 'mfa'] %}
-                  <option value="{{ value }}" {% if value == selected_channel %}selected{% endif %}>{{ value|title }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="submit">Apply filters</button>
-            <a class="button button-secondary" href="{{ url_for('scenario_lab') }}">Reset</a>
-          </div>
-        </form>
-      </div>
-    </section>
+    <section class="operator-notice lab-demo-notice" aria-label="Victim environment setup"><strong>Two-tab demonstration:</strong> open the <a href="{{ url_for('baseline_mail') }}">fictional mailbox</a> or <a href="{{ url_for('baseline_messages') }}">QuickChat</a> first, then launch a run here. Victim tabs remain local and receive delivery only after the scheduled due time.</section>
 
-    <section class="surface" style="margin-top: 1rem" aria-labelledby="active-attacks-title">
-      <div class="fake-content">
-        <div class="fake-toolbar">
-          <h2 id="active-attacks-title">Active attacks</h2>
-          <span class="badge badge-warning">{{ active_attacks|length }} local runs</span>
-        </div>
-        {% if active_attacks %}
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Attack</th><th>Channel</th><th>Status</th><th>Delivery</th><th>Victim</th></tr></thead>
-              <tbody>
-                {% for attack in active_attacks %}
-                  <tr>
-                    <td><a href="{{ url_for('attack_status_page', attack_id=attack.attack_id) }}"><code>{{ attack.attack_id[:10] }}</code></a><br /><span class="help-text">{{ attack.scenario_id }}</span></td>
-                    <td>{{ attack.channel }}</td>
-                    <td><span class="badge {{ 'badge-success' if attack.status == 'COMPLETED' else 'badge-warning' }}">{{ attack.status }}</span></td>
-                    <td>{{ attack.delivery_due_at }}</td>
-                    <td><a href="{{ active_attack_paths[attack.attack_id] }}">Open context</a></td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <div class="empty-state">No active attacks. Launch a scenario to arm one.</div>
-        {% endif %}
-      </div>
-    </section>
+    <section class="operator-panel operator-filter-section" aria-labelledby="filters-title"><header class="operator-panel-heading"><div><p class="operator-kicker">RUN LIBRARY</p><h2 id="filters-title">Choose a scenario</h2></div><span class="operator-count">{{ summaries|length }} available</span></header><form class="operator-filter-form" method="get" action="{{ url_for('scenario_lab') }}"><div class="form-field"><label for="attack_type">Attack type</label><select id="attack_type" name="attack_type"><option value="">All attack types</option>{% for value in attack_types %}<option value="{{ value }}" {% if value == selected_attack_type %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>{% endfor %}</select></div><div class="form-field"><label for="channel">Delivery channel</label><select id="channel" name="channel"><option value="">All channels</option>{% for value in ['website', 'email', 'sms', 'qr', 'mfa'] %}<option value="{{ value }}" {% if value == selected_channel %}selected{% endif %}>{{ value|title }}</option>{% endfor %}</select></div><div class="operator-filter-actions"><button type="submit">Apply filters</button><a class="button button-secondary" href="{{ url_for('scenario_lab') }}">Reset</a></div></form></section>
 
-    <section class="surface" style="margin-top: 1rem" aria-labelledby="recent-title">
-      <div class="fake-content">
-        <div class="fake-toolbar">
-          <h2 id="recent-title">Recent local runs</h2>
-          <a class="button button-quiet" href="{{ url_for('console') }}">Open analyst console</a>
-        </div>
-        {% if recent_sessions %}
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Session</th><th>Scenario</th><th>Status</th><th>Started</th></tr></thead>
-              <tbody>
-                {% for session in recent_sessions %}
-                  <tr>
-                    <td><code>{{ session.session_id[:12] }}</code></td>
-                    <td>{{ session.scenario_id }}</td>
-                    <td><span class="badge {{ 'badge-success' if session.status == 'completed' else 'badge-warning' }}">{{ session.status }}</span></td>
-                    <td>{{ session.started_at }}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        {% else %}
-          <div class="empty-state">No local runs yet. Launch a scenario to create one.</div>
-        {% endif %}
-      </div>
-    </section>
+    <section class="operator-panel" aria-labelledby="active-attacks-title"><header class="operator-panel-heading"><div><p class="operator-kicker">LIVE DELIVERY</p><h2 id="active-attacks-title">Active attacks</h2></div><span class="operator-count">{{ active_attacks|length }} local runs</span></header>{% if active_attacks %}<div class="operator-table-wrap"><table class="operator-table"><thead><tr><th>Attack</th><th>Channel</th><th>Status</th><th>Delivery</th><th>Victim context</th></tr></thead><tbody>{% for attack in active_attacks %}<tr><td><a href="{{ url_for('attack_status_page', attack_id=attack.attack_id) }}"><code>{{ attack.attack_id[:10] }}</code></a><br /><span>{{ attack.scenario_id }}</span></td><td><span class="operator-channel">{{ attack.channel }}</span></td><td><span class="badge {{ 'badge-success' if attack.status == 'COMPLETED' else 'badge-warning' }}">{{ attack.status }}</span></td><td>{{ attack.delivery_due_at }}</td><td><a href="{{ active_attack_paths[attack.attack_id] }}">Open context →</a></td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="operator-empty"><span>◌</span><strong>No active attacks</strong><p>Launch a scenario below to arm a local delivery instance.</p></div>{% endif %}</section>
 
-    <div class="section-heading">
-      <h2>Scenario catalogue</h2>
-      <p>Each launch creates or reuses a local training Session.</p>
-    </div>
+    <section class="operator-panel" aria-labelledby="recent-title"><header class="operator-panel-heading"><div><p class="operator-kicker">SESSION HISTORY</p><h2 id="recent-title">Recent local runs</h2></div><a class="operator-text-link" href="{{ url_for('console') }}">Inspect evidence →</a></header>{% if recent_sessions %}<div class="operator-table-wrap"><table class="operator-table"><thead><tr><th>Session</th><th>Scenario</th><th>Status</th><th>Started</th></tr></thead><tbody>{% for session in recent_sessions %}<tr><td><code>{{ session.session_id[:12] }}</code></td><td>{{ session.scenario_id }}</td><td><span class="badge {{ 'badge-success' if session.status == 'completed' else 'badge-warning' }}">{{ session.status }}</span></td><td>{{ session.started_at }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="operator-empty"><span>⌁</span><strong>No local sessions yet</strong><p>Launch a scenario to create the first analyst record.</p></div>{% endif %}</section>
 
-    {% if summaries %}
-      <section class="scenario-grid" aria-label="Available scenarios">
-        {% for summary in summaries %}
-          <article class="surface scenario-card">
-            <div>
-              <div class="row-between">
-                <span class="badge badge-accent">{{ summary.attack_type|replace('_', ' ')|title }}</span>
-                <span class="kicker">{{ summary.channel }}</span>
-              </div>
-              <h3>{{ summary.title }}</h3>
-              <p>{{ summary.description }}</p>
-            </div>
-            <div class="scenario-card-footer">
-              <span class="kicker">{{ summary.brand }} · {{ summary.target_role|title }}</span>
-              <form method="post" action="{{ url_for('launch_lab_scenario_form') }}">
-                <input type="hidden" name="scenario_id" value="{{ summary.scenario_id }}" />
-                <input type="hidden" name="target_role" value="{{ summary.target_role }}" />
-                <input type="hidden" name="delay_profile" value="{{ summary.delay_profile if summary.delay_profile in ['instant', 'short', 'standard'] else 'short' }}" />
-                <button type="submit">Launch</button>
-              </form>
-            </div>
-          </article>
-        {% endfor %}
-      </section>
-    {% else %}
-      <div class="empty-state">
-        <div>
-          <strong>No scenarios match those filters.</strong>
-          <p>Clear a filter to return to the local catalogue.</p>
-        </div>
-      </div>
-    {% endif %}
+    <div class="operator-section-heading"><div><p class="operator-kicker">SCENARIO CATALOGUE</p><h2>Available runs</h2></div><p>Each launch creates a distinct local delivery instance and telemetry session.</p></div>
+    {% if summaries %}<section class="operator-scenario-grid" aria-label="Available scenarios">{% for summary in summaries %}<article class="operator-scenario-card"><div class="operator-scenario-top"><span class="operator-scenario-type">{{ summary.attack_type|replace('_', ' ')|title }}</span><span class="operator-channel">{{ summary.channel }}</span></div><div><h3>{{ summary.title }}</h3><p>{{ summary.description }}</p></div><footer><span>{{ summary.brand }} · {{ summary.target_role|title }}</span><form method="post" action="{{ url_for('launch_lab_scenario_form') }}"><input type="hidden" name="scenario_id" value="{{ summary.scenario_id }}" /><input type="hidden" name="target_role" value="{{ summary.target_role }}" /><input type="hidden" name="delay_profile" value="{{ summary.delay_profile if summary.delay_profile in ['instant', 'short', 'standard'] else 'short' }}" /><button type="submit">Launch run <span>→</span></button></form></footer></article>{% endfor %}</section>{% else %}<div class="operator-empty"><span>⌕</span><strong>No scenarios match those filters</strong><p>Clear a filter to return to the local catalogue.</p></div>{% endif %}
 
-    <section class="notice notice-warning" style="margin-top: 1.5rem">
-      This lab does not send messages, collect real credentials, target real
-      people, or connect to external services. Every destination is local.
-    </section>
+    <section class="operator-safety-note"><strong>Safety boundary</strong><span>This lab does not send messages, collect real credentials, target real people, or connect to external services. Every destination is local.</span></section>
   </main>
 {% endblock %}

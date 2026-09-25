@@ -1,87 +1,17 @@
 {% extends "shell.html" %}
 
 {% block title %}Analyst Console · PhiSim{% endblock %}
+{% block body_class %}operator-body console-body{% endblock %}
 
 {% block content %}
-  <main class="page-frame analyst-frame">
-    <header class="page-heading">
-      <div>
-        <p class="eyebrow">Analyst workspace</p>
-        <h1>What happened?</h1>
-        <p class="hero-copy">Review local training sessions, meaningful interactions, and explainable indicators without accessing the database directly.</p>
-      </div>
-      <div class="row" id="connection-state"><span class="badge badge-warning">Connecting…</span></div>
-    </header>
+  <main class="page-frame operator-console">
+    <header class="operator-heading console-heading"><div><p class="operator-kicker">ANALYST EVIDENCE PLANE</p><h1>What happened?</h1><p>Trace local delivery, meaningful interaction, and explainable indicators without opening the database or exposing submitted values.</p></div><div class="operator-heading-actions"><span class="operator-connection-label">Telemetry boundary</span><div class="row" id="connection-state"><span class="badge badge-warning">Connecting…</span></div></div></header>
 
-    <section class="surface analyst-toolbar" aria-label="Console filters">
-      <div class="form-field">
-        <label for="session-filter">Session</label>
-        <select id="session-filter">
-          <option value="">Choose a session</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label for="channel-filter">Channel</label>
-        <select id="channel-filter">
-          <option value="">All channels</option>
-          <option value="website">Website</option>
-          <option value="email">Email</option>
-          <option value="sms">SMS</option>
-          <option value="qr">QR</option>
-          <option value="mfa">MFA</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label for="indicator-filter">Indicator</label>
-        <select id="indicator-filter">
-          <option value="">All indicators</option>
-        </select>
-      </div>
-      <div class="form-actions">
-        <button id="refresh-console" type="button">Refresh</button>
-        <button id="clear-console" class="button-secondary" type="button">Clear view</button>
-      </div>
-    </section>
+    <section class="console-safety-strip"><span class="console-safety-icon">⌁</span><div><strong>Evidence view is read-only</strong><span>Events contain safe metadata and indicator evidence only. No credential values are stored, returned, or broadcast.</span></div><span class="console-boundary">LOCAL / ONLY</span></section>
 
-    <section class="analyst-layout" aria-label="Analyst event review">
-      <aside class="surface session-panel" aria-labelledby="sessions-heading">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Live context</p>
-            <h2 id="sessions-heading">Sessions</h2>
-          </div>
-          <span id="session-count" class="badge">0</span>
-        </div>
-        <div id="session-list" class="session-list">
-          <div class="loading-state">Loading sessions…</div>
-        </div>
-      </aside>
+    <section class="operator-panel console-toolbar" aria-label="Console filters"><header class="operator-panel-heading"><div><p class="operator-kicker">QUERY CONTROLS</p><h2>Filter the evidence stream</h2></div><span class="operator-count">Live + historical</span></header><div class="console-filter-grid"><div class="form-field"><label for="session-filter">Session</label><select id="session-filter"><option value="">Choose a session</option></select></div><div class="form-field"><label for="channel-filter">Channel</label><select id="channel-filter"><option value="">All channels</option><option value="website">Website</option><option value="email">Email</option><option value="sms">SMS</option><option value="qr">QR</option><option value="mfa">MFA</option></select></div><div class="form-field"><label for="indicator-filter">Indicator</label><select id="indicator-filter"><option value="">All indicators</option></select></div><div class="operator-filter-actions"><button id="refresh-console" type="button">Refresh stream</button><button id="clear-console" class="button-secondary" type="button">Clear view</button></div></div></section>
 
-      <section class="surface timeline-panel" aria-labelledby="timeline-heading">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Session-filtered Events</p>
-            <h2 id="timeline-heading">Timeline</h2>
-          </div>
-          <span id="event-count" class="badge">0 events</span>
-        </div>
-        <div id="timeline" class="timeline-list">
-          <div class="empty-state">Select a session to inspect its timeline.</div>
-        </div>
-      </section>
-
-      <aside class="surface detail-panel" aria-labelledby="detail-heading">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">Evidence</p>
-            <h2 id="detail-heading">Event detail</h2>
-          </div>
-        </div>
-        <div id="event-detail" class="detail-content">
-          <div class="empty-state">Select an Event to see its evidence.</div>
-        </div>
-      </aside>
-    </section>
+    <section class="console-layout" aria-label="Analyst event review"><aside class="operator-console-panel console-session-panel" aria-labelledby="sessions-heading"><header class="console-panel-heading"><div><p class="operator-kicker">SESSION INDEX</p><h2 id="sessions-heading">Sessions</h2></div><span id="session-count" class="operator-count">0</span></header><div id="session-list" class="console-session-list"><div class="console-loading">Loading sessions…</div></div></aside><section class="operator-console-panel console-timeline-panel" aria-labelledby="timeline-heading"><header class="console-panel-heading"><div><p class="operator-kicker">EVENT STREAM</p><h2 id="timeline-heading">Timeline</h2></div><span id="event-count" class="operator-count">0 events</span></header><div id="timeline" class="console-timeline-list"><div class="console-empty">Select a session to inspect its timeline.</div></div></section><aside class="operator-console-panel console-detail-panel" aria-labelledby="detail-heading"><header class="console-panel-heading"><div><p class="operator-kicker">EVIDENCE INSPECTOR</p><h2 id="detail-heading">Event detail</h2></div></header><div id="event-detail" class="console-detail-content"><div class="console-empty">Select an event to see its evidence.</div></div></aside></section>
   </main>
 {% endblock %}
 
