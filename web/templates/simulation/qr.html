@@ -3,22 +3,8 @@
 {% block title %}{{ site_theme.display_name }} · QR verification{% endblock %}
 
 {% block simulation_content %}
-  <section class="mock-qr-shell" aria-labelledby="qr-title">
-    <div class="mock-qr-message">
-      <span class="mock-site-eyebrow">QR message · {{ scenario.organization }}</span>
-      <h1 id="qr-title">{{ scenario.title }}</h1>
-      <p class="mock-hero-body">{{ scenario.message }}</p>
-      <div class="mock-qr-warning"><strong>Fictional QR message</strong><span>This code points to a local destination only.</span></div>
-    </div>
-    <div class="mock-qr-card">
-      <span class="mock-card-icon" aria-hidden="true">{{ site_theme.mark }}</span>
-      <h2>Scan to continue</h2>
-      <img src="{{ qr_data_uri }}" alt="Local QR code for the fictional {{ site_theme.display_name }} verification flow" />
-      <p class="help-text host-display">{{ scan_url }}</p>
-      <a class="button" href="{{ url_for('qr_scan', scenario_id=scenario.scenario_id) }}">Simulate scan</a>
-      <span class="mock-local-note">A real phone is not contacted or required.</span>
-    </div>
-  </section>
+  {% set scan_action = url_for("qr_scan", scenario_id=scenario.scenario_id) %}
+  {% include "apps/qr/scan.html" %}
 {% endblock %}
 
 {% block simulation_footer %}{{ scenario.reminder }}{% endblock %}

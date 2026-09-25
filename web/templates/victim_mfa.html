@@ -4,38 +4,6 @@
 {% block app_name %}{{ site_theme.display_name }}{% endblock %}
 
 {% block victim_content %}
-  <section class="mock-mfa-shell" aria-labelledby="victim-mfa-title">
-    <div class="mock-mfa-device">
-      <header class="mock-mfa-device-header">
-        <div class="mock-auth-brand">
-          <span class="mock-card-icon" aria-hidden="true">{{ site_theme.mark }}</span>
-          <div>
-            <p class="mock-site-eyebrow">{{ scenario.service }}</p>
-            <h1 id="victim-mfa-title">{{ site_theme.display_name }}</h1>
-          </div>
-        </div>
-        <span class="mock-live-pill"><span></span> Step {{ step }} of {{ scenario.prompt_count }}</span>
-      </header>
-      <div class="mock-mfa-content">
-        <p class="mock-site-eyebrow">New sign-in approval</p>
-        <h2>Allow this sign-in?</h2>
-        <p>{{ scenario.message }}</p>
-        <div class="mock-device-card">
-          <span class="mock-device-icon" aria-hidden="true">⌁</span>
-          <div><strong>Chrome on Linux</strong><span>Northstar campus network · just now</span></div>
-        </div>
-        <div class="mock-mfa-actions">
-          <form method="post" action="{{ url_for('victim_mfa_respond', token=attack.victim_token, scenario_id=scenario.scenario_id, step=step) }}">
-            <input type="hidden" name="action" value="deny" />
-            <button class="button button-secondary" type="submit">Deny</button>
-          </form>
-          <form method="post" action="{{ url_for('victim_mfa_respond', token=attack.victim_token, scenario_id=scenario.scenario_id, step=step) }}">
-            <input type="hidden" name="action" value="approve" />
-            <button type="submit">Approve</button>
-          </form>
-        </div>
-      </div>
-      <footer class="mock-mfa-device-footer">{{ site_theme.footer_note }}</footer>
-    </div>
-  </section>
+  {% set mfa_action = url_for("victim_mfa_respond", token=attack.victim_token, scenario_id=scenario.scenario_id, step=step) %}
+  {% include "apps/mfa/prompt.html" %}
 {% endblock %}
