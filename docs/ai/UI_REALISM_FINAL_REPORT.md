@@ -26,7 +26,7 @@ The pass covers:
   approval, and QR destination preview;
 - a distinct operator Lab, analyst Console, and training Reveal.
 
-The final automated check passes with **187 tests**. One existing Starlette/
+The final automated check passes with **190 tests**. One existing Starlette/
 httpx test-client deprecation warning remains.
 
 ## Design architecture
@@ -117,9 +117,9 @@ uv run check
 Result:
 
 ```text
-120 files already formatted
+121 files already formatted
 0 errors, 0 warnings, 0 informations
-187 passed, 1 existing Starlette/httpx deprecation warning
+190 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The dedicated route matrix is in
@@ -142,6 +142,22 @@ The follow-up pass addressed the reported visual and lifecycle issues:
 - QuickChat uses the last message in the inbox and removes typing indicators.
 
 `tests/simulation/test_ui_regressions.py` covers these behaviors.
+
+## Live-update follow-up
+
+The live delivery paths now avoid stale browser state:
+
+- victim mailbox and conversation polling uses `no-store`, preserves the
+  current search/folder query, supports the primary QuickChat selector, and
+  prevents overlapping polls;
+- the Lab dashboard polls a fresh `/api/lab/dashboard` response that advances
+  due deliveries before returning state;
+- Lab attack status polling is cache-busted and serialized;
+- Console session polling refreshes the selected session when WebSocket frames
+  are unavailable.
+
+`tests/simulation/test_live_updates.py` covers the endpoint and polling
+contracts.
 
 ## Safety and privacy result
 
@@ -214,7 +230,9 @@ The work was split into atomic commits, in order:
 - `745aa2f` — portal layout, Lab contrast, and control hover fixes;
 - `d6b337d` and `88d97ce` — QuickChat typing removal and regression tests;
 - `b916694` — regression report update;
-- `9358c9e` — Gmail toolbar hover contrast follow-up.
+- `9358c9e` — Gmail toolbar hover contrast follow-up;
+- `68f39c0` — live Lab dashboard endpoint and refresh script;
+- `4ba9314` — resilient victim, Lab status, and Console polling.
 
 No push was performed.
 

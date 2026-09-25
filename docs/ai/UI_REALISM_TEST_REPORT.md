@@ -31,9 +31,9 @@ uv run check
 Final result:
 
 ```text
-120 files already formatted
+121 files already formatted
 0 errors, 0 warnings, 0 informations
-187 passed, 1 existing Starlette/httpx deprecation warning
+190 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The warning is the existing test-client deprecation warning:
@@ -149,6 +149,10 @@ The following route checks also passed:
 - Gemail and MFA contrast/hover selectors are present;
 - QuickChat shows the last message, removes typing indicators, and clears its
   unread marker after opening.
+
+`tests/simulation/test_live_updates.py` verifies fresh delivery state from the
+Lab dashboard endpoint, primary QuickChat polling selectors, cache-busting,
+and the Console selected-session refresh fallback.
 
 ## Safety verification
 
