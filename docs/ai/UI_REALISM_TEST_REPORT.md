@@ -16,7 +16,9 @@ Lab → Scenario → Session → Delivery → Victim application → Interaction
 
 All checks used the local FastAPI application and an isolated SQLite test
 engine. No real credentials, providers, domains, devices, or external network
-services were used.
+services were used. The opt-in synthetic capture tests additionally verify
+allowlisted demo inputs, salted secret digests, active-session display, and
+rejection toasts.
 
 ## Automated verification
 
@@ -31,9 +33,9 @@ uv run check
 Final result:
 
 ```text
-120 files already formatted
+125 files already formatted
 0 errors, 0 warnings, 0 informations
-202 passed, 1 existing Starlette/httpx deprecation warning
+205 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The warning is the existing test-client deprecation warning:

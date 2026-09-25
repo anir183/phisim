@@ -1,0 +1,26 @@
+<section class="sandbox-capture-panel" aria-labelledby="sandbox-capture-title">
+  <header class="sandbox-capture-heading">
+    <div>
+      <p class="training-kicker">SYNTHETIC SANDBOX CAPTURE</p>
+      <h2 id="sandbox-capture-title">Values observed in this demo</h2>
+    </div>
+    <span class="sandbox-capture-badge">LOCAL / SYNTHETIC</span>
+  </header>
+  {% if sandbox_captures %}
+    <p class="sandbox-capture-note">These are accepted demo values from the active local run. Secret-like values are shown from the active session cache; the database keeps only a salted digest.</p>
+    <div class="sandbox-capture-list">
+      {% for capture in sandbox_captures %}
+        <article class="sandbox-capture-record">
+          <header><strong>Step {{ capture.step }}</strong><span>{{ capture.channel }} · {{ capture.scenario_id }}</span></header>
+          <dl>
+            {% for field in capture.fields %}
+              <div><dt>{{ field.name }}</dt><dd>{% if field.value is not none %}{{ field.value }}{% else %}<em>Active-session value unavailable</em>{% endif %}</dd></div>
+            {% endfor %}
+          </dl>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="sandbox-capture-note">No accepted sandbox values were submitted for this run.</p>
+  {% endif %}
+</section>

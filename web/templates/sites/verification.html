@@ -17,7 +17,7 @@
       <div class="form-field">
         <label for="mock-verification-field">{{ field_label|default("Verification detail") }}</label>
         <input id="mock-verification-field" name="{{ field_name|default('confirmation') }}" type="{{ field_type|default('text') }}" autocomplete="off" required autofocus />
-        <small>The value is discarded and never stored.</small>
+        <small>{% if capture_enabled %}Accepted synthetic values are isolated in the local sandbox capture.{% else %}The value is discarded and never stored.{% endif %}</small>
       </div>
       <div class="form-actions">
         <button type="submit">{{ submit_label|default("Continue") }}</button>

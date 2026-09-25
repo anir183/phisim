@@ -21,6 +21,12 @@ from phisim.simulation.attack import (
     SimulationAttackError,
     SimulationAttackService,
 )
+from phisim.simulation.capture import (
+    SandboxCaptureValidationError,
+    list_sandbox_captures,
+    record_sandbox_capture,
+    sandbox_capture_enabled,
+)
 from phisim.simulation.catalog import (
     INDICATOR_INFO,
     MFA_SCENARIOS,
@@ -779,6 +785,51 @@ def _site_theme_for_scenario(scenario):
     return get_site_theme(scenario.scenario_id, scenario.channel)
 
 
+def _site_context(
+    database_session: OrmSession,
+    attack,
+    scenario,
+    *,
+    step: int = 1,
+    capture_error: str | None = None,
+) -> dict[str, object]:
+    return {
+        "attack": attack,
+        "scenario": scenario,
+        "site_theme": _site_theme_for_scenario(scenario),
+        "end_url": _site_end_path(attack, scenario.scenario_id),
+        "step": step,
+        "capture_enabled": sandbox_capture_enabled(),
+        "capture_error": capture_error,
+        "active_page": "victim",
+    }
+
+
+def _reveal_context(
+    database_session: OrmSession,
+    attack,
+    scenario,
+    *,
+    ended_early: bool,
+) -> dict[str, object]:
+    return {
+        "attack": attack,
+        "scenario": scenario,
+        "site_theme": _site_theme_for_scenario(scenario)
+        if hasattr(scenario, "channel")
+        else get_site_theme(scenario.scenario_id, "mfa"),
+        "indicator_info": INDICATOR_INFO,
+        "return_path": victim_return_path(attack),
+        "ended_early": ended_early,
+        "sandbox_capture_enabled": sandbox_capture_enabled(),
+        "sandbox_captures": list_sandbox_captures(
+            database_session,
+            attack.operator_session_id,
+        ),
+        "active_page": "victim",
+    }
+
+
 def _site_end_path(attack, scenario_id: str) -> str:
     return f"/v/{attack.victim_token}/site/{scenario_id}/end"
 
@@ -898,15 +949,12 @@ async def _complete_attack(
     return templates.TemplateResponse(
         request=request,
         name="victim_reveal.html",
-        context={
-            "attack": attack,
-            "scenario": scenario,
-            "site_theme": _site_theme_for_scenario(scenario),
-            "indicator_info": INDICATOR_INFO,
-            "return_path": victim_return_path(attack),
-            "ended_early": outcome == "ended_by_user",
-            "active_page": "victim",
-        },
+        context=_reveal_context(
+            database_session,
+            attack,
+            scenario,
+            ended_early=outcome == "ended_by_user",
+        ),
     )
 
 
@@ -1087,24 +1135,26 @@ async def victim_site(
     return templates.TemplateResponse(
         request=request,
         name="victim_site.html",
-        context={
-            "attack": attack,
-            "scenario": scenario,
-            "site_theme": _site_theme_for_scenario(scenario),
-            "end_url": _site_end_path(attack, scenario.scenario_id),
-            "step": max(1, min(step, 2)),
-            "active_page": "victim",
-        },
+        context=_site_context(
+            database_session,
+            attack,
+            scenario,
+            step=max(1, min(step, 2)),
+        ),
     )
 
 
-@router.post("/v/{token}/site/{scenario_id}/continue")
+@router.post(
+    "/v/{token}/site/{scenario_id}/continue",
+    response_class=HTMLResponse,
+    response_model=None,
+)
 async def victim_site_continue(
     request: Request,
     token: str,
     scenario_id: str,
     database_session: Annotated[OrmSession, Depends(get_session)],
-) -> RedirectResponse:
+) -> HTMLResponse | RedirectResponse:
     attack = _get_attack(database_session, token)
     await _deliver_if_due(database_session, attack)
     scenario = get_scenario(scenario_id)
@@ -1125,7 +1175,42 @@ async def victim_site_continue(
     form = await request.form()
     identifier = form.get("identifier", "")
     if not isinstance(identifier, str) or not identifier.strip():
+        if sandbox_capture_enabled():
+            return templates.TemplateResponse(
+                request=request,
+                name="victim_site.html",
+                context=_site_context(
+                    database_session,
+                    attack,
+                    scenario,
+                    step=1,
+                    capture_error="Enter a value to continue.",
+                ),
+                status_code=422,
+            )
         raise HTTPException(status_code=422, detail="Identifier is required.")
+    try:
+        record_sandbox_capture(
+            database_session,
+            session_id=attack.operator_session_id,
+            scenario_id=attack.scenario_id,
+            channel=attack.channel,
+            step=1,
+            fields={"identifier": identifier},
+        )
+    except SandboxCaptureValidationError as error:
+        return templates.TemplateResponse(
+            request=request,
+            name="victim_site.html",
+            context=_site_context(
+                database_session,
+                attack,
+                scenario,
+                step=1,
+                capture_error=str(error),
+            ),
+            status_code=422,
+        )
     service = _attack_service(database_session)
     service.update_state(
         attack, {"current_step": 2, "last_action": "website_viewed"}
@@ -1177,6 +1262,35 @@ async def victim_site_finish(
     if not value:
         value = form.get("confirmation", form.get("payment_method", ""))
     payment_method_present = "payment_method" in form
+    capture_field = (
+        "payment_method"
+        if payment_method_present
+        else "password"
+        if "password" in form
+        else "confirmation"
+    )
+    try:
+        record_sandbox_capture(
+            database_session,
+            session_id=attack.operator_session_id,
+            scenario_id=attack.scenario_id,
+            channel=attack.channel,
+            step=2,
+            fields={capture_field: value},
+        )
+    except SandboxCaptureValidationError as error:
+        return templates.TemplateResponse(
+            request=request,
+            name="victim_site.html",
+            context=_site_context(
+                database_session,
+                attack,
+                scenario,
+                step=2,
+                capture_error=str(error),
+            ),
+            status_code=422,
+        )
     non_credential_action = (
         "payment_method_selected"
         if payment_method_present
@@ -1268,15 +1382,12 @@ async def victim_result(
         return templates.TemplateResponse(
             request=request,
             name="victim_reveal.html",
-            context={
-                "attack": attack,
-                "scenario": scenario,
-                "site_theme": _site_theme_for_scenario(scenario),
-                "indicator_info": INDICATOR_INFO,
-                "return_path": victim_return_path(attack),
-                "ended_early": False,
-                "active_page": "victim",
-            },
+            context=_reveal_context(
+                database_session,
+                attack,
+                scenario,
+                ended_early=False,
+            ),
         )
     if not attack.state.get("destination_reached"):
         if attack.state.get("processing"):
@@ -1315,15 +1426,12 @@ async def victim_result_submit(
         return templates.TemplateResponse(
             request=request,
             name="victim_reveal.html",
-            context={
-                "attack": attack,
-                "scenario": scenario,
-                "site_theme": _site_theme_for_scenario(scenario),
-                "indicator_info": INDICATOR_INFO,
-                "return_path": victim_return_path(attack),
-                "ended_early": False,
-                "active_page": "victim",
-            },
+            context=_reveal_context(
+                database_session,
+                attack,
+                scenario,
+                ended_early=False,
+            ),
         )
     if not attack.state.get("destination_reached"):
         if attack.state.get("processing"):
@@ -1358,17 +1466,12 @@ async def victim_end_simulation(
         return templates.TemplateResponse(
             request=request,
             name="victim_reveal.html",
-            context={
-                "attack": attack,
-                "scenario": scenario,
-                "site_theme": _site_theme_for_scenario(scenario),
-                "indicator_info": INDICATOR_INFO,
-                "return_path": victim_return_path(attack),
-                "ended_early": not bool(
-                    attack.state.get("destination_reached")
-                ),
-                "active_page": "victim",
-            },
+            context=_reveal_context(
+                database_session,
+                attack,
+                scenario,
+                ended_early=not bool(attack.state.get("destination_reached")),
+            ),
         )
     _require_context(attack)
     _require_target(attack, scenario_id)
@@ -1446,6 +1549,14 @@ async def victim_qr_scan(
             ),
         },
     )
+    record_sandbox_capture(
+        database_session,
+        session_id=attack.operator_session_id,
+        scenario_id=attack.scenario_id,
+        channel=attack.channel,
+        step="scan",
+        fields={"action": "scan"},
+    )
     return RedirectResponse(
         url_for_victim_site(
             attack, scenario.target_scenario_id or "credential-basic-001"
@@ -1479,15 +1590,12 @@ async def victim_mfa(
         return templates.TemplateResponse(
             request=request,
             name="victim_reveal.html",
-            context={
-                "attack": attack,
-                "scenario": scenario,
-                "site_theme": get_site_theme(scenario.scenario_id, "mfa"),
-                "indicator_info": INDICATOR_INFO,
-                "return_path": victim_return_path(attack),
-                "ended_early": False,
-                "active_page": "victim",
-            },
+            context=_reveal_context(
+                database_session,
+                attack,
+                scenario,
+                ended_early=False,
+            ),
         )
     if attack.state.get("destination_reached"):
         return _destination_response(
@@ -1554,6 +1662,14 @@ async def victim_mfa_respond(
     action = form.get("action", "")
     if not isinstance(action, str) or action not in {"approve", "deny"}:
         raise HTTPException(status_code=400, detail="Invalid action.")
+    record_sandbox_capture(
+        database_session,
+        session_id=attack.operator_session_id,
+        scenario_id=attack.scenario_id,
+        channel=attack.channel,
+        step=step,
+        fields={"action": action},
+    )
     _engage(database_session, attack)
     await emit_simulation_event(
         database_session,
@@ -1604,15 +1720,12 @@ async def victim_mfa_end(
         return templates.TemplateResponse(
             request=request,
             name="victim_reveal.html",
-            context={
-                "attack": attack,
-                "scenario": scenario,
-                "site_theme": get_site_theme(scenario.scenario_id, "mfa"),
-                "indicator_info": INDICATOR_INFO,
-                "return_path": victim_return_path(attack),
-                "ended_early": False,
-                "active_page": "victim",
-            },
+            context=_reveal_context(
+                database_session,
+                attack,
+                scenario,
+                ended_early=False,
+            ),
         )
     if not attack.state.get("destination_reached"):
         raise HTTPException(

@@ -17,5 +17,6 @@
 {% endblock %}
 
 {% block scripts %}
+  <script src="{{ url_for('static', path='capture-validation.js') }}" defer></script>
   <script src="{{ url_for('static', path='simulation.js') }}" defer></script>
 {% endblock %}

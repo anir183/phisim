@@ -148,6 +148,15 @@ timestamp (server-generated)
 
 Secrets do not belong in `metadata`.
 
+### Optional synthetic capture boundary
+
+The explicit `PHISIM_SANDBOX_CAPTURE` demo mode is deliberately separate from
+`EventCreate` and `TelemetryService`. Validated non-secret demo values are kept
+in `sandbox_captures`; password and confirmation values are represented by
+salted digests there, while exact display values are limited to a bounded
+process-local cache for the active Reveal/Console session. The capture API is
+read-only and local, and rejected values never enter either store.
+
 ---
 
 ## 5. Persistence
@@ -163,9 +172,11 @@ infra/sqlite/
 ├── models/
 │   ├── event.py
 │   ├── scenario.py
+│   ├── sandbox_capture.py
 │   └── session.py
 └── repos/
     ├── event.py
+    ├── sandbox_capture.py
     ├── scenario.py
     └── session.py
 ```

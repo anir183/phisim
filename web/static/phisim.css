@@ -1089,6 +1089,12 @@ tr:last-child td {
   font-weight: 700;
 }
 
+.victim-toast-error {
+  border-color: #efb4a7;
+  background: #fff1ed;
+  color: #a53b2c;
+}
+
 @media (max-width: 680px) {
   .victim-topbar {
     align-items: flex-start;
@@ -6619,6 +6625,107 @@ body.mock-nimbusid,
   padding: 0.35rem 0 0.9rem;
 }
 
+.sandbox-capture-panel {
+  display: grid;
+  gap: 0.7rem;
+  border: 1px solid #cbd9f4;
+  border-radius: 10px;
+  padding: 0.9rem;
+  background: #f5f8ff;
+}
+
+.sandbox-capture-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.sandbox-capture-heading h2 {
+  margin: 0;
+  color: #34425d;
+  font-size: 0.9rem;
+}
+
+.sandbox-capture-badge {
+  border: 1px solid #b7c9f0;
+  border-radius: 999px;
+  padding: 0.25rem 0.45rem;
+  color: #3857a8;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.sandbox-capture-note {
+  margin: 0;
+  color: #667590;
+  font-size: 0.67rem;
+  line-height: 1.5;
+}
+
+.sandbox-capture-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.sandbox-capture-record {
+  display: grid;
+  gap: 0.45rem;
+  border-top: 1px solid #dbe4f5;
+  padding-top: 0.55rem;
+}
+
+.sandbox-capture-record header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+  color: #52627c;
+  font-size: 0.63rem;
+}
+
+.sandbox-capture-record header span {
+  color: #7b89a0;
+  font-size: 0.59rem;
+}
+
+.sandbox-capture-record dl {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.sandbox-capture-record dl div {
+  display: grid;
+  grid-template-columns: minmax(90px, 0.35fr) minmax(0, 1fr);
+  gap: 0.5rem;
+}
+
+.sandbox-capture-record dt,
+.sandbox-capture-record dd {
+  margin: 0;
+  font-size: 0.66rem;
+}
+
+.sandbox-capture-record dt {
+  color: #7b89a0;
+  font-weight: 700;
+}
+
+.sandbox-capture-record dd {
+  overflow-wrap: anywhere;
+  color: #34425d;
+  font-weight: 700;
+}
+
+.sandbox-capture-record dd em {
+  color: #8a95a8;
+  font-weight: 500;
+}
+
 .training-story:last-child {
   border-bottom: 0;
   padding-bottom: 0;
@@ -7286,6 +7393,76 @@ body.mock-nimbusid,
   font-weight: 800;
   letter-spacing: 0.08em;
   white-space: nowrap;
+}
+
+.sandbox-capture-console-panel {
+  margin-bottom: 0.8rem;
+  border-color: #294b6a;
+  background: #10263a;
+}
+
+.sandbox-capture-console-content {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.sandbox-capture-console-content .console-empty {
+  color: #8faabc;
+}
+
+.sandbox-console-record {
+  display: grid;
+  gap: 0.45rem;
+  border-top: 1px solid #23435c;
+  padding-top: 0.6rem;
+}
+
+.sandbox-console-record header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.45rem;
+  color: #b6d9e6;
+  font-size: 0.66rem;
+}
+
+.sandbox-console-record header span {
+  color: #7faabe;
+  font-size: 0.59rem;
+}
+
+.sandbox-console-record dl {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.sandbox-console-record dl div {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.35fr) minmax(0, 1fr);
+  gap: 0.55rem;
+}
+
+.sandbox-console-record dt,
+.sandbox-console-record dd {
+  margin: 0;
+  font-size: 0.65rem;
+}
+
+.sandbox-console-record dt {
+  color: #7faabe;
+  font-weight: 700;
+}
+
+.sandbox-console-record dd {
+  overflow-wrap: anywhere;
+  color: #e1f0f5;
+  font-weight: 700;
+}
+
+.sandbox-console-record dd.sandbox-active-value {
+  color: #b9e2c9;
 }
 
 .console-filter-grid {

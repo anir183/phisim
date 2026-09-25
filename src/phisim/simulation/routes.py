@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from phisim.simulation.capture_routes import router as capture_router
 from phisim.simulation.channels import (
     email_router,
     index_router,
@@ -18,3 +19,4 @@ router.include_router(sms_router)
 router.include_router(qr_router)
 router.include_router(mfa_router)
 router.include_router(victim_router)
+router.include_router(capture_router)

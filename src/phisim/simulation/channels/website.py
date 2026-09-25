@@ -7,6 +7,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session as OrmSession
 
 from phisim.infra.sqlite.connection import get_session
+from phisim.simulation.capture import (
+    SandboxCaptureValidationError,
+    list_sandbox_captures,
+    record_sandbox_capture,
+    sandbox_capture_enabled,
+)
 from phisim.simulation.catalog import INDICATOR_INFO, Scenario, get_scenario
 from phisim.simulation.channels.common import (
     emit_simulation_event,
@@ -26,6 +32,21 @@ from phisim.simulation.site_themes import get_site_theme
 router = APIRouter(tags=["simulation"])
 
 
+def _capture_context(
+    database_session: OrmSession,
+    session_id: str,
+) -> dict[str, object]:
+    enabled = sandbox_capture_enabled()
+    return {
+        "capture_enabled": enabled,
+        "sandbox_capture_enabled": enabled,
+        "sandbox_captures": list_sandbox_captures(
+            database_session,
+            session_id,
+        ),
+    }
+
+
 async def _complete_credential_submission(
     request: Request,
     scenario: Scenario,
@@ -33,6 +54,8 @@ async def _complete_credential_submission(
     *,
     username_present: bool,
     password_value: object,
+    username_value: object | None = None,
+    value_field_name: str = "password",
     session_id: str | None = None,
 ) -> HTMLResponse:
     result = (
@@ -64,6 +87,43 @@ async def _complete_credential_submission(
         description=scenario.message,
         session_id=session_id,
     )
+    capture_fields: dict[str, object] = {}
+    if username_value is not None:
+        capture_fields["username"] = username_value
+    if password_value is not None:
+        capture_fields[value_field_name] = password_value
+    try:
+        record_sandbox_capture(
+            database_session,
+            session_id=session_id,
+            scenario_id=scenario.scenario_id,
+            channel=scenario.channel,
+            step="submit",
+            fields=capture_fields,
+        )
+    except SandboxCaptureValidationError as error:
+        error_response = templates.TemplateResponse(
+            request=request,
+            name="simulation/password.html",
+            context=timing_context(
+                request,
+                scenario=scenario,
+                site_theme=get_site_theme(
+                    scenario.scenario_id, scenario.channel
+                ),
+                active_page="simulation",
+                capture_error=str(error),
+                **_capture_context(database_session, session_id),
+            ),
+            status_code=422,
+        )
+        for raw_key, raw_value in response.raw_headers:
+            if raw_key.lower() == b"set-cookie":
+                error_response.headers.append(
+                    "set-cookie",
+                    raw_value.decode("latin-1"),
+                )
+        return error_response
     run = get_or_create_run(
         database_session,
         session_id=session_id,
@@ -123,6 +183,7 @@ async def scenario_login(
             scenario=scenario,
             site_theme=get_site_theme(scenario.scenario_id, scenario.channel),
             active_page="simulation",
+            capture_enabled=sandbox_capture_enabled(),
         ),
     )
     session_id = ensure_simulation_session(
@@ -177,6 +238,11 @@ async def scenario_username(
                     scenario.scenario_id, scenario.channel
                 ),
                 active_page="simulation",
+                capture_error=(
+                    "Enter a value to continue."
+                    if sandbox_capture_enabled()
+                    else None
+                ),
                 error="Enter a username to continue.",
             ),
         )
@@ -198,6 +264,38 @@ async def scenario_username(
         scenario_type=scenario.channel,
         description=scenario.message,
     )
+    try:
+        record_sandbox_capture(
+            session,
+            session_id=session_id,
+            scenario_id=scenario.scenario_id,
+            channel=scenario.channel,
+            step="username",
+            fields={"username": username_value},
+        )
+    except SandboxCaptureValidationError as error:
+        error_response = templates.TemplateResponse(
+            request=request,
+            name="simulation/login.html",
+            context=timing_context(
+                request,
+                scenario=scenario,
+                site_theme=get_site_theme(
+                    scenario.scenario_id, scenario.channel
+                ),
+                active_page="simulation",
+                capture_error=str(error),
+                **_capture_context(session, session_id),
+            ),
+            status_code=422,
+        )
+        for raw_key, raw_value in response.raw_headers:
+            if raw_key.lower() == b"set-cookie":
+                error_response.headers.append(
+                    "set-cookie",
+                    raw_value.decode("latin-1"),
+                )
+        return error_response
     run = get_or_create_run(
         session,
         session_id=session_id,
@@ -233,6 +331,7 @@ async def scenario_password(
             scenario=scenario,
             site_theme=get_site_theme(scenario.scenario_id, scenario.channel),
             active_page="simulation",
+            capture_enabled=sandbox_capture_enabled(),
         ),
     )
     session_id = ensure_simulation_session(
@@ -295,6 +394,11 @@ async def scenario_password_submit(
         session,
         username_present=bool(state.get("username_present")),
         password_value=password_value,
+        value_field_name=(
+            "payment_method"
+            if scenario.scenario_id == "credential-shopping-001"
+            else "password"
+        ),
         session_id=session_id,
     )
 
@@ -318,6 +422,12 @@ async def scenario_submit(
         session,
         username_present=bool(form.get("username", "")),
         password_value=password_value,
+        username_value=form.get("username", ""),
+        value_field_name=(
+            "payment_method"
+            if scenario.scenario_id == "credential-shopping-001"
+            else "password"
+        ),
     )
 
 
@@ -398,6 +508,7 @@ async def scenario_end(
             ended_early=ended_early,
             indicator_info=INDICATOR_INFO,
             active_page="simulation",
+            **_capture_context(session, session_id),
         ),
     )
     for cookie in cookie_response.headers.getlist("set-cookie"):

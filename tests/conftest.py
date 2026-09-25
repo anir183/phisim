@@ -37,6 +37,9 @@ def client(
 
     app.dependency_overrides[get_session] = override_get_session
     monkeypatch.setattr("phisim.main.initialize_database", lambda: None)
+    monkeypatch.setattr(
+        "phisim.simulation.capture.settings.sandbox_capture", False
+    )
 
     try:
         with TestClient(app) as test_client:

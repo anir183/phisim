@@ -18,7 +18,7 @@
           <span class="training-story-number">01</span>
           <div>
             <h2>What was kept safe</h2>
-            <p>No approval value or personal data was retained, sent, or added to an account.</p>
+            <p>{% if sandbox_capture_enabled %}The synthetic approval actions are shown in the isolated sandbox panel; normal event telemetry remains secret-free.{% else %}No approval value or personal data was retained, sent, or added to an account.{% endif %}</p>
           </div>
         </section>
         <section class="training-story">
@@ -42,6 +42,7 @@
             </ul>
           </div>
         </section>
+        {% if sandbox_capture_enabled %}{% include "sandbox_capture_panel.html" %}{% endif %}
       </main>
       <aside class="training-evidence">
         <p class="training-kicker">LOCAL RUN SUMMARY</p>

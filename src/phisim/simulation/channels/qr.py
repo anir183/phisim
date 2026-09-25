@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session as OrmSession
 
 from phisim.infra.sqlite.connection import get_session
+from phisim.simulation.capture import record_sandbox_capture
 from phisim.simulation.catalog import get_scenario
 from phisim.simulation.channels.common import (
     emit_simulation_event,
@@ -107,5 +108,13 @@ async def qr_scan(
         event_type="qr_scan_simulated",
         metadata=qr_evidence(scenario)
         | {"target_url": f"/scenario/{target_scenario_id}"},
+    )
+    record_sandbox_capture(
+        session,
+        session_id=session_id,
+        scenario_id=scenario.scenario_id,
+        channel=scenario.channel,
+        step="scan",
+        fields={"action": "scan"},
     )
     return response

@@ -26,9 +26,12 @@ The pass covers:
   approval, and QR destination preview;
 - a distinct operator Lab, analyst Console, and training Reveal;
 - product-specific destination pages after meaningful actions, with an explicit
-  `End simulation` transition to the training reveal.
+  `End simulation` transition to the training reveal;
+- an opt-in synthetic sandbox capture that validates demo inputs, shows accepted
+  values on the Reveal and Console, stores non-secret values locally, and keeps
+  only salted digests for secret-like fields.
 
-The final automated check passes with **202 tests**. One existing Starlette/
+The final automated check passes with **205 tests**. One existing Starlette/
 httpx test-client deprecation warning remains.
 
 ## Design architecture
@@ -41,7 +44,8 @@ The following remain shared intentionally:
 - victim token/context management;
 - safe event emission, persistence, WebSocket updates, analysis, and Console
   APIs;
-- credential-safety validation and non-persistence guarantees;
+- credential-safety validation and non-persistence guarantees for normal telemetry;
+- optional isolated synthetic capture with salted secret digests and active-session display;
 - completion and explicit end-simulation controls;
 - local-only asset and network-egress policy;
 - baseline accessibility primitives and fictional safety framing.
@@ -113,6 +117,10 @@ persisting user-entered content.
 
 ## Verification
 
+The optional sandbox capture is covered by
+`tests/simulation/test_sandbox_capture.py`, including domain validation,
+salted-digest persistence, Reveal/Console display, and rejection toasts.
+
 The complete verification command passed:
 
 ```text
@@ -124,9 +132,9 @@ uv run check
 Result:
 
 ```text
-120 files already formatted
+125 files already formatted
 0 errors, 0 warnings, 0 informations
-202 passed, 1 existing Starlette/httpx deprecation warning
+205 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The dedicated route matrix is in

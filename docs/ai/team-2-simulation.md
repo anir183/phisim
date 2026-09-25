@@ -24,8 +24,11 @@ catalog at `scenarios/catalog.json`. Channel route ownership is split into
 focused modules under `src/phisim/simulation/channels/`; the former monolithic
 route module is now only a composition router.
 
-All destinations are local. No message is delivered, no external provider is
-contacted, and submitted credential values are discarded immediately.
+All destinations are local. No message is delivered and no external provider
+is contacted. The optional synthetic sandbox capture is isolated from normal
+telemetry: it validates demo inputs, stores non-secret values locally, keeps
+only salted digests for secret-like fields, and exposes exact demo values only
+through the active local Reveal/Console cache.
 
 ## Information architecture
 
@@ -67,8 +70,11 @@ rejects duplicate IDs, unknown targets, and non-reserved hosts.
 5. Participant reaches a product-specific destination.
 6. Participant explicitly ends the simulation to receive the educational reveal.
 
-Credential values are never placed in Event metadata, Session state, response
-text, or the database.
+Normal credential values are never placed in Event metadata, Session state,
+ordinary response text, or the database. When the explicit synthetic sandbox
+mode is enabled, accepted demo values are shown only through the isolated
+Reveal/Console capture surface; secret-like database records contain salted
+digests rather than raw values.
 
 ### Email
 

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', path='phisim.css') }}" />
     {% block head %}{% endblock %}
   </head>
-  <body class="{% block body_class %}{% endblock %}">
+  <body class="{% block body_class %}{% endblock %}"{% if capture_error %} data-capture-error="{{ capture_error }}"{% endif %}>
     <div class="app-shell">
       {% if not site_theme %}
         <header class="topbar">

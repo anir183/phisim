@@ -30,6 +30,16 @@ class SimulationAttackRepository:
             .order_by(SimulationAttack.updated_at.desc())
         )
 
+    def get_by_victim_session_id(
+        self,
+        victim_session_id: str,
+    ) -> SimulationAttack | None:
+        return self.session.scalar(
+            select(SimulationAttack)
+            .where(SimulationAttack.victim_session_id == victim_session_id)
+            .order_by(SimulationAttack.updated_at.desc())
+        )
+
     def get_active_by_victim_token(
         self,
         token: str,

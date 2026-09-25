@@ -22,6 +22,12 @@ cp .env.example .env
 uv run dev
 ```
 
+To enable the opt-in synthetic sandbox capture for the local training demo, set
+`PHISIM_SANDBOX_CAPTURE=true` in `.env`. It accepts only allowlisted demo
+values: emails ending in `@example.com` or `@gemail.com`, fictional payment
+options, and training-prefixed secret fields such as `sandbox-password`.
+Rejected values produce an accessible toast and are not advanced or stored.
+
 Open the local address printed by Uvicorn. The safe default is `127.0.0.1:8000`.
 
 To run the application without auto-reload:
@@ -65,14 +71,14 @@ Older routes remain available for local demonstrations and integration coverage:
 
 ## Project surfaces
 
-| Surface             | Route                                  | Purpose                                                 |
-| ------------------- | -------------------------------------- | ------------------------------------------------------- |
-| Scenario Lab        | `/lab`                                 | Launch and observe bounded local runs                   |
-| Victim applications | `/mail`, `/messages`, `/v/{token}/...` | Fictional participant experiences                       |
-| Analyst Console     | `/console`                             | Safe event timeline, indicators, and session inspection |
-| Training Reveal     | Product destination → `End simulation` | Debrief shown only after explicit completion            |
-| API                 | `/api/*`                               | Scenario, session, event, Lab, and analysis contracts   |
-| Live events         | `/api/events/ws`                       | Local WebSocket event stream                            |
+| Surface             | Route                                  | Purpose                                                                         |
+| ------------------- | -------------------------------------- | ------------------------------------------------------------------------------- |
+| Scenario Lab        | `/lab`                                 | Launch and observe bounded local runs                                           |
+| Victim applications | `/mail`, `/messages`, `/v/{token}/...` | Fictional participant experiences                                               |
+| Analyst Console     | `/console`                             | Safe event timeline, indicators, and session inspection                         |
+| Training Reveal     | Product destination → `End simulation` | Debrief shown only after explicit completion                                    |
+| API                 | `/api/*`                               | Scenario, session, event, Lab, analysis, and optional sandbox-capture contracts |
+| Live events         | `/api/events/ws`                       | Local WebSocket event stream                                                    |
 
 The Lab, victim applications, Console, and Reveal are separate presentation shells. They share contracts and safe infrastructure, not a single generic dashboard.
 
@@ -118,7 +124,8 @@ These are release-blocking constraints:
 
 - The server binds to loopback by default.
 - All organizations, users, messages, and domains are fictional.
-- Submitted credential values are never persisted, logged, broadcast, or returned.
+- Normal telemetry never persists, logs, broadcasts, or returns submitted credential values.
+- The opt-in synthetic sandbox capture is isolated from telemetry: non-secret demo values are stored locally, secret-like values receive salted digests, and exact secret display is limited to the active process-local session cache.
 - Event metadata contains allowlisted, non-secret facts only.
 - Email, SMS, QR targets, and attachment previews are local and inert.
 - No SMTP, SMS gateway, cloud provider, external API, or outbound network call is required.

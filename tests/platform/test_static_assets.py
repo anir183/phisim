@@ -10,6 +10,7 @@ def test_shared_static_assets_are_local_and_mounted(
     victim_script = client.get("/static/victim.js")
     lab_script = client.get("/static/lab.js")
     lab_dashboard_script = client.get("/static/lab-dashboard.js")
+    capture_script = client.get("/static/capture-validation.js")
 
     assert css.status_code == 200
     assert console_script.status_code == 200
@@ -17,6 +18,7 @@ def test_shared_static_assets_are_local_and_mounted(
     assert victim_script.status_code == 200
     assert lab_script.status_code == 200
     assert lab_dashboard_script.status_code == 200
+    assert capture_script.status_code == 200
     assert "https://" not in css.text
     assert "http://" not in css.text
     assert "innerHTML" not in console_script.text
@@ -32,6 +34,8 @@ def test_shared_static_assets_are_local_and_mounted(
     assert "replaceChildren" in lab_script.text
     assert "innerHTML" not in lab_dashboard_script.text
     assert "setInterval(refresh" in lab_dashboard_script.text
+    assert "training-only value" in capture_script.text
+    assert "https://" not in capture_script.text
     assert 'cache: "no-store"' in lab_dashboard_script.text
     assert "quickchat-thread-list" in victim_script.text
     assert 'cache: "no-store"' in victim_script.text

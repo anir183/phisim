@@ -24,6 +24,7 @@ The repository currently includes:
 - product-specific post-action destination pages and an explicit manual-end transition
 - a separate operator Lab, analyst Console, and training Reveal
 - safe event persistence, analysis indicators, inspection timelines, and WebSocket updates
+- optional synthetic sandbox capture with strict demo-input validation and isolated Reveal/Console display
 - focused platform, simulation, security, UI, and live-update tests
 
 The normal participant path is:
@@ -83,7 +84,8 @@ All changes must preserve these properties:
 - local/loopback operation by default
 - fictional organizations, identities, messages, and domains
 - no real outbound email or SMS
-- no credential or payment-detail persistence
+- no raw credential or payment-detail persistence in normal telemetry
+- optional synthetic sandbox captures keep non-secret demo values locally and salted secret digests only
 - no external provider or network dependency
 - inert attachments and local-only QR targets
 - no shell, code, or arbitrary-file execution

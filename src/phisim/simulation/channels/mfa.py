@@ -7,6 +7,11 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session as OrmSession
 
 from phisim.infra.sqlite.connection import get_session
+from phisim.simulation.capture import (
+    list_sandbox_captures,
+    record_sandbox_capture,
+    sandbox_capture_enabled,
+)
 from phisim.simulation.catalog import INDICATOR_INFO, get_mfa_scenario
 from phisim.simulation.channels.common import (
     emit_simulation_event,
@@ -133,6 +138,14 @@ async def mfa_respond(
             scenario_type="mfa",
             description=scenario.message,
         )
+        record_sandbox_capture(
+            session,
+            session_id=session_id,
+            scenario_id=scenario.scenario_id,
+            channel="mfa",
+            step=current_step,
+            fields={"action": action},
+        )
         run = get_or_create_run(
             session,
             session_id=session_id,
@@ -176,6 +189,14 @@ async def mfa_respond(
         scenario_name=scenario.title,
         scenario_type="mfa",
         description=scenario.message,
+    )
+    record_sandbox_capture(
+        session,
+        session_id=session_id,
+        scenario_id=scenario.scenario_id,
+        channel="mfa",
+        step=current_step,
+        fields={"action": action},
     )
     run = get_or_create_run(
         session,
@@ -297,6 +318,8 @@ async def mfa_end(
             ),
             mfa_action=state.get("mfa_decision"),
             active_page="simulation",
+            sandbox_capture_enabled=sandbox_capture_enabled(),
+            sandbox_captures=list_sandbox_captures(session, session_id),
         ),
     )
     for cookie in cookie_response.headers.getlist("set-cookie"):

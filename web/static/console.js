@@ -5,6 +5,8 @@ const state = {
   selectedSession: "",
   events: new Map(),
   indicators: new Map(),
+  captures: [],
+  captureEnabled: false,
   selectedEvent: "",
   socket: null,
   reconnectTimer: null,
@@ -22,6 +24,8 @@ const sessionCount = document.getElementById("session-count");
 const timeline = document.getElementById("timeline");
 const eventCount = document.getElementById("event-count");
 const detail = document.getElementById("event-detail");
+const sandboxCaptures = document.getElementById("sandbox-captures");
+const sandboxCaptureState = document.getElementById("sandbox-capture-state");
 const connectionState = document.getElementById("connection-state");
 const refreshButton = document.getElementById("refresh-console");
 const clearButton = document.getElementById("clear-console");
@@ -45,6 +49,59 @@ function setConnection(label, tone) {
 
 function showEmpty(parent, message) {
   parent.replaceChildren(element("div", message, "empty-state"));
+}
+
+function renderSandboxCaptures() {
+  if (!sandboxCaptures || !sandboxCaptureState) return;
+  sandboxCaptures.replaceChildren();
+  if (!state.captureEnabled) {
+    sandboxCaptureState.textContent = "Disabled";
+    showEmpty(
+      sandboxCaptures,
+      "Sandbox capture is disabled for this local run.",
+    );
+    return;
+  }
+  sandboxCaptureState.textContent = `${state.captures.length} capture${state.captures.length === 1 ? "" : "s"}`;
+  if (state.captures.length === 0) {
+    showEmpty(
+      sandboxCaptures,
+      state.selectedSession
+        ? "No accepted synthetic values were submitted for this Session."
+        : "Select a session to inspect accepted demo values.",
+    );
+    return;
+  }
+  for (const capture of state.captures) {
+    const record = document.createElement("article");
+    record.className = "sandbox-console-record";
+    const heading = document.createElement("header");
+    heading.appendChild(element("strong", `Step ${capture.step || "—"}`));
+    heading.appendChild(
+      element(
+        "span",
+        `${capture.channel || "local"} · ${capture.scenario_id || "unknown"}`,
+      ),
+    );
+    record.appendChild(heading);
+    const fields = document.createElement("dl");
+    for (const field of capture.fields || []) {
+      const row = document.createElement("div");
+      row.appendChild(element("dt", field.name || "value"));
+      const value = document.createElement("dd");
+      value.textContent =
+        field.value === null || field.value === undefined
+          ? "Active-session value unavailable"
+          : String(field.value);
+      if (field.storage === "active-session") {
+        value.className = "sandbox-active-value";
+      }
+      row.appendChild(value);
+      fields.appendChild(row);
+    }
+    record.appendChild(fields);
+    sandboxCaptures.appendChild(record);
+  }
 }
 
 async function getJson(url) {
@@ -267,21 +324,33 @@ async function selectSession(sessionId, preserve = false) {
   if (!preserve) {
     state.events.clear();
     state.indicators.clear();
+    state.captures = [];
+    state.captureEnabled = false;
     state.selectedEvent = "";
   }
   renderSessions();
   renderTimeline();
+  renderSandboxCaptures();
   if (!sessionId) return;
   setConnection("Loading", "warning");
   try {
     const encoded = encodeURIComponent(sessionId);
-    const [events, analysis] = await Promise.all([
+    const [events, analysis, captureResponse] = await Promise.all([
       getJson(`/api/events?session_id=${encoded}`),
       getJson(`/api/analysis/sessions/${encoded}`),
+      getJson(`/api/sandbox/captures?session_id=${encoded}`).catch(() => ({
+        enabled: false,
+        captures: [],
+      })),
     ]);
     if (!Array.isArray(events) || !analysis || !Array.isArray(analysis.timeline)) {
       throw new Error("Unexpected Event response");
     }
+    if (!captureResponse || !Array.isArray(captureResponse.captures)) {
+      throw new Error("Unexpected sandbox capture response");
+    }
+    state.captureEnabled = captureResponse.enabled === true;
+    state.captures = captureResponse.captures;
     for (const entry of analysis.timeline) {
       if (entry && typeof entry.event_id === "string") {
         state.indicators.set(entry.event_id, entry.indicators || []);
@@ -294,6 +363,7 @@ async function selectSession(sessionId, preserve = false) {
     }
     renderIndicatorFilter();
     renderTimeline();
+    renderSandboxCaptures();
     setConnection("Live", "success");
   } catch (_error) {
     showEmpty(timeline, "Unable to load this Session.");
@@ -305,7 +375,13 @@ async function refreshLiveIndicators(event) {
   if (!state.selectedSession || event.session_id !== state.selectedSession) return;
   try {
     const encoded = encodeURIComponent(state.selectedSession);
-    const analysis = await getJson(`/api/analysis/sessions/${encoded}`);
+    const [analysis, captureResponse] = await Promise.all([
+      getJson(`/api/analysis/sessions/${encoded}`),
+      getJson(`/api/sandbox/captures?session_id=${encoded}`).catch(() => ({
+        enabled: false,
+        captures: [],
+      })),
+    ]);
     const entry = Array.isArray(analysis.timeline)
       ? analysis.timeline.find((item) => item && item.event_id === event.event_id)
       : null;
@@ -313,6 +389,11 @@ async function refreshLiveIndicators(event) {
       state.indicators.set(event.event_id, entry.indicators);
       renderIndicatorFilter();
       renderTimeline();
+    }
+    if (captureResponse && Array.isArray(captureResponse.captures)) {
+      state.captureEnabled = captureResponse.enabled === true;
+      state.captures = captureResponse.captures;
+      renderSandboxCaptures();
     }
   } catch (_error) {
     setConnection("Live; analysis pending", "warning");
@@ -378,8 +459,11 @@ refreshButton.addEventListener("click", () => loadSessions(true));
 clearButton.addEventListener("click", () => {
   state.events.clear();
   state.indicators.clear();
+  state.captures = [];
+  state.captureEnabled = false;
   state.selectedEvent = "";
   renderTimeline();
+  renderSandboxCaptures();
 });
 window.addEventListener("beforeunload", () => {
   state.stopped = true;

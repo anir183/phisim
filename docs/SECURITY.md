@@ -38,7 +38,7 @@ Do not impersonate real organizations for the classroom demonstration.
 A fake login page may ask for a username and password to demonstrate the
 interaction.
 
-The system must not:
+The normal simulation and telemetry path must not:
 
 - store the password
 - log the password
@@ -62,6 +62,33 @@ interaction_result
 ```
 
 but never the secret itself.
+
+### Explicit synthetic sandbox capture
+
+The optional `PHISIM_SANDBOX_CAPTURE=true` mode exists only for a controlled
+local demonstration. It is not part of normal telemetry and must not be enabled
+for a shared or public deployment. The application also requires
+`PHISIM_ENV=development` and a loopback `PHISIM_HOST` before enabling capture.
+
+The mode accepts only allowlisted synthetic values:
+
+- email-like values ending in `@example.com` or `@gemail.com`;
+- fictional payment options; and
+- password fields using an explicit training prefix such as `sandbox-`,
+  `training-`, `demo-`, `local-`, `test-`, or `sample-`; and
+- short fictional confirmation values, which are treated as secret-like for
+  storage even when they are hardcoded scenario choices.
+
+Accepted non-secret values are stored in the local `sandbox_captures` table.
+Secret-like values are stored only as salted one-way digests. Their exact values
+are available only to the active process-local Reveal/Console session cache and
+are never added to Events, WebSocket frames, ordinary API event responses, or
+logs. Invalid values are rejected without echoing the submitted value and the UI
+shows a toast.
+
+This feature is a demonstration aid, not a credential store. Do not weaken the
+validation, add raw secret persistence, or expose the capture API outside the
+local sandbox.
 
 ---
 
