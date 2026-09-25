@@ -1,0 +1,20 @@
+<section class="amazaun-app mock-landing-amazaun" aria-labelledby="amazaun-order-title">
+  <header class="amazaun-topbar">
+    <a class="amazaun-wordmark" href="{{ home_action|default('#') }}"><span class="amazaun-smile" aria-hidden="true">a</span><span>Amazaun</span></a>
+    <form class="amazaun-search" method="get" action="{{ home_action|default('#') }}" role="search"><select aria-label="Search category"><option>All</option></select><input type="search" placeholder="Search Amazaun" aria-label="Search Amazaun" /><button type="submit">⌕</button></form>
+    <div class="amazaun-account"><span>Hello, fictional shopper</span><strong>Account &amp; Lists</strong><span>Returns</span><strong>Orders</strong><b>Cart · 0</b></div>
+  </header>
+  <nav class="amazaun-nav" aria-label="Amazaun categories"><span>☰ All</span><span>Today's deals</span><span>Customer Service</span><span>Registry</span><span>Gift Cards</span><span>Sell</span><strong>Shop deals in Electronics</strong></nav>
+  <main class="amazaun-main">
+    <div class="amazaun-breadcrumb"><a href="{{ home_action|default('#') }}">Orders</a><span>›</span><span>Order #1042-991</span></div>
+    <div class="amazaun-order-layout">
+      <section class="amazaun-order-main">
+        <div class="amazaun-order-heading"><div><p class="amazaun-overline">ORDER #1042-991</p><h1 id="amazaun-order-title">{{ site_theme.hero_title|default("Review your delivery") }}</h1><p>This fictional order is waiting for a delivery detail check.</p></div><span class="amazaun-order-status">Pending confirmation</span></div>
+        <article class="amazaun-product-card"><div class="amazaun-product-art" aria-hidden="true">▣</div><div><h2>Fictional household essentials</h2><p>Quantity: 1 · Local training order</p><span class="amazaun-price">No real charge</span></div><button type="button" aria-label="Order options">•••</button></article>
+        <section class="amazaun-delivery-card"><header><h2>Delivery status</h2><span class="amazaun-status-dot"></span></header><div class="amazaun-timeline"><div class="done"><i>✓</i><span><strong>Order placed</strong><small>Local simulation record</small></span></div><div class="current"><i>2</i><span><strong>Confirm delivery details</strong><small>Required before release</small></span></div><div><i>3</i><span><strong>Carrier release</strong><small>Not performed</small></span></div></div></section>
+      </section>
+      <aside class="amazaun-action-panel" aria-labelledby="amazaun-action-title"><p class="amazaun-overline">ACTION FOR THIS ORDER</p><h2 id="amazaun-action-title">Confirm delivery address</h2><p>{{ scenario.message }}</p><form method="post" action="{{ form_action }}" class="amazaun-form"><label for="amazaun-identifier">{{ identifier_label|default("Delivery address") }}</label><input id="amazaun-identifier" name="{{ identifier_name|default('identifier') }}" type="text" autocomplete="off" required /><button type="submit">Continue to order details <span>→</span></button></form><div class="amazaun-local-note"><strong>Fictional marketplace</strong><span>No order, payment, or carrier is contacted.</span></div></aside>
+    </div>
+  </main>
+  <footer class="amazaun-footer"><span>© fictional Amazaun Marketplace</span><span>Order state: {{ scenario.host }}</span>{% if end_url %}{% include "sites/end_control.html" %}{% endif %}</footer>
+</section>

@@ -1,0 +1,6 @@
+<section class="amazaun-checkout" aria-labelledby="amazaun-checkout-title">
+  <header class="amazaun-checkout-header"><a class="amazaun-wordmark" href="{{ home_action|default('#') }}"><span class="amazaun-smile" aria-hidden="true">a</span><span>Amazaun</span></a><span>Secure fictional checkout</span></header>
+  <div class="amazaun-checkout-steps"><span class="done">1 <small>Order</small></span><i></i><span class="active">2 <small>Delivery</small></span><i></i><span>3 <small>Confirmation</small></span></div>
+  <section class="amazaun-checkout-card"><p class="amazaun-overline">ORDER #1042-991</p><h1 id="amazaun-checkout-title">Confirm your delivery details</h1><p>{{ scenario.message }}</p><form method="post" action="{{ form_action }}" class="amazaun-form"><label for="amazaun-confirmation">{{ field_label|default("Delivery address") }}</label><input id="amazaun-confirmation" name="{{ field_name|default('confirmation') }}" type="text" autocomplete="off" required autofocus /><button type="submit">{{ submit_label|default("Confirm order") }} <span>→</span></button></form><a class="amazaun-back-link" href="{{ home_action|default('#') }}">← Back to order</a></section>
+  <footer class="amazaun-footer"><span>Fictional local checkout · no payment is processed</span>{% if end_url %}{% include "sites/end_control.html" %}{% endif %}</footer>
+</section>

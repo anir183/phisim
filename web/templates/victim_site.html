@@ -4,13 +4,39 @@
 {% block app_name %}{{ site_theme.display_name }}{% endblock %}
 
 {% block victim_content %}
-  {% if step == 1 %}
+  {% set home_action = url_for("victim_site", token=attack.victim_token, scenario_id=scenario.scenario_id) ~ '?step=1' %}
+  {% if site_theme.key == "amazaun" %}
+    {% set identifier_label = "Delivery address" %}
+    {% set identifier_name = "identifier" %}
+    {% if step == 1 %}
+      {% set form_action = url_for("victim_site_continue", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% include "apps/amazaun/home.html" %}
+    {% else %}
+      {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% set field_label = "Delivery address" %}
+      {% set field_name = "confirmation" %}
+      {% set submit_label = "Confirm order" %}
+      {% include "apps/amazaun/checkout.html" %}
+    {% endif %}
+  {% elif site_theme.key == "cloudbox" %}
+    {% set identifier_label = "Work email" %}
+    {% set identifier_name = "identifier" %}
+    {% if step == 1 %}
+      {% set form_action = url_for("victim_site_continue", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% include "apps/cloudbox/home.html" %}
+    {% else %}
+      {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
+      {% set field_label = "Work email" %}
+      {% set field_name = "confirmation" %}
+      {% set submit_label = "Verify shared file" %}
+      {% include "apps/cloudbox/verify.html" %}
+    {% endif %}
+  {% elif step == 1 %}
     {% set identifier_label = "Student ID" if "student_id" in scenario.workflow else "Exam registration ID" if "registration_id" in scenario.workflow else "Course code" if "course_code" in scenario.workflow else "Employee ID" if "employee_id" in scenario.workflow else "Delivery address" if "address" in scenario.workflow else "Billing email" if "payment" in scenario.workflow else "Work email" if "email" in scenario.workflow else "Account identifier" %}
     {% set form_action = url_for("victim_site_continue", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
     {% set identifier_name = "identifier" %}
     {% include "sites/landing.html" %}
   {% else %}
-    {% set home_action = url_for("victim_site", token=attack.victim_token, scenario_id=scenario.scenario_id, step=1) %}
     {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
     {% if "password" in scenario.workflow %}
       {% set verification_title = "Verify your identity" %}
