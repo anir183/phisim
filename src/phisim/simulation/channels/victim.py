@@ -153,6 +153,13 @@ def _require_context(attack) -> None:
         raise HTTPException(status_code=410, detail="Victim context is closed.")
 
 
+def _require_artifact_context(attack) -> None:
+    """Allow terminal contexts to be listed, but not opened or acted on."""
+    _require_context(attack)
+    if attack.status == "COMPLETED":
+        raise HTTPException(status_code=410, detail="Victim context is closed.")
+
+
 def _require_target(attack, scenario_id: str) -> None:
     expected = attack.scenario_id
     if attack.channel == "email":
@@ -516,7 +523,7 @@ async def victim_email(
     )
     if attack is None:
         raise HTTPException(status_code=404, detail="Message not found.")
-    _require_context(attack)
+    _require_artifact_context(attack)
     attack_message = get_email_message(message_id)
     if attack_message is None:
         raise HTTPException(status_code=404, detail="Message not found.")
@@ -580,7 +587,7 @@ async def victim_email_state(
     )
     if attack is None:
         raise HTTPException(status_code=404, detail="Message not found.")
-    _require_context(attack)
+    _require_artifact_context(attack)
     if action not in {
         "star",
         "unstar",
@@ -656,7 +663,7 @@ async def victim_attachment(
     )
     if attack is None:
         raise HTTPException(status_code=404, detail="Attachment not found.")
-    _require_context(attack)
+    _require_artifact_context(attack)
     message = get_email_message(message_id)
     if message is None or message.attachment_name is None:
         raise HTTPException(status_code=404, detail="Attachment not found.")
@@ -706,7 +713,7 @@ async def victim_email_link(
     )
     if attack is None:
         raise HTTPException(status_code=404, detail="Message link not found.")
-    _require_context(attack)
+    _require_artifact_context(attack)
     message = get_email_message(message_id)
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found.")
@@ -877,7 +884,7 @@ async def victim_message(
     )
     if attack is None:
         raise HTTPException(status_code=404, detail="Conversation not found.")
-    _require_context(attack)
+    _require_artifact_context(attack)
     thread = next(
         (
             item
@@ -944,7 +951,7 @@ async def victim_message_link(
     )
     if attack is None:
         raise HTTPException(status_code=404, detail="Message link not found.")
-    _require_context(attack)
+    _require_artifact_context(attack)
     thread = get_sms_thread(thread_id)
     if thread is None:
         raise HTTPException(status_code=404, detail="Conversation not found.")
