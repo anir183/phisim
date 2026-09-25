@@ -42,7 +42,7 @@ contacted, and submitted credential values are discarded immediately.
 The catalog contains:
 
 - UniSecure / Northstar University account verification.
-- Amazaun delivery-address verification.
+- Amazaun delivery-address and fictional payment-method verification.
 - CloudBox storage verification.
 - PayMate payment confirmation.
 - UniSecure Support security verification.
@@ -64,7 +64,8 @@ rejects duplicate IDs, unknown targets, and non-reserved hosts.
 2. Participant submits a fictional username.
 3. Participant reaches a separate password step.
 4. PhiSim records only boolean `field_presence` facts.
-5. Participant receives a safe educational outcome.
+5. Participant reaches a product-specific destination.
+6. Participant explicitly ends the simulation to receive the educational reveal.
 
 Credential values are never placed in Event metadata, Session state, response
 text, or the database.
@@ -100,14 +101,16 @@ available; client transitions are bounded and deterministic.
 Meaningful Event types are:
 
 ```text
-scenario_started             operator launch
-scenario_opened              website opened
-scenario_completed           terminal training outcome
-message_opened               email/SMS opened
-link_clicked                 email/SMS local link
-attachment_opened            inert attachment preview
-qr_viewed                    QR message viewed
-qr_scan_simulated            local QR scan action
+scenario_started              operator launch
+scenario_opened               website opened
+destination_reached           product destination reached
+attack_completed              participant explicitly ended the run
+scenario_completed            terminal training outcome
+message_opened                email/SMS opened
+link_clicked                  email/SMS local link
+attachment_opened             inert attachment preview
+qr_viewed                     QR message viewed
+qr_scan_simulated             local QR scan action
 credential_submission_attempted
 mfa_prompt_displayed
 mfa_prompt_responded
@@ -148,6 +151,5 @@ values.
 Simulation tests cover route existence, local redirects, Event ordering,
 credential non-persistence, read/unread state, distinct parody sites, inert
 attachments, QR destinations, MFA transitions, catalog constraints, and static
-assets. Yaak workspace `PhiSim` (`wk_dvBfLUkGqf`) contains the rebuilt local
-request set in folder `PhiSim Rebuild` (`fl_yeDVyHEMhf`) and the existing
-WebSocket request.
+assets. The full route matrix is covered by
+`tests/simulation/test_ui_realism_flows.py`.

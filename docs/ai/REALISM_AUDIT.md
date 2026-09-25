@@ -291,20 +291,20 @@ WebSocket boundary.
 
 ## Simulation Matrix
 
-| Attack | Channel | Distinct workflow | Dynamic delivery | Events | Analysis | Tested |
-|---|---|---|---|---|---|---|
-| Credential phishing | Email/SMS → website | service-specific authentication | delayed unread message | delivery/open/link/submission | credential, urgency, domain, authority | Existing baseline; rebuild required |
-| Spear phishing | Email | personalized academic request | delayed targeted message | delivery/open/link/action | personalization, authority, urgency | Existing data; rebuild required |
-| Whaling | Email → payment/support | executive/finance request | delayed executive message | delivery/open/action | authority, invoice, urgency | Existing data; rebuild required |
-| Clone phishing | Email | copied thread with changed action | delayed familiar thread | delivery/open/link | personalization, out-of-band, link mismatch | Existing data; rebuild required |
-| Urgency phishing | Email/web | deadline/countdown then request | delayed warning | delivery/open/action | urgency, incident fear | Existing data; rebuild required |
-| Pretexting | Web/email | incident → support verification | delayed support context | delivery/open/verification | authority, support, incident fear | Existing baseline; rebuild required |
-| QR phishing | Message/poster → QR | scan and destination preview | delayed message context | delivery/view/scan | domain, urgency, QR | Existing baseline; rebuild required |
-| Smishing | SMS | conversation plus unexpected link | delayed unread message | delivery/open/link | urgency, impersonation, domain | Existing baseline; rebuild required |
-| Attachment phishing | Email → document | preview and follow-up | delayed attachment message | delivery/open/attachment | attachment lure, credential request | Existing baseline; rebuild required |
-| Link spoofing | Email | visible/actual destination mismatch | delayed familiar request | delivery/open/link | link mismatch, domain | Existing baseline; rebuild required |
-| BEC | Email → payment | executive/finance instruction | delayed finance request | delivery/open/action | authority, invoice, urgency | Existing data; rebuild required |
-| MFA fatigue | Website/device | repeated prompts and response | scheduled prompt sequence | displayed/responded | MFA fatigue, unusual context | Existing baseline; rebuild required |
+| Attack              | Channel                 | Distinct workflow                   | Dynamic delivery           | Events                        | Analysis                                    | Tested                              |
+| ------------------- | ----------------------- | ----------------------------------- | -------------------------- | ----------------------------- | ------------------------------------------- | ----------------------------------- |
+| Credential phishing | Email/SMS → website     | service-specific authentication     | delayed unread message     | delivery/open/link/submission | credential, urgency, domain, authority      | Existing baseline; rebuild required |
+| Spear phishing      | Email                   | personalized academic request       | delayed targeted message   | delivery/open/link/action     | personalization, authority, urgency         | Existing data; rebuild required     |
+| Whaling             | Email → payment/support | executive/finance request           | delayed executive message  | delivery/open/action          | authority, invoice, urgency                 | Existing data; rebuild required     |
+| Clone phishing      | Email                   | copied thread with changed action   | delayed familiar thread    | delivery/open/link            | personalization, out-of-band, link mismatch | Existing data; rebuild required     |
+| Urgency phishing    | Email/web               | deadline/countdown then request     | delayed warning            | delivery/open/action          | urgency, incident fear                      | Existing data; rebuild required     |
+| Pretexting          | Web/email               | incident → support verification     | delayed support context    | delivery/open/verification    | authority, support, incident fear           | Existing baseline; rebuild required |
+| QR phishing         | Message/poster → QR     | scan and destination preview        | delayed message context    | delivery/view/scan            | domain, urgency, QR                         | Existing baseline; rebuild required |
+| Smishing            | SMS                     | conversation plus unexpected link   | delayed unread message     | delivery/open/link            | urgency, impersonation, domain              | Existing baseline; rebuild required |
+| Attachment phishing | Email → document        | preview and follow-up               | delayed attachment message | delivery/open/attachment      | attachment lure, credential request         | Existing baseline; rebuild required |
+| Link spoofing       | Email                   | visible/actual destination mismatch | delayed familiar request   | delivery/open/link            | link mismatch, domain                       | Existing baseline; rebuild required |
+| BEC                 | Email → payment         | executive/finance instruction       | delayed finance request    | delivery/open/action          | authority, invoice, urgency                 | Existing data; rebuild required     |
+| MFA fatigue         | Website/device          | repeated prompts and response       | scheduled prompt sequence  | displayed/responded           | MFA fatigue, unusual context                | Existing baseline; rebuild required |
 
 ## UI Applications
 
@@ -507,19 +507,19 @@ REST/WebSocket console timeline contains the complete sequence
 
 ### Workflow coverage
 
-| Flow | Implemented mechanism | Processing/reveal behavior |
-|---|---|---|
-| Email credential phishing | Gemail message → local link → UniSecure student flow | password attempt → branded debrief |
-| SMS smishing | QuickChat thread → local link → Amazaun | site-specific confirmation/result path |
-| Shopping/payment | Address or billing confirmation instead of password | non-credential victim action Event |
-| BEC | Executive/invoice lure → PayMate review | payment confirmation → reveal |
-| Academic portals | MAKExam registration ID and TechnoSphere course-code flows | distinct fictional labels and result copy |
-| Support | Employee ID and verification-code flow | support-specific landing and debrief |
-| CloudBox | Work-email terminology and storage context | password attempt remains boolean-only |
-| QR | Local QR image → explicit simulated scan | scan Event → target site |
-| Attachment | Inert attachment card and preview | no download, file, or execution |
-| Link spoofing | Visible/local destination preview | local link only; mismatch evidence remains safe |
-| MFA fatigue | Repeated NimbusID prompts with approve/deny | terminal prompt → reveal |
+| Flow                      | Implemented mechanism                                      | Processing/reveal behavior                      |
+| ------------------------- | ---------------------------------------------------------- | ----------------------------------------------- |
+| Email credential phishing | Gemail message → local link → UniSecure student flow       | password attempt → branded debrief              |
+| SMS smishing              | QuickChat thread → local link → Amazaun                    | site-specific confirmation/result path          |
+| Shopping/payment          | Address or billing confirmation instead of password        | non-credential victim action Event              |
+| BEC                       | Executive/invoice lure → PayMate review                    | payment confirmation → reveal                   |
+| Academic portals          | MAKExam registration ID and TechnoSphere course-code flows | distinct fictional labels and result copy       |
+| Support                   | Employee ID and verification-code flow                     | support-specific landing and debrief            |
+| CloudBox                  | Work-email terminology and storage context                 | password attempt remains boolean-only           |
+| QR                        | Local QR image → explicit simulated scan                   | scan Event → target site                        |
+| Attachment                | Inert attachment card and preview                          | no download, file, or execution                 |
+| Link spoofing             | Visible/local destination preview                          | local link only; mismatch evidence remains safe |
+| MFA fatigue               | Repeated NimbusID prompts with approve/deny                | terminal prompt → reveal                        |
 
 ### Verification evidence
 
@@ -580,7 +580,6 @@ legacy-shaped database by launching both email and SMS attacks against the
 same pre-opened environment. Existing local data does not need to be deleted.
 Restart the application once after pulling this fix so startup can run the
 migration.
-
 
 - Desktop-browser visual/accessibility verification is still deferred because
   no connected browser was available; HTTP rendering, route behavior, and

@@ -9,7 +9,7 @@ This file records decisions that affect future implementation.
 **Reason:** The project is an educational phishing simulation and should
 not accidentally become an externally reachable campaign system.
 
-------------------------------------------------------------------------
+---
 
 ## D002 --- SQLite first
 
@@ -21,7 +21,7 @@ database infrastructure for its first milestones.
 A future database can be introduced behind the
 infrastructure/application boundary if required.
 
-------------------------------------------------------------------------
+---
 
 ## D003 --- Event-driven telemetry boundary
 
@@ -31,7 +31,7 @@ telemetry subsystem.
 **Reason:** This decouples simulation behavior from persistence and
 analyst presentation.
 
-------------------------------------------------------------------------
+---
 
 ## D004 --- No real email/SMS delivery
 
@@ -41,7 +41,7 @@ artifacts/workflows.
 **Reason:** The educational objective is phishing recognition and
 telemetry, not delivery infrastructure.
 
-------------------------------------------------------------------------
+---
 
 ## D005 --- Evidence-oriented analysis
 
@@ -51,7 +51,7 @@ rather than relying on one opaque phishing score.
 **Reason:** The project is intended to teach users what makes an
 interaction suspicious.
 
-------------------------------------------------------------------------
+---
 
 ## D006 --- Few abstractions
 
@@ -62,7 +62,7 @@ boundaries justify.
 **Reason:** The team is small and the project should remain easy to
 understand and merge.
 
-------------------------------------------------------------------------
+---
 
 ## D007 --- Directory ownership
 
@@ -71,7 +71,7 @@ understand and merge.
 **Reason:** Reducing shared-file edits is the primary merge-conflict
 prevention mechanism.
 
-------------------------------------------------------------------------
+---
 
 ## D008 --- Email and SMS are local simulated channels
 
@@ -85,7 +85,7 @@ operational complexity, and safety risk.
 **P0 dependency impact:** No additional third-party package is required
 specifically for email or SMS.
 
-------------------------------------------------------------------------
+---
 
 ## D009 --- Vertical slice before scenario breadth
 

@@ -2,7 +2,7 @@
 
 ## Current dependency graph
 
-``` text
+```text
 Team 1 backend/platform
        |
        +----> Team 2 simulation
@@ -43,16 +43,16 @@ contract is stable.
 
 Before changing a shared contract:
 
--   [ ] identify all consumers
--   [ ] write the intended change here
--   [ ] make the smallest compatible change
--   [ ] add/update tests
--   [ ] notify affected team
--   [ ] avoid simultaneous edits to the same root files
+- [ ] identify all consumers
+- [ ] write the intended change here
+- [ ] make the smallest compatible change
+- [ ] add/update tests
+- [ ] notify affected team
+- [ ] avoid simultaneous edits to the same root files
 
 ## P0 integration scenario
 
-``` text
+```text
 start session
     |
 open fake site
@@ -114,9 +114,9 @@ The staging branch now provides:
 - strict fail-closed credential metadata validation
 - a safe text-only console consuming REST and WebSocket contracts
 
-The original Team 2/Team 3/Team 4 handoff notes remain useful as historical
-records; their integration-resolution sections describe the final staging
-state.
+The original Team 2/Team 3/Team 4 handoff notes are retained only where
+they document a still-relevant contract; the canonical project documents and
+the current UI verification reports describe the final staging state.
 
 ## Team 2 simulation integration
 
@@ -129,8 +129,9 @@ Every catalog entry used by a flow is registered through the shared Scenario
 service. A browser Session retains its entry Scenario while subsequent
 cross-channel Events use their own Scenario IDs, allowing the existing
 Session-filtered Event contract to represent a complete local training flow.
-Terminal website and MFA outcomes complete the Session through the shared
-service.
+Meaningful website, MFA, email, SMS, and QR actions record a local
+`destination_reached` state. The participant or operator must explicitly end
+the run before the shared Session is completed.
 
 Credential submission metadata remains limited to interaction facts. The
 Team 1 allowlist includes Team 2's `channel` and constrained
@@ -148,7 +149,7 @@ not feature count.
 
 ### Parallel start
 
-``` text
+```text
 Team 1: Event + Scenario + Session contracts
 Team 2: Fake credential site
 Team 3: Indicator fixtures/rules + secret-safety test
@@ -159,7 +160,7 @@ Team 4: Console event/session view
 
 At the end of the first run:
 
-``` text
+```text
 fake site
   -> event
   -> persistence
@@ -174,7 +175,7 @@ Do not start email/SMS integration until this path works.
 
 Use the same primitives to add:
 
-``` text
+```text
 fake email inbox -> fake email -> local link
 fake SMS thread  -> fake message -> local link
 ```
@@ -183,13 +184,13 @@ No external delivery APIs are involved.
 
 ## Integration checklist
 
--   [x] scenario can be identified without hardcoded UI-only state
--   [x] session is created/reused correctly
--   [x] event has stable event_id
--   [x] timestamp is server-generated
--   [x] submitted password never appears in event metadata
--   [x] duplicate events are handled deterministically
--   [x] analysis consumes events rather than database internals
--   [x] console consumes API/WebSocket contracts rather than SQLAlchemy
--   [x] all links remain local
--   [x] no external delivery provider is configured
+- [x] scenario can be identified without hardcoded UI-only state
+- [x] session is created/reused correctly
+- [x] event has stable event_id
+- [x] timestamp is server-generated
+- [x] submitted password never appears in event metadata
+- [x] duplicate events are handled deterministically
+- [x] analysis consumes events rather than database internals
+- [x] console consumes API/WebSocket contracts rather than SQLAlchemy
+- [x] all links remain local
+- [x] no external delivery provider is configured

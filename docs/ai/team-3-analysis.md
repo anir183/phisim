@@ -2,7 +2,7 @@
 
 ## Owned paths
 
-``` text
+```text
 src/phisim/analysis/
 src/phisim/inspection/
 src/phisim/security/
@@ -18,16 +18,16 @@ enforce safety constraints.
 
 ## Phase 0
 
--   [x] define indicator structure
--   [x] define indicator codes
--   [x] implement deterministic rules
--   [x] define evidence/explanation format
--   [x] create analysis fixtures
--   [x] define fail-closed secret-safety checks
+- [x] define indicator structure
+- [x] define indicator codes
+- [x] implement deterministic rules
+- [x] define evidence/explanation format
+- [x] create analysis fixtures
+- [x] define fail-closed secret-safety checks
 
 Initial and catalog-aligned indicators:
 
-``` text
+```text
 credential_request
 urgent_language
 unexpected_link
@@ -48,10 +48,10 @@ mfa_fatigue
 
 ## Phase 1
 
--   [x] scenario-aware indicator rules
--   [x] session-level aggregation
--   [x] inspection/timeline explanation
--   [x] console-ready analysis results
+- [x] scenario-aware indicator rules
+- [x] session-level aggregation
+- [x] inspection/timeline explanation
+- [x] console-ready analysis results
 
 ## Integrated contract
 
@@ -70,7 +70,7 @@ strips them. The Team 1 credential allowlist remains authoritative.
 
 Prefer:
 
-``` text
+```text
 indicator code
 evidence
 explanation

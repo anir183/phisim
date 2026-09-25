@@ -89,34 +89,34 @@ stored there.
 
 ## Feature Matrix
 
-| Feature | Final state | Evidence | Notes |
-|---|---|---|---|
-| Operator Scenario Lab | Implemented | `/lab`, `/api/lab/scenarios`, `/api/lab/launch` | Filters, safe target presets, timing, recent local runs |
-| Credential phishing | Implemented | `/scenario/{id}` | Two-step username/password flow across five parody services |
-| Spear phishing | Implemented | Gemail catalog and `/inbox/{id}` | Personalized student scholarship context |
-| Whaling | Implemented | Gemail catalog and PayMate target | Executive finance/payment context |
-| Clone phishing | Implemented | Gemail thread-style subject/body | Expired shared-file context and out-of-band indicator |
-| Urgency phishing | Implemented | Gemail urgency record | Deadline/lock pressure without a live countdown |
-| Tech-support phishing | Implemented | Gemail + UniSecure Support | Dedicated support shell and safe target |
-| QR phishing | Implemented | `/qr/{id}` and `/qr/{id}/scan` | Local data URI, context, preview, `qr_scan_simulated` |
-| Smishing | Implemented | `/sms` and `/sms/{id}` | QuickChat shell, unread state, timestamps, typing metadata |
-| Attachment phishing | Implemented | `/inbox/{id}/attachment/preview` | Inert metadata/preview only; no file endpoint or payload |
-| Link spoofing | Implemented | Link-spoof Gemail record and local link evidence | Visible identity and actual local target are both shown |
-| BEC | Implemented | Apex Office Supplies / PayMate flow | Fictional invoice and finance context |
-| MFA fatigue | Implemented | `/mfa/{id}/{step}` | Three deterministic prompts, approve/deny, terminal outcome |
-| Gemail experience | Implemented | Folders, search, read/unread state, detail, timestamps | Modern local shell |
-| QuickChat experience | Implemented | Conversation navigation and message history | Modern local shell |
-| Website variants | Implemented | UniSecure, Amazaun, CloudBox, PayMate, Support | Distinct brands and local targets |
-| Meaningful lifecycle Events | Implemented | `scenario_started`, `scenario_completed` | Operator and terminal workflow boundaries |
-| Session tracking | Implemented | Existing lifecycle plus `SimulationRun` | Reused active Sessions; new Session after completion |
-| Deterministic analysis | Implemented | `/api/analysis/sessions/{id}` | Rule registry, catalog flags, explanations |
-| Timeline | Implemented | Analysis timeline and console | UTC ordering and Event detail |
-| Analyst console | Implemented | `/console` + `web/static/console.js` | Session list, filters, timeline, evidence, reconnect states |
-| Shared UI system | Implemented | `web/static/phisim.css`, `shell.html` | Local tokens, responsive primitives, safety strip |
-| Static packaging | Implemented | Hatch includes `web` and `scenarios` | Wheel import tested outside repository |
-| Browser visual automation | Not implemented | No connected desktop browser | Manual HTTP/HTML and API flows were run instead |
-| External delivery/providers | Intentionally not implemented | Safety requirement | No SMTP, SMS, SNS, or external APIs |
-| Real targeting/campaigns | Intentionally not implemented | Safety requirement | Only bounded fictional presets exist |
+| Feature                     | Final state                   | Evidence                                               | Notes                                                       |
+| --------------------------- | ----------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
+| Operator Scenario Lab       | Implemented                   | `/lab`, `/api/lab/scenarios`, `/api/lab/launch`        | Filters, safe target presets, timing, recent local runs     |
+| Credential phishing         | Implemented                   | `/scenario/{id}`                                       | Two-step username/password flow across five parody services |
+| Spear phishing              | Implemented                   | Gemail catalog and `/inbox/{id}`                       | Personalized student scholarship context                    |
+| Whaling                     | Implemented                   | Gemail catalog and PayMate target                      | Executive finance/payment context                           |
+| Clone phishing              | Implemented                   | Gemail thread-style subject/body                       | Expired shared-file context and out-of-band indicator       |
+| Urgency phishing            | Implemented                   | Gemail urgency record                                  | Deadline/lock pressure without a live countdown             |
+| Tech-support phishing       | Implemented                   | Gemail + UniSecure Support                             | Dedicated support shell and safe target                     |
+| QR phishing                 | Implemented                   | `/qr/{id}` and `/qr/{id}/scan`                         | Local data URI, context, preview, `qr_scan_simulated`       |
+| Smishing                    | Implemented                   | `/sms` and `/sms/{id}`                                 | QuickChat shell, unread state, timestamps, typing metadata  |
+| Attachment phishing         | Implemented                   | `/inbox/{id}/attachment/preview`                       | Inert metadata/preview only; no file endpoint or payload    |
+| Link spoofing               | Implemented                   | Link-spoof Gemail record and local link evidence       | Visible identity and actual local target are both shown     |
+| BEC                         | Implemented                   | Apex Office Supplies / PayMate flow                    | Fictional invoice and finance context                       |
+| MFA fatigue                 | Implemented                   | `/mfa/{id}/{step}`                                     | Three deterministic prompts, approve/deny, terminal outcome |
+| Gemail experience           | Implemented                   | Folders, search, read/unread state, detail, timestamps | Modern local shell                                          |
+| QuickChat experience        | Implemented                   | Conversation navigation and message history            | Modern local shell                                          |
+| Website variants            | Implemented                   | UniSecure, Amazaun, CloudBox, PayMate, Support         | Distinct brands and local targets                           |
+| Meaningful lifecycle Events | Implemented                   | `scenario_started`, `scenario_completed`               | Operator and terminal workflow boundaries                   |
+| Session tracking            | Implemented                   | Existing lifecycle plus `SimulationRun`                | Reused active Sessions; new Session after completion        |
+| Deterministic analysis      | Implemented                   | `/api/analysis/sessions/{id}`                          | Rule registry, catalog flags, explanations                  |
+| Timeline                    | Implemented                   | Analysis timeline and console                          | UTC ordering and Event detail                               |
+| Analyst console             | Implemented                   | `/console` + `web/static/console.js`                   | Session list, filters, timeline, evidence, reconnect states |
+| Shared UI system            | Implemented                   | `web/static/phisim.css`, `shell.html`                  | Local tokens, responsive primitives, safety strip           |
+| Static packaging            | Implemented                   | Hatch includes `web` and `scenarios`                   | Wheel import tested outside repository                      |
+| Browser visual automation   | Not implemented               | No connected desktop browser                           | Manual HTTP/HTML and API flows were run instead             |
+| External delivery/providers | Intentionally not implemented | Safety requirement                                     | No SMTP, SMS, SNS, or external APIs                         |
+| Real targeting/campaigns    | Intentionally not implemented | Safety requirement                                     | Only bounded fictional presets exist                        |
 
 ## UI/UX Audit
 

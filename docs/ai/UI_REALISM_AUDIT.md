@@ -37,24 +37,24 @@ accepted.
 
 ## 1. Current application inventory
 
-| Application surface | Current implementation | Current route family | Current fidelity |
-|---|---|---|---|
-| Operator Lab | `web/templates/lab.html`, `/lab`, `/api/lab/launch` | Scenario selection and attack observation | Functional operator surface; visually separate from victims |
-| Gemail primary | `victim_mail.html`, `victim_email.html`, `victim_attachment.html` | `/mail`, `/v/{token}/mail`, message/link/attachment routes | Mailbox list/detail exists, but still uses a shared fake-app shell and limited folder/state semantics |
-| Gemail legacy | `simulation/inbox.html`, `simulation/email.html` | `/inbox`, `/inbox/{id}`, link/attachment routes | Compatibility mailbox; separate markup from primary flow |
-| QuickChat primary | `victim_messages.html`, `victim_message.html` | `/messages`, `/v/{token}/messages`, thread/link routes | Conversation list/detail exists, but lacks a true contact/search/composer experience |
-| QuickChat legacy | `simulation/sms.html`, `simulation/sms_thread.html` | `/sms`, `/sms/{id}`, link route | Compatibility conversation viewer; not yet a full messaging product |
-| Amazaun | Shared `victim_site.html` / `sites/landing.html` path | `/scenario/credential-shopping-001` and primary target route | Marketplace copy/theme exists, but the page is still a generic landing/dashboard/form composition |
-| CloudBox | Shared site landing/verification path | `/scenario/credential-cloud-001` and primary target route | Storage copy/theme exists, but no true file browser, shared-file list, breadcrumbs, or storage context |
-| UniSecure | Shared site landing/verification path | `/scenario/credential-basic-001` and primary target route | Generic account center; needs an independent university/SSO information architecture |
-| UniSecure Support | Shared site landing/verification path | `/scenario/support-portal-001` and primary target route | Ticket copy exists, but the interaction is still a generic form flow |
-| PayMate | Shared site landing/verification path | `/scenario/credential-payment-001` and primary target route | Payment copy/theme exists, but not a distinct payment product workflow |
-| MAKExam | Shared site landing/verification path | `/scenario/mak-exam-001` and primary target route | Academic copy exists, but lacks notices, registration, exam, result, and academic calendar context |
-| TechnoSphere | Shared site landing/verification path | `/scenario/technosphere-001` and primary target route | Course copy exists, but lacks a faculty/LMS workspace model |
-| NimbusID MFA | `victim_mfa.html`, `simulation/mfa.html` | `/v/{token}/mfa/...`, `/mfa/...` | Device prompt styling exists, but is still a shared auth-shaped surface rather than a full MFA product state model |
-| QR destination | `victim_qr.html`, `simulation/qr.html` | `/v/{token}/qr/...`, `/qr/...` | QR context is distinct, but destination state is still mostly a route transition |
-| Training reveal | `victim_reveal.html`, `simulation/outcome.html`, MFA outcome templates | Result/end routes | Separate debrief surface exists and should remain separate from victim applications |
-| Analyst Console | `console.html`, `console.js` | `/console`, analysis/event APIs | Separate operator-facing telemetry surface; should not share victim application layouts |
+| Application surface | Current implementation                                                 | Current route family                                         | Current fidelity                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Operator Lab        | `web/templates/lab.html`, `/lab`, `/api/lab/launch`                    | Scenario selection and attack observation                    | Functional operator surface; visually separate from victims                                                        |
+| Gemail primary      | `victim_mail.html`, `victim_email.html`, `victim_attachment.html`      | `/mail`, `/v/{token}/mail`, message/link/attachment routes   | Mailbox list/detail exists, but still uses a shared fake-app shell and limited folder/state semantics              |
+| Gemail legacy       | `simulation/inbox.html`, `simulation/email.html`                       | `/inbox`, `/inbox/{id}`, link/attachment routes              | Compatibility mailbox; separate markup from primary flow                                                           |
+| QuickChat primary   | `victim_messages.html`, `victim_message.html`                          | `/messages`, `/v/{token}/messages`, thread/link routes       | Conversation list/detail exists, but lacks a true contact/search/composer experience                               |
+| QuickChat legacy    | `simulation/sms.html`, `simulation/sms_thread.html`                    | `/sms`, `/sms/{id}`, link route                              | Compatibility conversation viewer; not yet a full messaging product                                                |
+| Amazaun             | Shared `victim_site.html` / `sites/landing.html` path                  | `/scenario/credential-shopping-001` and primary target route | Marketplace copy/theme exists, but the page is still a generic landing/dashboard/form composition                  |
+| CloudBox            | Shared site landing/verification path                                  | `/scenario/credential-cloud-001` and primary target route    | Storage copy/theme exists, but no true file browser, shared-file list, breadcrumbs, or storage context             |
+| UniSecure           | Shared site landing/verification path                                  | `/scenario/credential-basic-001` and primary target route    | Generic account center; needs an independent university/SSO information architecture                               |
+| UniSecure Support   | Shared site landing/verification path                                  | `/scenario/support-portal-001` and primary target route      | Ticket copy exists, but the interaction is still a generic form flow                                               |
+| PayMate             | Shared site landing/verification path                                  | `/scenario/credential-payment-001` and primary target route  | Payment copy/theme exists, but not a distinct payment product workflow                                             |
+| MAKExam             | Shared site landing/verification path                                  | `/scenario/mak-exam-001` and primary target route            | Academic copy exists, but lacks notices, registration, exam, result, and academic calendar context                 |
+| TechnoSphere        | Shared site landing/verification path                                  | `/scenario/technosphere-001` and primary target route        | Course copy exists, but lacks a faculty/LMS workspace model                                                        |
+| NimbusID MFA        | `victim_mfa.html`, `simulation/mfa.html`                               | `/v/{token}/mfa/...`, `/mfa/...`                             | Device prompt styling exists, but is still a shared auth-shaped surface rather than a full MFA product state model |
+| QR destination      | `victim_qr.html`, `simulation/qr.html`                                 | `/v/{token}/qr/...`, `/qr/...`                               | QR context is distinct, but destination state is still mostly a route transition                                   |
+| Training reveal     | `victim_reveal.html`, `simulation/outcome.html`, MFA outcome templates | Result/end routes                                            | Separate debrief surface exists and should remain separate from victim applications                                |
+| Analyst Console     | `console.html`, `console.js`                                           | `/console`, analysis/event APIs                              | Separate operator-facing telemetry surface; should not share victim application layouts                            |
 
 ### Reference interpretation
 
@@ -76,77 +76,77 @@ credentials, domains, providers, and network calls.
 
 ### Operator and platform
 
-| Route | Purpose |
-|---|---|
-| `GET /lab` | Scenario Lab and attack launcher |
-| `POST /api/lab/launch` | Starts a local run/attack |
-| `GET /api/lab/attacks/{attack_id}` | Operator attack status page/API |
-| `POST /api/lab/attacks/{attack_id}/abandon` | Operator-controlled abandonment |
-| `GET /api/scenarios` | Scenario catalog |
-| `GET /api/sessions` | Session listing |
-| `GET /api/events` | Event retrieval |
-| `GET /api/events/ws` | Live event WebSocket |
-| `GET /api/analysis/sessions/{session_id}` | Session analysis/timeline |
-| `GET /console` | Analyst console |
+| Route                                       | Purpose                          |
+| ------------------------------------------- | -------------------------------- |
+| `GET /lab`                                  | Scenario Lab and attack launcher |
+| `POST /api/lab/launch`                      | Starts a local run/attack        |
+| `GET /api/lab/attacks/{attack_id}`          | Operator attack status page/API  |
+| `POST /api/lab/attacks/{attack_id}/abandon` | Operator-controlled abandonment  |
+| `GET /api/scenarios`                        | Scenario catalog                 |
+| `GET /api/sessions`                         | Session listing                  |
+| `GET /api/events`                           | Event retrieval                  |
+| `GET /api/events/ws`                        | Live event WebSocket             |
+| `GET /api/analysis/sessions/{session_id}`   | Session analysis/timeline        |
+| `GET /console`                              | Analyst console                  |
 
 ### Primary victim environment
 
-| Route | Purpose |
-|---|---|
-| `GET /mail` | Gemail/environment entry point |
-| `GET /messages` | QuickChat/environment entry point |
-| `GET /v/{token}/status` | Delivery/lifecycle status polling |
-| `GET /v/{token}/mail` | Primary mailbox |
-| `GET /v/{token}/mail/{message_id}` | Primary message detail |
-| `GET /v/{token}/mail/{message_id}/link` | Message link funnel |
-| `GET /v/{token}/mail/{message_id}/attachment` | Inert attachment preview |
-| `GET /v/{token}/messages` | Primary conversation list |
-| `GET /v/{token}/messages/{thread_id}` | Primary conversation detail |
-| `GET /v/{token}/messages/{thread_id}/link` | Message link funnel |
-| `GET /v/{token}/site/{scenario_id}` | Primary target application |
-| `POST /v/{token}/site/{scenario_id}/continue` | Target application interaction |
-| `POST /v/{token}/site/{scenario_id}/finish` | Target application final action |
-| `GET /v/{token}/site/{scenario_id}/result` | Compatibility completion route |
-| `POST /v/{token}/site/{scenario_id}/end` | Safe user-requested simulation completion |
-| `GET /v/{token}/qr/{scenario_id}` | Primary QR context |
-| `GET /v/{token}/qr/{scenario_id}/scan` | Simulated QR scan |
-| `GET/POST /v/{token}/mfa/{scenario_id}/{step}` | Primary MFA prompt/response |
+| Route                                          | Purpose                                   |
+| ---------------------------------------------- | ----------------------------------------- |
+| `GET /mail`                                    | Gemail/environment entry point            |
+| `GET /messages`                                | QuickChat/environment entry point         |
+| `GET /v/{token}/status`                        | Delivery/lifecycle status polling         |
+| `GET /v/{token}/mail`                          | Primary mailbox                           |
+| `GET /v/{token}/mail/{message_id}`             | Primary message detail                    |
+| `GET /v/{token}/mail/{message_id}/link`        | Message link funnel                       |
+| `GET /v/{token}/mail/{message_id}/attachment`  | Inert attachment preview                  |
+| `GET /v/{token}/messages`                      | Primary conversation list                 |
+| `GET /v/{token}/messages/{thread_id}`          | Primary conversation detail               |
+| `GET /v/{token}/messages/{thread_id}/link`     | Message link funnel                       |
+| `GET /v/{token}/site/{scenario_id}`            | Primary target application                |
+| `POST /v/{token}/site/{scenario_id}/continue`  | Target application interaction            |
+| `POST /v/{token}/site/{scenario_id}/finish`    | Target application final action           |
+| `GET /v/{token}/site/{scenario_id}/result`     | Compatibility completion route            |
+| `POST /v/{token}/site/{scenario_id}/end`       | Safe user-requested simulation completion |
+| `GET /v/{token}/qr/{scenario_id}`              | Primary QR context                        |
+| `GET /v/{token}/qr/{scenario_id}/scan`         | Simulated QR scan                         |
+| `GET/POST /v/{token}/mfa/{scenario_id}/{step}` | Primary MFA prompt/response               |
 
 ### Legacy compatibility routes
 
-| Route | Purpose |
-|---|---|
-| `GET /inbox` | Legacy mailbox |
-| `GET /inbox/{message_id}` | Legacy message detail |
-| `GET /inbox/{message_id}/link` | Legacy link funnel |
-| `GET /inbox/{message_id}/attachment...` | Legacy inert attachment routes |
-| `GET /sms` | Legacy conversation list |
-| `GET /sms/{thread_id}` | Legacy conversation detail |
-| `GET /sms/{thread_id}/link` | Legacy link funnel |
-| `GET/POST /scenario/{scenario_id}` | Legacy target application |
-| `GET/POST /scenario/{scenario_id}/username` | Legacy identifier step |
+| Route                                       | Purpose                           |
+| ------------------------------------------- | --------------------------------- |
+| `GET /inbox`                                | Legacy mailbox                    |
+| `GET /inbox/{message_id}`                   | Legacy message detail             |
+| `GET /inbox/{message_id}/link`              | Legacy link funnel                |
+| `GET /inbox/{message_id}/attachment...`     | Legacy inert attachment routes    |
+| `GET /sms`                                  | Legacy conversation list          |
+| `GET /sms/{thread_id}`                      | Legacy conversation detail        |
+| `GET /sms/{thread_id}/link`                 | Legacy link funnel                |
+| `GET/POST /scenario/{scenario_id}`          | Legacy target application         |
+| `GET/POST /scenario/{scenario_id}/username` | Legacy identifier step            |
 | `GET/POST /scenario/{scenario_id}/password` | Legacy password/confirmation step |
-| `POST /scenario/{scenario_id}/end` | Legacy safe completion |
-| `GET /qr/{scenario_id}` | Legacy QR context |
-| `GET /mfa/{scenario_id}/{step}` | Legacy MFA context |
+| `POST /scenario/{scenario_id}/end`          | Legacy safe completion            |
+| `GET /qr/{scenario_id}`                     | Legacy QR context                 |
+| `GET /mfa/{scenario_id}/{step}`             | Legacy MFA context                |
 
 ---
 
 ## 3. Current scenario → UI mapping
 
-| Scenario family | Artifact/target | Current UI path | Current problem |
-|---|---|---|---|
-| Credential phishing | Email/SMS/QR → UniSecure | Shared target landing → shared verification | Good safety/lifecycle foundation, but generic auth-shaped target |
-| Shopping | SMS/email → Amazaun | Shared target landing → address/confirmation | Copy says marketplace, structure is still generic dashboard/form |
-| Cloud storage | Email → CloudBox | Shared target landing → work email/password | Copy says storage, structure is still generic dashboard/form |
-| Payment/BEC | Email → PayMate | Shared target landing → billing/confirmation | Payment context is not a payment product state machine |
-| Support | Email → UniSecure Support | Shared target landing → employee/verification | Support context is not a ticket/agent/helpdesk product |
-| Academic | UniSecure/TechnoSphere/MAKExam targets | Shared target landing → registration/course/password | No notices, dashboard, academic calendar, result, or course workspace model |
-| Spear/whaling/clone/urgency | Gemail artifacts → target sites | Catalog-specific copy inside shared Gemail/target UI | Email techniques differ in text but not enough in application workflow |
-| QR | QR artifact → UniSecure | QR card → target landing | QR is distinct, but destination preview and application state are thin |
-| MFA fatigue | NimbusID | Repeated prompt route | Prompt sequence exists; device/application context needs deeper product modeling |
-| Attachment/link spoofing | Gemail artifact → target | Inert preview/link flow | Artifact context exists, but surrounding application workflow is not product-specific |
-| SMS smishing | QuickChat → Amazaun/Support | Conversation list → link → target | Conversation product is not yet a real messaging workspace |
+| Scenario family             | Artifact/target                        | Current UI path                                      | Current problem                                                                       |
+| --------------------------- | -------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Credential phishing         | Email/SMS/QR → UniSecure               | Shared target landing → shared verification          | Good safety/lifecycle foundation, but generic auth-shaped target                      |
+| Shopping                    | SMS/email → Amazaun                    | Shared target landing → address/confirmation         | Copy says marketplace, structure is still generic dashboard/form                      |
+| Cloud storage               | Email → CloudBox                       | Shared target landing → work email/password          | Copy says storage, structure is still generic dashboard/form                          |
+| Payment/BEC                 | Email → PayMate                        | Shared target landing → billing/confirmation         | Payment context is not a payment product state machine                                |
+| Support                     | Email → UniSecure Support              | Shared target landing → employee/verification        | Support context is not a ticket/agent/helpdesk product                                |
+| Academic                    | UniSecure/TechnoSphere/MAKExam targets | Shared target landing → registration/course/password | No notices, dashboard, academic calendar, result, or course workspace model           |
+| Spear/whaling/clone/urgency | Gemail artifacts → target sites        | Catalog-specific copy inside shared Gemail/target UI | Email techniques differ in text but not enough in application workflow                |
+| QR                          | QR artifact → UniSecure                | QR card → target landing                             | QR is distinct, but destination preview and application state are thin                |
+| MFA fatigue                 | NimbusID                               | Repeated prompt route                                | Prompt sequence exists; device/application context needs deeper product modeling      |
+| Attachment/link spoofing    | Gemail artifact → target               | Inert preview/link flow                              | Artifact context exists, but surrounding application workflow is not product-specific |
+| SMS smishing                | QuickChat → Amazaun/Support            | Conversation list → link → target                    | Conversation product is not yet a real messaging workspace                            |
 
 ---
 
@@ -249,6 +249,7 @@ architecture.
 - Order detail
 - Delivery pending
 - Address confirmation
+- Fictional payment-method confirmation
 - Payment issue
 - Account/sign-in state
 - Order success/failure state

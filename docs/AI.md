@@ -7,7 +7,7 @@ PhiSim.
 
 There are two documentation namespaces:
 
-``` text
+```text
 docs/*.md       canonical human/project documentation
 docs/ai/*.md    AI planning/interface documentation
 ```
@@ -16,9 +16,9 @@ docs/ai/*.md    AI planning/interface documentation
 
 AI agents:
 
--   **MUST NOT edit any `docs/*.md` file**
--   **MAY edit only `docs/ai/*.md` for AI planning/interface artifacts**
--   MUST treat existing `docs/*.md` as read-only project policy
+- **MUST NOT edit any `docs/*.md` file**
+- **MAY edit only `docs/ai/*.md` for AI planning/interface artifacts**
+- MUST treat existing `docs/*.md` as read-only project policy
 
 If a human asks an AI agent to change canonical documentation, the human
 should make that change directly or explicitly perform the
@@ -26,7 +26,7 @@ documentation-editing task outside the normal coding-agent workflow.
 
 AI agents may read all documentation.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Source of truth
 
@@ -35,7 +35,7 @@ planning notes.
 
 For project policy:
 
-``` text
+```text
 docs/*.md
 ```
 
@@ -43,7 +43,7 @@ is canonical.
 
 For active AI task coordination:
 
-``` text
+```text
 docs/ai/*.md
 ```
 
@@ -57,11 +57,11 @@ If the code and documentation disagree:
 4.  record the required documentation follow-up in the relevant
     `docs/ai/*.md`.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Project map
 
-``` text
+```text
 src/phisim/
 ├── analysis/       # structured phishing/interaction analysis
 ├── console/        # analyst-facing routes and presentation integration
@@ -91,19 +91,19 @@ docs/               # canonical human documentation
 docs/ai/            # AI-only planning/interface notes
 ```
 
-------------------------------------------------------------------------
+---
 
 ## 4. Current application entry point
 
 The FastAPI application is:
 
-``` text
+```text
 phisim.main:app
 ```
 
 The project exposes:
 
-``` text
+```text
 phisim
 dev
 test
@@ -116,7 +116,7 @@ clean
 
 The preferred commands are:
 
-``` bash
+```bash
 uv run dev
 uv run test
 uv run lint
@@ -130,7 +130,7 @@ project settings.
 
 Environment configuration uses:
 
-``` text
+```text
 PHISIM_ENV
 PHISIM_HOST
 PHISIM_PORT
@@ -139,7 +139,7 @@ PHISIM_DB_URL
 
 See `.env.example`.
 
-------------------------------------------------------------------------
+---
 
 ## 5. Do not assume files exist
 
@@ -154,51 +154,54 @@ Before implementing a planned module:
 Planning documents describe intended architecture, not guaranteed
 implementation.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Correct place for new code
 
 Use the narrowest appropriate subsystem.
 
-  ---------------------------------------------------------------------
-  Need                               Location
-  ---------------------------------- ----------------------------------
-  event API                          `src/phisim/telemetry/`
+---
 
-  DB model/repository                `src/phisim/infra/sqlite/`
+Need Location
 
-  simulation behavior                `src/phisim/simulation/`
+---
 
-  scenario assets                    `scenarios/`
+event API `src/phisim/telemetry/`
 
-  indicator logic                    `src/phisim/analysis/`
+DB model/repository `src/phisim/infra/sqlite/`
 
-  inspection/explanation             `src/phisim/inspection/`
+simulation behavior `src/phisim/simulation/`
 
-  security guardrail                 `src/phisim/security/`
+scenario assets `scenarios/`
 
-  analyst UI backend                 `src/phisim/console/`
+indicator logic `src/phisim/analysis/`
 
-  console browser assets             `web/templates/console/`,
-                                     `web/static/console/`
+inspection/explanation `src/phisim/inspection/`
 
-  simulation browser assets          `web/templates/simulation/`,
-                                     `web/static/simulation/`
+security guardrail `src/phisim/security/`
 
-  tiny cross-cutting helper          `src/phisim/utils/`
+analyst UI backend `src/phisim/console/`
 
-  tests                              matching `tests/` area
-  ---------------------------------------------------------------------
+console browser assets `web/templates/console/`,
+`web/static/console/`
+
+simulation browser assets `web/templates/simulation/`,
+`web/static/simulation/`
+
+tiny cross-cutting helper `src/phisim/utils/`
+
+tests matching `tests/` area
+---------------------------------------------------------------------
 
 Do not create new top-level directories without a documented reason.
 
-------------------------------------------------------------------------
+---
 
 ## 7. AI workflow
 
 Every AI task should follow:
 
-``` text
+```text
 read docs
   -> inspect code
   -> read relevant docs/ai/*.md
@@ -212,14 +215,14 @@ read docs
 
 Before editing, the agent should state internally or in its task record:
 
--   goal
--   owned files
--   contracts consumed
--   contracts changed
--   tests required
--   security implications
+- goal
+- owned files
+- contracts consumed
+- contracts changed
+- tests required
+- security implications
 
-------------------------------------------------------------------------
+---
 
 ## 8. Ownership
 
@@ -227,7 +230,7 @@ Follow the four workstreams:
 
 ### Team 1
 
-``` text
+```text
 src/phisim/infra/
 src/phisim/telemetry/
 src/phisim/utils/
@@ -235,7 +238,7 @@ src/phisim/utils/
 
 ### Team 2
 
-``` text
+```text
 src/phisim/simulation/
 scenarios/
 simulation web assets
@@ -243,7 +246,7 @@ simulation web assets
 
 ### Team 3
 
-``` text
+```text
 src/phisim/analysis/
 src/phisim/inspection/
 src/phisim/security/
@@ -251,7 +254,7 @@ src/phisim/security/
 
 ### Team 4
 
-``` text
+```text
 src/phisim/console/
 console web assets
 ```
@@ -261,33 +264,33 @@ Avoid editing another team's owned files.
 If another subsystem is required, depend on its public contract rather
 than reaching into its internals.
 
-------------------------------------------------------------------------
+---
 
 ## 9. Code design rules
 
 Prefer:
 
--   explicit functions
--   typed Pydantic contracts
--   thin FastAPI routes
--   repositories for DB access
--   small services
--   deterministic analysis
--   focused tests
+- explicit functions
+- typed Pydantic contracts
+- thin FastAPI routes
+- repositories for DB access
+- small services
+- deterministic analysis
+- focused tests
 
 Avoid:
 
--   speculative interfaces
--   generic frameworks
--   "manager of manager" abstractions
--   giant utility modules
--   global state for domain behavior
--   duplicated business rules
--   direct DB access from UI/simulation code
+- speculative interfaces
+- generic frameworks
+- "manager of manager" abstractions
+- giant utility modules
+- global state for domain behavior
+- duplicated business rules
+- direct DB access from UI/simulation code
 
 Do not refactor unrelated code while implementing a feature.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Security constraints
 
@@ -295,32 +298,32 @@ PhiSim is a controlled educational simulation.
 
 AI agents MUST NOT implement:
 
--   real credential harvesting
--   password persistence
--   credential replay
--   real SMTP/SMS delivery
--   public campaign infrastructure
--   malware
--   executable attachment delivery
--   shell execution endpoints
--   arbitrary file read/write endpoints
--   stealth/persistence mechanisms
--   real target lists
--   real organization impersonation
--   public-by-default binding
+- real credential harvesting
+- password persistence
+- credential replay
+- real SMTP/SMS delivery
+- public campaign infrastructure
+- malware
+- executable attachment delivery
+- shell execution endpoints
+- arbitrary file read/write endpoints
+- stealth/persistence mechanisms
+- real target lists
+- real organization impersonation
+- public-by-default binding
 
 The application should remain local/loopback by default.
 
 Credential submissions may generate:
 
-``` text
+```text
 credential_submission_attempted
 ```
 
 but submitted secret values must never be stored or emitted as
 telemetry.
 
-------------------------------------------------------------------------
+---
 
 ## 11. Scenario implementation rule
 
@@ -328,7 +331,7 @@ A scenario should be a composition of common primitives.
 
 Do not create:
 
-``` text
+```text
 fake-site framework
 email framework
 sms framework
@@ -339,13 +342,13 @@ three.
 
 Scenario-specific differences belong in:
 
--   scenario metadata
--   templates
--   harmless content
--   interaction definitions
--   indicator configuration
+- scenario metadata
+- templates
+- harmless content
+- interaction definitions
+- indicator configuration
 
-------------------------------------------------------------------------
+---
 
 ## 12. Analysis rule
 
@@ -353,7 +356,7 @@ Analysis should expose evidence.
 
 Prefer:
 
-``` text
+```text
 domain_mismatch
 evidence = "..."
 explanation = "..."
@@ -361,21 +364,21 @@ explanation = "..."
 
 over:
 
-``` text
+```text
 risk = 97
 ```
 
 A score can be added later if it has a clear educational purpose and
 documented semantics.
 
-------------------------------------------------------------------------
+---
 
 ## 13. Testing rule
 
 AI agents should run the smallest relevant test first and the full check
 before handing work back:
 
-``` bash
+```bash
 uv run test
 uv run check
 ```
@@ -384,7 +387,7 @@ If a full check cannot be run, say exactly which command failed and why.
 
 Do not claim tests passed without actually running them.
 
-------------------------------------------------------------------------
+---
 
 ## 14. Dependency rule
 
@@ -397,7 +400,7 @@ If a dependency is required:
 3.  ensure cross-platform compatibility;
 4.  update the lockfile using `uv`.
 
-------------------------------------------------------------------------
+---
 
 ## 15. Optional AI tooling
 
@@ -405,19 +408,19 @@ AI tools may improve development, but they are optional.
 
 Useful categories include:
 
--   repository-aware coding agents
--   IDE assistants
--   MCP servers for GitHub/issue tracking
--   documentation/search MCPs
--   browser automation for harmless UI testing
--   local test-running agents
+- repository-aware coding agents
+- IDE assistants
+- MCP servers for GitHub/issue tracking
+- documentation/search MCPs
+- browser automation for harmless UI testing
+- local test-running agents
 
 Any AI/MCP tool must follow the same repository safety boundary.
 
 Do not grant an AI tool access to real mail/SMS accounts or secrets for
 PhiSim.
 
-------------------------------------------------------------------------
+---
 
 ## 16. AI planning files
 
@@ -425,7 +428,7 @@ The `docs/ai/` directory is the AI coordination layer.
 
 Agents should use:
 
-``` text
+```text
 docs/ai/README.md
 docs/ai/team-1-backend.md
 docs/ai/team-2-simulation.md
@@ -437,18 +440,18 @@ docs/ai/ai-task-template.md
 
 These files may contain:
 
--   current task
--   owned paths
--   dependencies
--   contract notes
--   TODOs
--   phase state
--   test status
--   handoff notes
+- current task
+- owned paths
+- dependencies
+- contract notes
+- TODOs
+- phase state
+- test status
+- handoff notes
 
 They are not a replacement for canonical project documentation.
 
-------------------------------------------------------------------------
+---
 
 ## 18. First 2--3 hour execution target
 
@@ -457,7 +460,7 @@ finish every P0 feature.
 
 The target is one complete vertical slice:
 
-``` text
+```text
 fake credential site
     -> session
     -> telemetry
@@ -469,10 +472,10 @@ fake credential site
 
 With four contributors working roughly 2--3 hours each, use this split:
 
--   Team 1: minimum Scenario/Session/Event backend contract
--   Team 2: fake credential site
--   Team 3: four basic indicators + credential-secret safety test
--   Team 4: live event/session console
+- Team 1: minimum Scenario/Session/Event backend contract
+- Team 2: fake credential site
+- Team 3: four basic indicators + credential-secret safety test
+- Team 4: live event/session console
 
 Once that works, the next short run adds email and SMS.
 
@@ -484,7 +487,7 @@ Email and SMS are **local simulated interfaces**, not delivery systems.
 
 Use:
 
-``` text
+```text
 FastAPI + Jinja2
     -> fake inbox
     -> fake email viewer
@@ -497,7 +500,7 @@ No SMTP server or email provider is required.
 
 Use:
 
-``` text
+```text
 FastAPI + Jinja2
     -> fake message conversation
     -> local links/interactions
@@ -519,7 +522,7 @@ or external recipients.
 
 When an AI coding task is complete, report:
 
-``` text
+```text
 Changed:
 - file
 - file

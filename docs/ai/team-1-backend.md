@@ -2,7 +2,7 @@
 
 ## Owned paths
 
-``` text
+```text
 src/phisim/main.py
 src/phisim/telemetry/
 src/phisim/infra/
@@ -21,23 +21,23 @@ persistence, and configuration.
 
 ## Phase 0
 
--   [x] stabilize event request/response contract
--   [x] remove stale timestamp input from event tests
--   [x] add scenario model/repository
--   [x] add session model/repository
--   [x] define session lifecycle
--   [x] expose scenario/session APIs
--   [x] add event listing by session
--   [x] enforce credential-safe event metadata
--   [x] document contract changes in `integration.md`
+- [x] stabilize event request/response contract
+- [x] remove stale timestamp input from event tests
+- [x] add scenario model/repository
+- [x] add session model/repository
+- [x] define session lifecycle
+- [x] expose scenario/session APIs
+- [x] add event listing by session
+- [x] enforce credential-safe event metadata
+- [x] document contract changes in `integration.md`
 
 ## Phase 1
 
--   [x] finalize the Event/Session relationship as free-form Event
-  identifiers with Session-filtered retrieval for P0 compatibility
--   [x] robust duplicate-event handling under concurrent writes
--   [x] add focused integration fixtures
--   [x] keep WebSocket behavior stable
+- [x] finalize the Event/Session relationship as free-form Event
+      identifiers with Session-filtered retrieval for P0 compatibility
+- [x] robust duplicate-event handling under concurrent writes
+- [x] add focused integration fixtures
+- [x] keep WebSocket behavior stable
 
 ## Contract supplied to other teams
 
@@ -45,7 +45,7 @@ persistence, and configuration.
 
 Simulation should be able to submit an event equivalent to:
 
-``` text
+```text
 event_id
 session_id
 scenario_id
@@ -121,7 +121,7 @@ handoff.
 
 ## Avoid
 
--   editing simulation templates
--   editing console templates
--   embedding analysis rules in repositories
--   large refactors of unrelated backend code
+- editing simulation templates
+- editing console templates
+- embedding analysis rules in repositories
+- large refactors of unrelated backend code

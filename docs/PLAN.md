@@ -15,7 +15,7 @@ The system should demonstrate both:
 
 No real phishing delivery is part of the project.
 
-------------------------------------------------------------------------
+---
 
 ## 2A. First 2--3 hour implementation run
 
@@ -25,7 +25,7 @@ an attempt to finish P0.
 With four contributors working for roughly **2--3 hours each** (about
 8--12 person-hours total), the target is:
 
-``` text
+```text
 fake credential site
       ↓
 session
@@ -55,11 +55,11 @@ analyst console
 
 **Do not spend this run on:**
 
--   migrations
--   PostgreSQL support
--   generic repository interfaces
--   large refactors
--   production deployment
+- migrations
+- PostgreSQL support
+- generic repository interfaces
+- large refactors
+- production deployment
 
 ### Team 2 --- first run
 
@@ -79,7 +79,7 @@ analyst console
 
 Implement a small deterministic indicator set:
 
-``` text
+```text
 credential_request
 urgent_language
 domain_mismatch
@@ -106,7 +106,7 @@ enter an event payload.
 
 The first run is successful when a contributor can:
 
-``` text
+```text
 open local fake site
     → interact with fake login
     → submit fictional credentials
@@ -129,7 +129,7 @@ Neither requires a real delivery provider.
 
 Email:
 
-``` text
+```text
 FastAPI
   → fake inbox
   → fake email viewer
@@ -139,7 +139,7 @@ FastAPI
 
 SMS:
 
-``` text
+```text
 FastAPI
   → fake conversation
   → local message/link
@@ -155,52 +155,56 @@ required for P0.
 These are required before the team treats the simulation platform as
 usable.
 
-  Priority   Feature                                       Main owner
-  ---------- --------------------------------------------- --------------------------
-  P0         Fake credential/login site                    Team 2
-  P0         Email phishing simulation artifact/workflow   Team 2
-  P0         SMS/smishing simulation artifact/workflow     Team 2
-  P0         Scenario/session lifecycle                    Team 1
-  P0         Event telemetry contract and persistence      Team 1
-  P0         Analyst console showing live events           Team 4
-  P0         Basic indicator analysis                      Team 3
-  P0         Shared scenario metadata/registry             Team 1 + contract review
+Priority Feature Main owner
+
+---
+
+P0 Fake credential/login site Team 2
+P0 Email phishing simulation artifact/workflow Team 2
+P0 SMS/smishing simulation artifact/workflow Team 2
+P0 Scenario/session lifecycle Team 1
+P0 Event telemetry contract and persistence Team 1
+P0 Analyst console showing live events Team 4
+P0 Basic indicator analysis Team 3
+P0 Shared scenario metadata/registry Team 1 + contract review
 
 ### P1 --- expand the scenario catalogue
 
-  Feature                          Main owner
-  -------------------------------- ------------
-  Spear phishing                   Team 2
-  Whaling                          Team 2
-  Clone phishing                   Team 2
-  Urgency phishing                 Team 2
-  Tech-support phishing            Team 2
-  QR phishing / quishing           Team 2
-  Attachment phishing              Team 2
-  Link spoofing                    Team 2
-  BEC simulation                   Team 2
-  MFA-fatigue simulation           Team 2
-  Richer indicator analysis        Team 3
-  Session/scenario analytics       Team 3
-  Console filtering/detail views   Team 4
+Feature Main owner
+
+---
+
+Spear phishing Team 2
+Whaling Team 2
+Clone phishing Team 2
+Urgency phishing Team 2
+Tech-support phishing Team 2
+QR phishing / quishing Team 2
+Attachment phishing Team 2
+Link spoofing Team 2
+BEC simulation Team 2
+MFA-fatigue simulation Team 2
+Richer indicator analysis Team 3
+Session/scenario analytics Team 3
+Console filtering/detail views Team 4
 
 ### P2 --- polish and extension
 
 Potential later work:
 
--   scenario authoring format
--   reusable message templates
--   richer analyst dashboards
--   export/import of simulation results
--   more detailed timeline analysis
--   accessibility improvements
--   fixture/demo-data generation
--   additional harmless channel simulations
--   optional container/dev tooling
+- scenario authoring format
+- reusable message templates
+- richer analyst dashboards
+- export/import of simulation results
+- more detailed timeline analysis
+- accessibility improvements
+- fixture/demo-data generation
+- additional harmless channel simulations
+- optional container/dev tooling
 
 P2 work must not destabilize P0 contracts.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Priority model
 
@@ -211,7 +215,7 @@ normally create and modify files in their owned area only.
 
 **Owns**
 
-``` text
+```text
 src/phisim/main.py
 src/phisim/telemetry/
 src/phisim/infra/
@@ -223,15 +227,15 @@ tests/platform/
 
 **Responsibilities**
 
--   application startup/lifespan
--   event API
--   WebSocket manager
--   scenario/session persistence
--   repositories
--   database models
--   environment/configuration
--   backend-level validation
--   integration tests for backend contracts
+- application startup/lifespan
+- event API
+- WebSocket manager
+- scenario/session persistence
+- repositories
+- database models
+- environment/configuration
+- backend-level validation
+- integration tests for backend contracts
 
 **Primary deliverables**
 
@@ -244,17 +248,17 @@ tests/platform/
 
 **Does not own**
 
--   phishing page/message presentation
--   indicator rules
--   analyst dashboard UI
+- phishing page/message presentation
+- indicator rules
+- analyst dashboard UI
 
-------------------------------------------------------------------------
+---
 
 ### Team 2 --- Simulation channels
 
 **Owns**
 
-``` text
+```text
 src/phisim/simulation/
 scenarios/
 web/templates/simulation/
@@ -267,15 +271,15 @@ create it under the existing `web/templates` and `web/static` roots.
 
 **Responsibilities**
 
--   fake credential site
--   email simulation
--   SMS simulation
--   later phishing scenarios
--   common simulation rendering
--   safe interaction handlers
--   scenario-specific telemetry emission
--   harmless QR generation
--   inert attachment examples
+- fake credential site
+- email simulation
+- SMS simulation
+- later phishing scenarios
+- common simulation rendering
+- safe interaction handlers
+- scenario-specific telemetry emission
+- harmless QR generation
+- inert attachment examples
 
 **Primary deliverables**
 
@@ -291,13 +295,13 @@ create it under the existing `web/templates` and `web/static` roots.
 Team 2 does not directly modify database models or the analyst console
 to make a scenario work. It emits the agreed telemetry contract.
 
-------------------------------------------------------------------------
+---
 
 ### Team 3 --- Analysis / inspection / security
 
 **Owns**
 
-``` text
+```text
 src/phisim/analysis/
 src/phisim/inspection/
 src/phisim/security/
@@ -308,13 +312,13 @@ tests/security/
 
 **Responsibilities**
 
--   phishing-indicator extraction
--   event/session analysis
--   risk/indicator classification
--   explanation of why an artifact is suspicious
--   security-policy enforcement helpers
--   input validation that is specifically security-oriented
--   analysis tests
+- phishing-indicator extraction
+- event/session analysis
+- risk/indicator classification
+- explanation of why an artifact is suspicious
+- security-policy enforcement helpers
+- input validation that is specifically security-oriented
+- analysis tests
 
 **Primary deliverables**
 
@@ -328,13 +332,13 @@ tests/security/
 The analysis layer should produce structured facts, not a vague single
 score.
 
-------------------------------------------------------------------------
+---
 
 ### Team 4 --- Analyst console / presentation / integration UX
 
 **Owns**
 
-``` text
+```text
 src/phisim/console/
 web/templates/console/
 web/static/console/
@@ -343,14 +347,14 @@ tests/console/
 
 **Responsibilities**
 
--   analyst console
--   live event stream
--   session timeline
--   scenario/session detail
--   filtering
--   indicator presentation
--   safe DOM rendering
--   browser-facing integration tests
+- analyst console
+- live event stream
+- session timeline
+- scenario/session detail
+- filtering
+- indicator presentation
+- safe DOM rendering
+- browser-facing integration tests
 
 **Primary deliverables**
 
@@ -364,7 +368,7 @@ tests/console/
 Team 4 consumes APIs/contracts. It should not reach directly into
 SQLAlchemy models.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Shared-contract protocol
 
@@ -373,11 +377,11 @@ APIs.
 
 ### Contract owners
 
--   Team 1 owns persistence/API contracts.
--   Team 2 owns scenario interaction semantics.
--   Team 3 owns analysis result structures.
--   Team 4 owns presentation needs, but cannot silently redefine backend
-    contracts.
+- Team 1 owns persistence/API contracts.
+- Team 2 owns scenario interaction semantics.
+- Team 3 owns analysis result structures.
+- Team 4 owns presentation needs, but cannot silently redefine backend
+  contracts.
 
 A contract change requires:
 
@@ -391,7 +395,7 @@ A contract change requires:
 Canonical public contracts should eventually be represented by Pydantic
 schemas rather than copied dictionaries.
 
-------------------------------------------------------------------------
+---
 
 ## 5. Implementation phases
 
@@ -399,15 +403,15 @@ schemas rather than copied dictionaries.
 
 **Goal:** make parallel work safe.
 
--   finalize event schema
--   finalize scenario schema
--   finalize session schema
--   define event type naming
--   define telemetry metadata conventions
--   define simulation-to-telemetry boundary
--   define analysis output shape
--   clean stale tests
--   document safety constraints
+- finalize event schema
+- finalize scenario schema
+- finalize session schema
+- define event type naming
+- define telemetry metadata conventions
+- define simulation-to-telemetry boundary
+- define analysis output shape
+- clean stale tests
+- document safety constraints
 
 **Exit condition:** all four teams can work without modifying one
 another's implementation files.
@@ -416,7 +420,7 @@ another's implementation files.
 
 Build one complete flow:
 
-``` text
+```text
 scenario
   -> fake login page
   -> interaction
@@ -439,16 +443,16 @@ Improve filtering, timelines, explanations, and session views.
 
 ### Phase 4 --- reliability/polish
 
--   error handling
--   idempotency
--   accessibility
--   test coverage
--   browser compatibility
--   safe shutdown
--   documentation
--   fixture/demo data
+- error handling
+- idempotency
+- accessibility
+- test coverage
+- browser compatibility
+- safe shutdown
+- documentation
+- fixture/demo data
 
-------------------------------------------------------------------------
+---
 
 ## 6. Definition of done
 
@@ -456,19 +460,19 @@ A feature is not complete because its page renders.
 
 A scenario is done when:
 
--   it is fictional and inert;
--   it has a scenario identifier;
--   it can be launched in a local session;
--   meaningful interactions generate telemetry;
--   no secret submitted by the participant is stored;
--   events persist correctly;
--   the analyst console can observe the interaction;
--   analysis produces structured indicators where applicable;
--   the scenario has automated tests;
--   the scenario has no outbound delivery path;
--   the feature follows the ownership and Git rules.
+- it is fictional and inert;
+- it has a scenario identifier;
+- it can be launched in a local session;
+- meaningful interactions generate telemetry;
+- no secret submitted by the participant is stored;
+- events persist correctly;
+- the analyst console can observe the interaction;
+- analysis produces structured indicators where applicable;
+- the scenario has automated tests;
+- the scenario has no outbound delivery path;
+- the feature follows the ownership and Git rules.
 
-------------------------------------------------------------------------
+---
 
 ## 7. Testing levels
 
@@ -479,32 +483,32 @@ boundaries.
 
 Pure logic:
 
--   indicator extraction
--   scenario validation
--   message construction
--   identifier generation
--   analysis rules
+- indicator extraction
+- scenario validation
+- message construction
+- identifier generation
+- analysis rules
 
 ### Integration
 
 Component boundaries:
 
--   API -\> service -\> repository
--   simulation -\> telemetry
--   telemetry -\> analysis
--   WebSocket -\> console
+- API -\> service -\> repository
+- simulation -\> telemetry
+- telemetry -\> analysis
+- WebSocket -\> console
 
 ### Browser/manual
 
 Only for actual UI behavior:
 
--   fake login interaction
--   email artifact rendering
--   SMS artifact rendering
--   console live update
--   responsive layout
+- fake login interaction
+- email artifact rendering
+- SMS artifact rendering
+- console live update
+- responsive layout
 
-------------------------------------------------------------------------
+---
 
 ## 8. Suggested event taxonomy
 
@@ -512,7 +516,7 @@ Use stable, descriptive names.
 
 Examples:
 
-``` text
+```text
 session_started
 session_completed
 scenario_opened
@@ -532,23 +536,23 @@ A credential submission event must contain **no password value**.
 Do not invent dozens of event types when a typed metadata field can
 represent a variation.
 
-------------------------------------------------------------------------
+---
 
 ## 9. What not to build
 
 Do not add:
 
--   real SMTP sending
--   real SMS gateways
--   public campaign delivery
--   real credential harvesting
--   password storage
--   credential replay
--   malware or executable payloads
--   shell execution from HTTP requests
--   arbitrary server-side file access
--   stealth/persistence mechanisms
--   real-world target lists
+- real SMTP sending
+- real SMS gateways
+- public campaign delivery
+- real credential harvesting
+- password storage
+- credential replay
+- malware or executable payloads
+- shell execution from HTTP requests
+- arbitrary server-side file access
+- stealth/persistence mechanisms
+- real-world target lists
 
 The classroom value comes from simulation and analysis, not real
 delivery capability.

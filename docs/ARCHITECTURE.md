@@ -4,7 +4,7 @@
 
 PhiSim is a small modular web application with four logical layers:
 
-``` text
+```text
 Simulation
     |
     v
@@ -28,11 +28,11 @@ Similarly:
 > The console consumes API/event contracts. It does not access database
 > models directly.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Current repository structure
 
-``` text
+```text
 src/phisim/
 ├── analysis/          # indicator and event analysis
 ├── console/           # analyst-facing HTTP/UI integration
@@ -64,7 +64,7 @@ docs/
 
 The existing repository also contains the SQLite database under `data/`.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Feature architecture
 
@@ -74,7 +74,7 @@ A scenario is metadata plus a simulation experience.
 
 Conceptually:
 
-``` text
+```text
 Scenario
   ├── identity
   ├── type
@@ -98,13 +98,13 @@ Event
 
 Scenario definitions should not contain persistence logic.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Telemetry
 
 The telemetry subsystem is the system's internal event boundary.
 
-``` text
+```text
 simulation
     |
     | EventCreate
@@ -121,12 +121,12 @@ TelemetryService
 
 The current implementation already has:
 
--   `EventCreate`
--   `EventResponse`
--   event repository
--   duplicate event detection
--   event persistence
--   WebSocket broadcasting
+- `EventCreate`
+- `EventResponse`
+- event repository
+- duplicate event detection
+- event persistence
+- WebSocket broadcasting
 
 Future work should extend this rather than bypass it.
 
@@ -134,7 +134,7 @@ Future work should extend this rather than bypass it.
 
 The event should have:
 
-``` text
+```text
 event_id
 session_id
 scenario_id
@@ -148,7 +148,7 @@ timestamp (server-generated)
 
 Secrets do not belong in `metadata`.
 
-------------------------------------------------------------------------
+---
 
 ## 5. Persistence
 
@@ -156,7 +156,7 @@ SQLite/SQLAlchemy is the current persistence layer.
 
 The intended structure is:
 
-``` text
+```text
 infra/sqlite/
 ├── connection.py
 ├── models_registry.py
@@ -176,22 +176,22 @@ Do not create a generic repository abstraction merely to avoid three
 small repositories. Explicit repositories are easier to understand and
 test.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Simulation subsystem
 
 The simulation layer should provide reusable primitives for:
 
--   scenario loading
--   session start
--   artifact rendering
--   interaction handling
--   telemetry emission
--   completion state
+- scenario loading
+- session start
+- artifact rendering
+- interaction handling
+- telemetry emission
+- completion state
 
 Priority channels:
 
-``` text
+```text
 P0
 ├── fake credential site
 ├── email
@@ -217,14 +217,15 @@ realism.
 
 On submission:
 
-``` text
+```text
 credential_submission_attempted
 ```
 
 The event must not include the submitted password.
 
-The browser should then transition to an educational outcome page or
-equivalent safe state.
+The browser should transition to a product-specific destination. The
+participant then explicitly ends the simulation to reach the educational
+outcome/reveal.
 
 ### Email simulation
 
@@ -237,7 +238,7 @@ other external mail provider.
 
 The first implementation is simply:
 
-``` text
+```text
 FastAPI
    |
 Jinja2/local templates
@@ -253,18 +254,18 @@ existing simulation + telemetry
 
 A simulated email may contain:
 
--   fictional sender
--   fictional subject
--   body text
--   local links
--   harmless attachment representations
+- fictional sender
+- fictional subject
+- body text
+- local links
+- harmless attachment representations
 
 If RFC/MIME parsing becomes educationally useful later, Python's
 standard-library `email` package may be used. It is not required for P0.
 
 Possible interactions:
 
-``` text
+```text
 message_opened
 link_clicked
 attachment_opened
@@ -283,7 +284,7 @@ or any external SMS provider.
 
 The first implementation is simply:
 
-``` text
+```text
 FastAPI
    |
 Jinja2/local templates
@@ -300,14 +301,14 @@ text such as `Delivery Service` or a synthetic number.
 
 No carrier or SMS gateway is required.
 
-------------------------------------------------------------------------
+---
 
 ## 7. Shared channel model
 
 Email, SMS, and the fake credential site are **channels of the same
 simulation system**, not three independent applications.
 
-``` text
+```text
                     Scenario
                        |
           +------------+------------+
@@ -339,7 +340,7 @@ No new dependency is required specifically for email or SMS.
 
 The existing stack is sufficient:
 
-``` text
+```text
 FastAPI
 Jinja2
 Pydantic
@@ -356,7 +357,7 @@ observations.
 
 Prefer:
 
-``` text
+```text
 Indicator
   ├── code
   ├── category
@@ -369,7 +370,7 @@ over a single opaque "phishing score".
 
 Examples:
 
-``` text
+```text
 urgent_language
 credential_request
 unexpected_link
@@ -381,7 +382,7 @@ unusual_mfa_request
 
 Analysis should be deterministic and testable.
 
-------------------------------------------------------------------------
+---
 
 ## 9. Inspection subsystem
 
@@ -391,22 +392,22 @@ Inspection answers:
 
 It can consume:
 
--   scenario metadata
--   events
--   analysis results
+- scenario metadata
+- events
+- analysis results
 
 It should not duplicate analysis rules.
 
 If analysis says:
 
-``` text
+```text
 domain_mismatch
 ```
 
 inspection may explain the evidence and display it, but the rule belongs
 in analysis.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Security subsystem
 
@@ -414,25 +415,25 @@ Security contains guardrails that protect the simulation itself.
 
 Examples:
 
--   loopback/default host enforcement
--   safe redirect validation
--   forbidden payload/file checks
--   secret stripping
--   input normalization
--   simulation-only restrictions
+- loopback/default host enforcement
+- safe redirect validation
+- forbidden payload/file checks
+- secret stripping
+- input normalization
+- simulation-only restrictions
 
 Security helpers should be small and explicit.
 
 Do not build a generic policy framework unless a concrete requirement
 demands one.
 
-------------------------------------------------------------------------
+---
 
 ## 11. Analyst console
 
 The console is a consumer of backend contracts.
 
-``` text
+```text
 HTTP page
    +
 WebSocket event stream
@@ -445,12 +446,12 @@ Analyst UI
 
 The console should eventually provide:
 
--   active sessions
--   scenario information
--   event timeline
--   event detail
--   indicator explanations
--   basic filtering
+- active sessions
+- scenario information
+- event timeline
+- event detail
+- indicator explanations
+- basic filtering
 
 ### Browser security
 
@@ -461,7 +462,7 @@ Use DOM text APIs or framework-safe rendering.
 Event metadata should also be treated as untrusted input even though the
 application generates most events.
 
-------------------------------------------------------------------------
+---
 
 ## 12. Application composition
 
@@ -469,19 +470,19 @@ application generates most events.
 
 It should:
 
--   create the FastAPI application
--   register routers
--   initialize lifecycle resources
+- create the FastAPI application
+- register routers
+- initialize lifecycle resources
 
 It should not become the place where business logic is implemented.
 
-------------------------------------------------------------------------
+---
 
 ## 13. Dependency direction
 
 Prefer this direction:
 
-``` text
+```text
 web / routes
       |
       v
@@ -501,13 +502,13 @@ console consumes application boundaries.
 
 Avoid circular dependencies such as:
 
-``` text
+```text
 console -> simulation -> console
 analysis -> console
 repository -> service
 ```
 
-------------------------------------------------------------------------
+---
 
 ## 14. Shared utilities
 
@@ -522,13 +523,13 @@ Before adding a utility:
 3.  keep it dependency-light;
 4.  add a focused test if behavior is non-trivial.
 
-------------------------------------------------------------------------
+---
 
 ## 15. Web assets
 
 Use separate namespaces under the shared web roots:
 
-``` text
+```text
 web/templates/
 ├── console/
 └── simulation/
@@ -541,7 +542,7 @@ web/static/
 This prevents the four team members from constantly editing one giant
 template or stylesheet.
 
-------------------------------------------------------------------------
+---
 
 ## 16. External boundaries
 
@@ -549,7 +550,7 @@ PhiSim intentionally has no required external delivery boundary.
 
 The safe default is:
 
-``` text
+```text
 browser
   |
 127.0.0.1

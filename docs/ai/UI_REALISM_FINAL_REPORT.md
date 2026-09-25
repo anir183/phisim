@@ -17,7 +17,7 @@ The pass covers:
   inert attachment previews;
 - QuickChat conversation list, search, contact view, last-message previews,
   unread state, link bubble, and read-only composer;
-- Amazaun order detail, delivery timeline, address confirmation, and checkout;
+- Amazaun order detail, delivery timeline, address step, fictional payment-method confirmation, and checkout;
 - CloudBox file browser, shared files, storage/activity context, and sharing
   verification;
 - fictional university student services, MAKExam registration, and TechnoSphere
@@ -72,20 +72,20 @@ families now route to independent application compositions.
 
 ## Route and workflow results
 
-| Area | Result |
-|---|---|
-| Lab → launch | Operator can filter the catalogue, launch a bounded run, and see active/recent state. |
-| Session → delivery | Delivery remains deterministic and instance-scoped; repeated email/SMS deliveries remain separate. |
-| Gemail | Delivered messages appear in a realistic mailbox; read/search/star/archive state is derived from the attack instance. |
-| QuickChat | Delivered conversations appear in a split-pane messenger; unread/search/detail states are local and deterministic. |
-| Amazaun | Context begins in an order page, advances through delivery confirmation, then lands on an order-confirmed product destination before manual reveal. |
-| CloudBox | Context begins in a file workspace, advances through shared-file verification, then lands on a workspace-ready product destination before manual reveal. |
-| University services | Student dashboard, exam schedule/registration, and faculty course workspace are separate compositions. |
-| Support/payment | Ticket timeline and invoice review expose domain-specific pending/verification states. |
-| QR | Message context and local destination are shown before simulated scan; the target then reaches its product destination before manual reveal. |
-| MFA | Device, location, scope, expiry, and repeated prompt history are visible; the terminal decision lands on a NimbusID destination before manual reveal. |
-| Telemetry → Console | Events remain safe, discoverable, and visible in the analyst evidence workspace. |
-| Reveal | Completion is rendered on a standalone debrief shell, not inside the victim application. |
+| Area                | Result                                                                                                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lab → launch        | Operator can filter the catalogue, launch a bounded run, and see active/recent state.                                                                                           |
+| Session → delivery  | Delivery remains deterministic and instance-scoped; repeated email/SMS deliveries remain separate.                                                                              |
+| Gemail              | Delivered messages appear in a realistic mailbox; read/search/star/archive state is derived from the attack instance.                                                           |
+| QuickChat           | Delivered conversations appear in a split-pane messenger; unread/search/detail states are local and deterministic.                                                              |
+| Amazaun             | Context begins in an order page, captures the delivery address, confirms a fictional payment method, then lands on an order-confirmed product destination before manual reveal. |
+| CloudBox            | Context begins in a file workspace, advances through shared-file verification, then lands on a workspace-ready product destination before manual reveal.                        |
+| University services | Student dashboard, exam schedule/registration, and faculty course workspace are separate compositions.                                                                          |
+| Support/payment     | Ticket timeline and invoice review expose domain-specific pending/verification states.                                                                                          |
+| QR                  | Message context and local destination are shown before simulated scan; the target then reaches its product destination before manual reveal.                                    |
+| MFA                 | Device, location, scope, expiry, and repeated prompt history are visible; the terminal decision lands on a NimbusID destination before manual reveal.                           |
+| Telemetry → Console | Events remain safe, discoverable, and visible in the analyst evidence workspace.                                                                                                |
+| Reveal              | Completion is rendered on a standalone debrief shell, not inside the victim application.                                                                                        |
 
 ## State and interaction coverage
 
@@ -124,7 +124,7 @@ uv run check
 Result:
 
 ```text
-121 files already formatted
+120 files already formatted
 0 errors, 0 warnings, 0 informations
 202 passed, 1 existing Starlette/httpx deprecation warning
 ```
@@ -214,22 +214,22 @@ palette, and component language.
 
 ## Acceptance criteria
 
-| Criterion | Status |
-|---|---|
-| Gemail feels like a mailbox | PASS |
-| QuickChat feels like a messenger | PASS |
-| Amazaun feels like an order flow | PASS |
-| CloudBox feels like file storage | PASS |
-| University scenarios begin in academic context | PASS |
-| Support and payment begin in domain context | PASS |
-| QR and MFA have distinct application models | PASS |
-| Phishing is embedded in believable workflows | PASS |
-| Meaningful actions land on product destinations before manual reveal | PASS |
-| Telemetry remains safe and connected to Console | PASS |
-| Lab, victim apps, Console, and Reveal are separate | PASS |
-| Six-flow route verification | PASS |
-| `uv run check` | PASS |
-| Connected-browser screenshots/accessibility review | PENDING |
+| Criterion                                                            | Status  |
+| -------------------------------------------------------------------- | ------- |
+| Gemail feels like a mailbox                                          | PASS    |
+| QuickChat feels like a messenger                                     | PASS    |
+| Amazaun feels like an order flow                                     | PASS    |
+| CloudBox feels like file storage                                     | PASS    |
+| University scenarios begin in academic context                       | PASS    |
+| Support and payment begin in domain context                          | PASS    |
+| QR and MFA have distinct application models                          | PASS    |
+| Phishing is embedded in believable workflows                         | PASS    |
+| Meaningful actions land on product destinations before manual reveal | PASS    |
+| Telemetry remains safe and connected to Console                      | PASS    |
+| Lab, victim apps, Console, and Reveal are separate                   | PASS    |
+| Six-flow route verification                                          | PASS    |
+| `uv run check`                                                       | PASS    |
+| Connected-browser screenshots/accessibility review                   | PENDING |
 
 ## Commit record
 

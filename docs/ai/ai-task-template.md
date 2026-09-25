@@ -5,62 +5,64 @@
 ```{=html}
 <!-- One sentence describing the change. -->
 ```
+
 ## Owner
 
 ```{=html}
 <!-- Team/workstream. -->
 ```
+
 ## Owned files
 
-``` text
+```text
 # List exact paths.
 ```
 
 ## Contract consumed
 
-``` text
+```text
 # Existing APIs/schemas/events.
 ```
 
 ## Contract changed
 
-``` text
+```text
 # None, or describe the smallest change.
 ```
 
 ## Implementation steps
 
--   [ ] inspect existing implementation
--   [ ] implement smallest change
--   [ ] add/update tests
--   [ ] run focused tests
--   [ ] run `uv run check`
+- [ ] inspect existing implementation
+- [ ] implement smallest change
+- [ ] add/update tests
+- [ ] run focused tests
+- [ ] run `uv run check`
 
 ## Safety review
 
--   [ ] no credential secret storage
--   [ ] no real email/SMS delivery
--   [ ] no external network requirement
--   [ ] no executable payload
--   [ ] no shell/file execution
--   [ ] fictional simulation content
+- [ ] no credential secret storage
+- [ ] no real email/SMS delivery
+- [ ] no external network requirement
+- [ ] no executable payload
+- [ ] no shell/file execution
+- [ ] fictional simulation content
 
 ## Handoff
 
 Changed:
 
-``` text
+```text
 # files
 ```
 
 Tests:
 
-``` text
+```text
 # commands and results
 ```
 
 Follow-up:
 
-``` text
+```text
 # next task or None
 ```

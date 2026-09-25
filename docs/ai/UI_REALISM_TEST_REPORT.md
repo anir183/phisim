@@ -31,7 +31,7 @@ uv run check
 Final result:
 
 ```text
-121 files already formatted
+120 files already formatted
 0 errors, 0 warnings, 0 informations
 202 passed, 1 existing Starlette/httpx deprecation warning
 ```
@@ -56,14 +56,14 @@ timestamps moved to the deterministic due state. They exercise the same route
 and template branches used by the application; they are not just static marker
 checks.
 
-| Flow | Route walk | Verified states and structure | Result |
-|---|---|---|---|
-| Gemail | `/v/{token}/mail` → message detail → message state POST → starred folder | Empty baseline, delivered row, unread state, search, detail, star/archive state, local link, attachment entry | PASS |
-| QuickChat | `/v/{token}/messages` → conversation detail → message link | Empty baseline, delivered conversation, unread marker, last-message preview, search, contact header, bubbles, read-only composer | PASS |
-| Amazaun | `/v/{token}/site/credential-shopping-001` → continue → checkout → finish → destination → end | Marketplace header, order number, pending delivery, address confirmation, order timeline, product destination, manual reveal | PASS |
-| CloudBox | `/v/{token}/site/credential-cloud-001` → continue → verification → finish → destination → end | File sidebar, shared files, storage meter, activity, sharing action, workspace destination, manual reveal | PASS |
-| QR | `/v/{token}/qr/qr-phish-001` → scan → target → finish → destination → end | Message context, local QR image, destination preview, scan transition, target product destination, manual reveal | PASS |
-| MFA | `/v/{token}/mfa/mfa-fatigue-001/1` → approve/deny → destination → end | Device prompt, request scopes, location, request history, decision destination, manual reveal | PASS |
+| Flow      | Route walk                                                                                         | Verified states and structure                                                                                                    | Result |
+| --------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| Gemail    | `/v/{token}/mail` → message detail → message state POST → starred folder                           | Empty baseline, delivered row, unread state, search, detail, star/archive state, local link, attachment entry                    | PASS   |
+| QuickChat | `/v/{token}/messages` → conversation detail → message link                                         | Empty baseline, delivered conversation, unread marker, last-message preview, search, contact header, bubbles, read-only composer | PASS   |
+| Amazaun   | `/v/{token}/site/credential-shopping-001` → continue → payment method → finish → destination → end | Marketplace header, order number, delivery address, fictional payment choice, product destination, manual reveal                 | PASS   |
+| CloudBox  | `/v/{token}/site/credential-cloud-001` → continue → verification → finish → destination → end      | File sidebar, shared files, storage meter, activity, sharing action, workspace destination, manual reveal                        | PASS   |
+| QR        | `/v/{token}/qr/qr-phish-001` → scan → target → finish → destination → end                          | Message context, local QR image, destination preview, scan transition, target product destination, manual reveal                 | PASS   |
+| MFA       | `/v/{token}/mfa/mfa-fatigue-001/1` → approve/deny → destination → end                              | Device prompt, request scopes, location, request history, decision destination, manual reveal                                    | PASS   |
 
 ### Gemail evidence
 
@@ -145,7 +145,6 @@ viewport-filling spacing contract.
 The baseline `/mail` and `/messages` routes are now covered as branded
 Gemail/QuickChat empty states, and the stylesheet regression checks cover the
 viewport-filling product document and destination layout rules.
-
 
 ## Additional application checks
 
