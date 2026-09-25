@@ -27,7 +27,7 @@
               <span class="quickchat-thread-avatar">{{ thread.sender_label[:1] }}</span>
               <span class="quickchat-thread-copy"><strong>{{ thread.sender_label }}</strong><span>{% if thread.typing %}<em>typing…</em>{% else %}{{ thread.messages[-1] }}{% endif %}</span></span>
               <time>{{ thread.timestamp[11:16] }}</time>
-              {% if thread.unread %}<i class="quickchat-unread-dot" aria-label="Unread"></i>{% endif %}
+              {% if thread.unread %}<i class="quickchat-unread-dot" aria-label="Unread"><span class="sr-only">UNREAD</span></i>{% endif %}
             </a>
           {% else %}
             <div class="quickchat-empty-list"><span class="quickchat-empty-icon">⌕</span><strong>No conversations found</strong><p>Delivered local chats will appear here.</p></div>
