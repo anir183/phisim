@@ -131,8 +131,8 @@ Amazaun, CloudBox, QR, and MFA end to end. Full evidence is recorded in
 
 The follow-up pass addressed the reported visual and lifecycle issues:
 
-- terminal email/SMS lists remain readable, while message/conversation detail
-  and action links return `410 Gone` instead of reopening a completed artifact;
+- terminal email/SMS lists remain readable, while message/conversation details
+  render read-only and state-changing actions return `410 Gone`;
 - account verification progress is outside the alert content;
 - training reveal is explicitly centered;
 - TechnoSphere navigation and course-access layout no longer overlap;
@@ -208,7 +208,9 @@ The work was split into atomic commits, in order:
 - `547f0af` and `39ade3b` — compatibility/readability fixes;
 - `21cca42` — legacy outcome moved to the standalone reveal;
 - `bd4122f` — victim applications own their product chrome;
-- `34ebff3` — terminal artifact details close safely;
+- `991fa15` — terminal email/SMS details remain readable in read-only mode;
+- `261841c` — light analyst Console restoration;
+- `34ebff3` — initial terminal action guard;
 - `745aa2f` — portal layout, Lab contrast, and control hover fixes;
 - `d6b337d` and `88d97ce` — QuickChat typing removal and regression tests;
 - `b916694` — regression report update;

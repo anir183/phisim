@@ -140,11 +140,12 @@ The following route checks also passed:
 
 `tests/simulation/test_ui_regressions.py` additionally verifies:
 
-- completed and abandoned email/SMS lists remain visible while detail and
-  action links return `410 Gone`;
+- completed and abandoned email/SMS lists remain visible and their details
+  render read-only; state-changing actions return `410 Gone`;
 - account verification progress is outside the alert content;
 - TechnoSphere has separated navigation and course-access structure;
-- the Lab renders with the light workspace class;
+- the Lab and analyst Console render with the light workspace class;
+- the Console keeps its evidence layout while using the light palette;
 - Gemail and MFA contrast/hover selectors are present;
 - QuickChat shows the last message, removes typing indicators, and clears its
   unread marker after opening.
