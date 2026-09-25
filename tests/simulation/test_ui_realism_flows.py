@@ -172,10 +172,13 @@ def test_cloudbox_manual_route_walks_shared_file_to_debrief(
     verification = client.get(continued.headers["location"])
     assert verification.status_code == 200
     assert "cloudbox-verify" in verification.text
+    assert "Password" in verification.text
+    assert 'name="password"' in verification.text
+    assert "Work email" not in verification.text
 
     finished = client.post(
         f"{target}/finish",
-        data={"confirmation": "local-training-confirmation"},
+        data={"password": "local-training-password"},
         follow_redirects=False,
     )
     assert finished.status_code == 303
@@ -256,11 +259,12 @@ def test_each_product_flow_reaches_destination_before_manual_debrief(
         follow_redirects=False,
     )
     assert continued.status_code == 303
-    finish_data = (
-        {"payment_method": "Fictional card ending 4242"}
-        if scenario_id == "credential-shopping-001"
-        else {"confirmation": "local-training-confirmation"}
-    )
+    if scenario_id == "credential-shopping-001":
+        finish_data = {"payment_method": "Fictional card ending 4242"}
+    elif scenario_id == "credential-cloud-001":
+        finish_data = {"password": "local-training-password"}
+    else:
+        finish_data = {"confirmation": "local-training-confirmation"}
     finished = client.post(
         f"{target}/finish",
         data=finish_data,

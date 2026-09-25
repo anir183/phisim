@@ -27,9 +27,10 @@
       {% include "apps/cloudbox/home.html" %}
     {% else %}
       {% set form_action = url_for("victim_site_finish", token=attack.victim_token, scenario_id=scenario.scenario_id) %}
-      {% set field_label = "Work email" %}
-      {% set field_name = "confirmation" %}
-      {% set submit_label = "Verify shared file" %}
+      {% set field_label = "Password" %}
+      {% set field_name = "password" %}
+      {% set field_type = "password" %}
+      {% set submit_label = "Sign in to CloudBox" %}
       {% include "apps/cloudbox/verify.html" %}
     {% endif %}
   {% elif site_theme.key == "unisecure" %}
