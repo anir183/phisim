@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session as OrmSession
 
 from phisim.infra.sqlite.connection import get_session
@@ -11,6 +11,7 @@ from phisim.simulation.catalog import INDICATOR_INFO, get_mfa_scenario
 from phisim.simulation.channels.common import (
     emit_simulation_event,
     get_or_create_run,
+    get_run_state,
     templates,
     timing_context,
     update_run_state,
@@ -38,17 +39,17 @@ def _parse_mfa_step(step_raw: str, prompt_count: int) -> int:
     return step
 
 
-@router.get("/mfa/{scenario_id}/{step}", response_class=HTMLResponse)
+@router.get("/mfa/{scenario_id}/{step:int}", response_class=HTMLResponse)
 async def mfa_prompt(
     request: Request,
     scenario_id: str,
-    step: str,
+    step: int,
     session: Annotated[OrmSession, Depends(get_session)],
 ) -> HTMLResponse:
     scenario = get_mfa_scenario(scenario_id)
     if scenario is None:
         raise HTTPException(status_code=404, detail="Scenario not found.")
-    current_step = _parse_mfa_step(step, scenario.prompt_count)
+    current_step = _parse_mfa_step(str(step), scenario.prompt_count)
     response = templates.TemplateResponse(
         request=request,
         name="simulation/mfa.html",
@@ -88,20 +89,20 @@ async def mfa_prompt(
 
 
 @router.post(
-    "/mfa/{scenario_id}/{step}",
+    "/mfa/{scenario_id}/{step:int}",
     response_class=HTMLResponse,
     response_model=None,
 )
 async def mfa_respond(
     request: Request,
     scenario_id: str,
-    step: str,
+    step: int,
     session: Annotated[OrmSession, Depends(get_session)],
 ) -> HTMLResponse | RedirectResponse:
     scenario = get_mfa_scenario(scenario_id)
     if scenario is None:
         raise HTTPException(status_code=404, detail="Scenario not found.")
-    current_step = _parse_mfa_step(step, scenario.prompt_count)
+    current_step = _parse_mfa_step(str(step), scenario.prompt_count)
     form = await request.form()
     action_value = form.get("action", "")
     if not isinstance(action_value, str) or action_value not in (
@@ -155,15 +156,17 @@ async def mfa_respond(
 
     response = templates.TemplateResponse(
         request=request,
-        name="simulation/mfa_outcome.html",
-        context=timing_context(
-            request,
-            scenario=scenario,
-            site_theme=get_site_theme(scenario.scenario_id, "mfa"),
-            fatigued=fatigued,
-            indicator_info=INDICATOR_INFO,
-            active_page="simulation",
-        ),
+        name="victim_destination.html",
+        context={
+            "scenario": scenario,
+            "site_theme": get_site_theme(scenario.scenario_id, "mfa"),
+            "end_url": request.url_for(
+                "mfa_end", scenario_id=scenario.scenario_id
+            ),
+            "mfa_action": action,
+            "fatigued": fatigued,
+            "active_page": "simulation",
+        },
     )
     session_id = ensure_simulation_session(
         request,
@@ -181,7 +184,16 @@ async def mfa_respond(
         channel="mfa",
         initial_state={"mfa_step": current_step},
     )
-    update_run_state(session, run.run_id, {"mfa_step": current_step})
+    update_run_state(
+        session,
+        run.run_id,
+        {
+            "mfa_step": current_step,
+            "mfa_decision": action,
+            "auth_stage": "destination",
+            "last_action": "destination_reached",
+        },
+    )
     await emit_simulation_event(
         session,
         session_id,
@@ -197,12 +209,97 @@ async def mfa_respond(
         session,
         session_id,
         scenario_id=scenario.scenario_id,
-        event_type="scenario_completed",
+        event_type="destination_reached",
+        source="victim",
         metadata={
             "channel": "mfa",
             "attack_type": scenario.attack_type,
-            "outcome": "training_complete",
+            "action": action,
         },
     )
+    return response
+
+
+@router.post("/mfa/{scenario_id}/end", response_class=HTMLResponse)
+async def mfa_end(
+    request: Request,
+    scenario_id: str,
+    session: Annotated[OrmSession, Depends(get_session)],
+) -> HTMLResponse:
+    scenario = get_mfa_scenario(scenario_id)
+    if scenario is None:
+        raise HTTPException(status_code=404, detail="Scenario not found.")
+    cookie_response = Response()
+    session_id = ensure_simulation_session(
+        request,
+        cookie_response,
+        session,
+        scenario_id=scenario.scenario_id,
+        scenario_name=scenario.title,
+        scenario_type="mfa",
+        description=scenario.message,
+    )
+    run = get_or_create_run(
+        session,
+        session_id=session_id,
+        scenario_id=scenario.scenario_id,
+        channel="mfa",
+    )
+    state = get_run_state(session, run.run_id)
+    was_complete = state.get("auth_stage") == "complete"
+    if not was_complete and state.get("auth_stage") != "destination":
+        raise HTTPException(
+            status_code=409, detail="MFA destination is not ready."
+        )
+    if not was_complete:
+        update_run_state(
+            session,
+            run.run_id,
+            {
+                "auth_stage": "complete",
+                "completion_outcome": "training_complete",
+                "last_action": "scenario_completed",
+            },
+        )
+        await emit_simulation_event(
+            session,
+            session_id,
+            scenario_id=scenario.scenario_id,
+            event_type="attack_completed",
+            metadata={
+                "channel": "mfa",
+                "attack_type": scenario.attack_type,
+                "outcome": "training_complete",
+            },
+        )
+        await emit_simulation_event(
+            session,
+            session_id,
+            scenario_id=scenario.scenario_id,
+            event_type="scenario_completed",
+            metadata={
+                "channel": "mfa",
+                "attack_type": scenario.attack_type,
+                "outcome": "training_complete",
+            },
+        )
+    response = templates.TemplateResponse(
+        request=request,
+        name="simulation/mfa_outcome.html",
+        context=timing_context(
+            request,
+            scenario=scenario,
+            site_theme=get_site_theme(scenario.scenario_id, "mfa"),
+            indicator_info=INDICATOR_INFO,
+            fatigued=(
+                state.get("mfa_decision") == "approve"
+                and state.get("mfa_step") == scenario.prompt_count
+            ),
+            mfa_action=state.get("mfa_decision"),
+            active_page="simulation",
+        ),
+    )
+    for cookie in cookie_response.headers.getlist("set-cookie"):
+        response.headers.append("set-cookie", cookie)
     complete_simulation_session(session, session_id)
     return response

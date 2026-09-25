@@ -42,15 +42,17 @@ async def _complete_credential_submission(
     )
     response = templates.TemplateResponse(
         request=request,
-        name="simulation/outcome.html",
-        context=timing_context(
-            request,
-            scenario=scenario,
-            site_theme=get_site_theme(scenario.scenario_id, scenario.channel),
-            result=result,
-            indicator_info=INDICATOR_INFO,
-            active_page="simulation",
-        ),
+        name="victim_destination.html",
+        context={
+            "scenario": scenario,
+            "site_theme": get_site_theme(
+                scenario.scenario_id, scenario.channel
+            ),
+            "end_url": request.url_for(
+                "scenario_end", scenario_id=scenario.scenario_id
+            ),
+            "active_page": "simulation",
+        },
     )
     session_id = ensure_simulation_session(
         request,
@@ -62,12 +64,17 @@ async def _complete_credential_submission(
         description=scenario.message,
         session_id=session_id,
     )
-    get_or_create_run(
+    run = get_or_create_run(
         database_session,
         session_id=session_id,
         scenario_id=scenario.scenario_id,
         channel=scenario.channel,
-        initial_state={"auth_stage": "complete"},
+        initial_state={"auth_stage": "destination"},
+    )
+    update_run_state(
+        database_session,
+        run.run_id,
+        {"auth_stage": "destination", "last_action": "destination_reached"},
     )
     await emit_simulation_event(
         database_session,
@@ -87,14 +94,14 @@ async def _complete_credential_submission(
         database_session,
         session_id,
         scenario_id=scenario.scenario_id,
-        event_type="scenario_completed",
+        event_type="destination_reached",
+        source="victim",
         metadata={
             "channel": scenario.channel,
             "attack_type": scenario.attack_type,
-            "outcome": "training_complete",
+            "action": "credential_submission_attempted",
         },
     )
-    complete_simulation_session(database_session, session_id)
     return response
 
 
@@ -318,22 +325,10 @@ async def scenario_end(
     scenario = get_scenario(scenario_id)
     if scenario is None or scenario.channel != "website":
         raise HTTPException(status_code=404, detail="Scenario not found.")
-    response = templates.TemplateResponse(
-        request=request,
-        name="simulation/outcome.html",
-        context=timing_context(
-            request,
-            scenario=scenario,
-            site_theme=get_site_theme(scenario.scenario_id, scenario.channel),
-            result="ended",
-            ended_early=True,
-            indicator_info=INDICATOR_INFO,
-            active_page="simulation",
-        ),
-    )
+    cookie_response = Response()
     session_id = ensure_simulation_session(
         request,
-        response,
+        cookie_response,
         session,
         scenario_id=scenario.scenario_id,
         scenario_name=scenario.title,
@@ -348,11 +343,33 @@ async def scenario_end(
         initial_state={"auth_stage": "landing"},
     )
     state = get_run_state(session, run.run_id)
-    if state.get("auth_stage") != "complete":
+    was_complete = state.get("auth_stage") == "complete"
+    ended_early = (
+        state.get("completion_outcome") == "ended_by_user"
+        if was_complete
+        else state.get("auth_stage") != "destination"
+    )
+    completion_outcome = "ended_by_user" if ended_early else "training_complete"
+    if not was_complete:
         update_run_state(
             session,
             run.run_id,
-            {"auth_stage": "complete", "last_action": "scenario_completed"},
+            {
+                "auth_stage": "complete",
+                "completion_outcome": completion_outcome,
+                "last_action": "scenario_completed",
+            },
+        )
+        await emit_simulation_event(
+            session,
+            session_id,
+            scenario_id=scenario.scenario_id,
+            event_type="attack_completed",
+            metadata={
+                "channel": scenario.channel,
+                "attack_type": scenario.attack_type,
+                "outcome": completion_outcome,
+            },
         )
         await emit_simulation_event(
             session,
@@ -362,8 +379,23 @@ async def scenario_end(
             metadata={
                 "channel": scenario.channel,
                 "attack_type": scenario.attack_type,
-                "outcome": "ended_by_user",
+                "outcome": completion_outcome,
             },
         )
+    response = templates.TemplateResponse(
+        request=request,
+        name="simulation/outcome.html",
+        context=timing_context(
+            request,
+            scenario=scenario,
+            site_theme=get_site_theme(scenario.scenario_id, scenario.channel),
+            result="ended",
+            ended_early=ended_early,
+            indicator_info=INDICATOR_INFO,
+            active_page="simulation",
+        ),
+    )
+    for cookie in cookie_response.headers.getlist("set-cookie"):
+        response.headers.append("set-cookie", cookie)
     complete_simulation_session(session, session_id)
     return response

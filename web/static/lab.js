@@ -83,8 +83,10 @@ if (frame) {
       );
       if (!response.ok) throw new Error("Status request failed");
       const payload = await response.json();
-      status.textContent = text(payload.status);
-      lifecycle.textContent = text(payload.status);
+      const phase = text(payload.phase || payload.status);
+      status.textContent = phase;
+      status.className = `badge ${payload.status === "COMPLETED" ? "badge-success" : "badge-warning"}`;
+      lifecycle.textContent = phase;
       due.textContent = text(payload.delivery_due_at);
       if (eventCount) {
         eventCount.textContent = text(

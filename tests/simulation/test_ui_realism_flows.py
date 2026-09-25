@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -104,6 +105,8 @@ def test_amazaun_manual_route_walks_order_to_debrief(
     assert order.status_code == 200
     assert "amazaun-app" in order.text
     assert "Order #1042-991" in order.text
+    assert "Private training environment" not in order.text
+    assert "Local security lab" not in order.text
 
     continued = client.post(
         f"{target}/continue",
@@ -121,10 +124,26 @@ def test_amazaun_manual_route_walks_order_to_debrief(
         follow_redirects=False,
     )
     assert finished.status_code == 303
-    debrief = client.get(finished.headers["location"])
-    assert debrief.status_code == 200
-    assert "What happened?" in debrief.text
-    assert "training-reveal" in debrief.text
+    destination = client.get(finished.headers["location"])
+    assert destination.status_code == 200
+    assert "Your order is confirmed" in destination.text
+    assert "Fictional local training site" in destination.text
+    assert "What happened?" not in destination.text
+    status = client.get(f"/api/lab/attacks/{launch['attack_id']}")
+    assert status.status_code == 200
+    assert status.json()["status"] == "ENGAGED"
+    assert status.json()["state"]["destination_reached"] is True
+    assert status.json()["phase"] == "AWAITING_MANUAL_END"
+    assert "attack_completed" not in [
+        event["event_type"] for event in status.json()["events"]
+    ]
+    status_page = client.get(launch["operator_path"])
+    assert status_page.status_code == 200
+    assert "AWAITING_MANUAL_END" in status_page.text
+    completed = client.post(f"{target}/end")
+    assert completed.status_code == 200
+    assert "What happened?" in completed.text
+    assert "training-reveal" in completed.text
 
 
 def test_cloudbox_manual_route_walks_shared_file_to_debrief(
@@ -157,9 +176,74 @@ def test_cloudbox_manual_route_walks_shared_file_to_debrief(
         follow_redirects=False,
     )
     assert finished.status_code == 303
-    debrief = client.get(finished.headers["location"])
-    assert debrief.status_code == 200
-    assert "training-reveal" in debrief.text
+    destination = client.get(finished.headers["location"])
+    assert destination.status_code == 200
+    assert "Your workspace is ready" in destination.text
+    assert "What happened?" not in destination.text
+    completed = client.post(f"{target}/end")
+    assert completed.status_code == 200
+    assert "training-reveal" in completed.text
+
+
+@pytest.mark.parametrize(
+    ("scenario_id", "role", "expected_heading"),
+    [
+        ("credential-basic-001", "student", "Account access updated"),
+        (
+            "credential-shopping-001",
+            "online shopper",
+            "Your order is confirmed",
+        ),
+        ("credential-cloud-001", "collaborator", "Your workspace is ready"),
+        (
+            "credential-payment-001",
+            "billing administrator",
+            "Payment review recorded",
+        ),
+        (
+            "support-portal-001",
+            "university employee",
+            "Case verification recorded",
+        ),
+        ("mak-exam-001", "student", "Registration confirmed"),
+        ("technosphere-001", "faculty", "Course workspace unlocked"),
+    ],
+)
+def test_each_product_flow_reaches_destination_before_manual_debrief(
+    client: TestClient,
+    test_engine: Engine,
+    scenario_id: str,
+    role: str,
+    expected_heading: str,
+) -> None:
+    launch = _launch(client, scenario_id, role)
+    token = launch["victim_path"].split("/")[2]
+    _make_due(test_engine, launch["attack_id"])
+    target = f"/v/{token}/site/{scenario_id}"
+
+    landing = client.get(target)
+    assert landing.status_code == 200
+    continued = client.post(
+        f"{target}/continue",
+        data={"identifier": "local-training-identifier"},
+        follow_redirects=False,
+    )
+    assert continued.status_code == 303
+    finished = client.post(
+        f"{target}/finish",
+        data={"confirmation": "local-training-confirmation"},
+        follow_redirects=False,
+    )
+    assert finished.status_code == 303
+    destination = client.get(finished.headers["location"])
+    assert destination.status_code == 200
+    assert expected_heading in destination.text
+    assert "End simulation" in destination.text
+    assert "What happened?" not in destination.text
+
+    completed = client.post(f"{target}/end")
+    assert completed.status_code == 200
+    assert "What happened?" in completed.text
 
 
 def test_qr_manual_route_exposes_destination_before_local_scan(
@@ -184,6 +268,87 @@ def test_qr_manual_route_exposes_destination_before_local_scan(
     destination = client.get(scanned.headers["location"])
     assert destination.status_code == 200
     assert "university-account" in destination.text
+    target = f"/v/{token}/site/credential-basic-001"
+    continued = client.post(
+        f"{target}/continue",
+        data={"identifier": "local-training-student"},
+        follow_redirects=False,
+    )
+    assert continued.status_code == 303
+    finished = client.post(
+        f"{target}/finish",
+        data={"password": "local-training-secret"},
+        follow_redirects=False,
+    )
+    assert finished.status_code == 303
+    result = client.get(finished.headers["location"])
+    assert "Account access updated" in result.text
+    assert "What happened?" not in result.text
+    completed = client.post(f"{target}/end")
+    assert completed.status_code == 200
+    assert "What happened?" in completed.text
+
+
+def test_legacy_email_handoff_uses_destination_before_manual_debrief(
+    client: TestClient,
+) -> None:
+    opened = client.get("/inbox/email-phish-001")
+    assert opened.status_code == 200
+    link = client.get(
+        "/inbox/email-phish-001/link",
+        follow_redirects=False,
+    )
+    assert link.status_code == 302
+    target = link.headers["location"].split("testserver", 1)[-1]
+    continued = client.post(
+        f"{target}/username",
+        data={"username": "local-training-student"},
+        follow_redirects=False,
+    )
+    assert continued.status_code == 303
+    destination = client.post(
+        f"{target}/password",
+        data={"password": "local-training-secret"},
+    )
+    assert destination.status_code == 200
+    assert "Account access updated" in destination.text
+    assert "What happened?" not in destination.text
+    completed = client.post(f"{target}/end")
+    assert completed.status_code == 200
+    assert "What happened?" in completed.text
+
+
+def test_sms_handoff_reaches_product_destination_before_manual_debrief(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    launch = _launch(client, "sms-parcel-001", "online shopper")
+    token = launch["victim_path"].split("/")[2]
+    _make_due(test_engine, launch["attack_id"])
+    link = client.get(
+        f"/v/{token}/messages/sms-parcel-001/link",
+        follow_redirects=False,
+    )
+    assert link.status_code == 302
+    target = link.headers["location"]
+    continued = client.post(
+        f"{target}/continue",
+        data={"identifier": "local-training-address"},
+        follow_redirects=False,
+    )
+    assert continued.status_code == 303
+    finished = client.post(
+        f"{target}/finish",
+        data={"confirmation": "local-training-confirmation"},
+        follow_redirects=False,
+    )
+    assert finished.status_code == 303
+    result = client.get(finished.headers["location"])
+    assert "Your order is confirmed" in result.text
+    assert "What happened?" not in result.text
+    completed = client.post(f"{target}/end")
+    assert completed.status_code == 200
+    assert "What happened?" in completed.text
 
 
 def test_mfa_manual_route_exposes_repeated_device_requests(

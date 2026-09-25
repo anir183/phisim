@@ -3,30 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Fictional Environment · PhiSim{% endblock %}</title>
+    <title>{% block title %}Fictional product{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', path='phisim.css') }}" />
   </head>
   {% set active_theme = site_theme|default(None) %}
-  <body class="victim-body{% if active_theme %} mock-site mock-{{ active_theme.key }}{% endif %}">
-    <div class="victim-shell mock-site-shell" data-victim-token="{{ attack.victim_token }}" data-attack-id="{{ attack.attack_id }}">
-      <header class="victim-topbar mock-site-topbar">
-        <div class="brand-lockup">
-          <span class="brand-mark mock-site-mark" aria-hidden="true">{% if active_theme %}{{ active_theme.mark }}{% else %}{{ attack.channel[:1]|upper }}{% endif %}</span>
-          <span>{% block app_name %}{% if active_theme %}{{ active_theme.display_name }}{% else %}Fictional environment{% endif %}{% endblock %}</span>
-        </div>
-        {% if active_theme %}
-          <nav class="mock-site-nav" aria-label="{{ active_theme.display_name }} sections">
-            {% for item in active_theme.nav[:3] %}<span>{{ item }}</span>{% endfor %}
-          </nav>
-        {% endif %}
-        <span class="badge badge-success">Private training environment</span>
-      </header>
-      <div class="safety-strip">Fictional local environment · no external account or message is contacted</div>
+  <body class="victim-body product-victim{% if active_theme %} mock-site mock-{{ active_theme.key }}{% endif %}">
+    <div class="victim-shell product-document" data-victim-token="{{ attack.victim_token }}" data-attack-id="{{ attack.attack_id }}">
       {% block site_chrome %}{% endblock %}
-      <main class="page-frame">
+      <main class="victim-product-main">
         {% block victim_content %}{% endblock %}
       </main>
+      <div class="product-local-marker">Fictional local training site · no external account or service is contacted</div>
+      <script src="{{ url_for('static', path='victim.js') }}" defer></script>
     </div>
-    <script src="{{ url_for('static', path='victim.js') }}" defer></script>
   </body>
 </html>

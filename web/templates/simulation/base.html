@@ -7,11 +7,13 @@
     {% block simulation_header %}{% endblock %}
     {% block simulation_content %}{% endblock %}
   </main>
-  <footer class="page-frame" style="padding-top: 0; padding-bottom: 2rem">
-    <p class="help-text" style="text-align: center">
-      {% block simulation_footer %}This is a fictional local training experience.{% endblock %}
-    </p>
-  </footer>
+  {% if not site_theme %}
+    <footer class="page-frame" style="padding-top: 0; padding-bottom: 2rem">
+      <p class="help-text" style="text-align: center">
+        {% block simulation_footer %}This is a fictional local training experience.{% endblock %}
+      </p>
+    </footer>
+  {% endif %}
 {% endblock %}
 
 {% block scripts %}

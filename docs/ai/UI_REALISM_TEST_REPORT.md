@@ -33,7 +33,7 @@ Final result:
 ```text
 121 files already formatted
 0 errors, 0 warnings, 0 informations
-190 passed, 1 existing Starlette/httpx deprecation warning
+201 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The warning is the existing test-client deprecation warning:
@@ -45,7 +45,9 @@ install `httpx2` instead.
 
 The UI realism route matrix is implemented in
 `tests/simulation/test_ui_realism_flows.py` and covers the six requested
-manual-verification surfaces.
+manual-verification surfaces plus all seven website product destinations, SMS
+handoff, and the full QR handoff. Each successful action is asserted to land on
+a product destination before the explicit manual debrief transition.
 
 ## Manual route verification
 
@@ -58,10 +60,10 @@ checks.
 |---|---|---|---|
 | Gemail | `/v/{token}/mail` → message detail → message state POST → starred folder | Empty baseline, delivered row, unread state, search, detail, star/archive state, local link, attachment entry | PASS |
 | QuickChat | `/v/{token}/messages` → conversation detail → message link | Empty baseline, delivered conversation, unread marker, last-message preview, search, contact header, bubbles, read-only composer | PASS |
-| Amazaun | `/v/{token}/site/credential-shopping-001` → continue → checkout → finish → debrief | Marketplace header, order number, pending delivery, address confirmation, order timeline, completion reveal | PASS |
-| CloudBox | `/v/{token}/site/credential-cloud-001` → continue → verification → finish → debrief | File sidebar, shared files, storage meter, activity, sharing action, verification state, completion reveal | PASS |
-| QR | `/v/{token}/qr/qr-phish-001` → scan → local destination | Message context, local QR image, destination preview, scan transition, target application handoff | PASS |
-| MFA | `/v/{token}/mfa/mfa-fatigue-001/1` → approve → prompt 2 | Device prompt, request scopes, location, request history, repeated prompt state, local response | PASS |
+| Amazaun | `/v/{token}/site/credential-shopping-001` → continue → checkout → finish → destination → end | Marketplace header, order number, pending delivery, address confirmation, order timeline, product destination, manual reveal | PASS |
+| CloudBox | `/v/{token}/site/credential-cloud-001` → continue → verification → finish → destination → end | File sidebar, shared files, storage meter, activity, sharing action, workspace destination, manual reveal | PASS |
+| QR | `/v/{token}/qr/qr-phish-001` → scan → target → finish → destination → end | Message context, local QR image, destination preview, scan transition, target product destination, manual reveal | PASS |
+| MFA | `/v/{token}/mfa/mfa-fatigue-001/1` → approve/deny → destination → end | Device prompt, request scopes, location, request history, decision destination, manual reveal | PASS |
 
 ### Gemail evidence
 
@@ -89,8 +91,9 @@ checks.
   dashboard: navigation/search, order identity, delivery timeline, pending
   status, and contextual address action.
 - `web/templates/apps/amazaun/checkout.html` is a distinct confirmation step.
-- The final action transitions to the standalone training reveal, not a generic
-  processing screen.
+- The final action lands on a believable order-confirmed product destination;
+  the destination's explicit `End simulation` control transitions to the
+  standalone training reveal.
 
 ### CloudBox evidence
 
@@ -98,6 +101,8 @@ checks.
   Recent, Starred, Shared, Trash, storage, activity, and shared-file context.
 - `web/templates/apps/cloudbox/verify.html` is a separate shared-file
   verification state.
+- The final action lands on a believable workspace-ready product destination;
+  its explicit `End simulation` control transitions to the standalone reveal.
 - No file is uploaded, downloaded, opened, or executed.
 
 ### QR evidence
@@ -105,7 +110,8 @@ checks.
 - `web/templates/apps/qr/scan.html` presents a message/poster context and a
   destination preview before the simulated scan.
 - The QR image is generated locally and points to a local route only.
-- The scan transition emits the existing `qr_scan_simulated` telemetry event.
+- The scan transition emits the existing `qr_scan_simulated` telemetry event,
+  then the target action reaches its product destination before manual reveal.
 
 ### MFA evidence
 
@@ -114,7 +120,22 @@ checks.
 - Primary and compatibility routes use the same product-specific prompt
   composition while retaining their existing route contracts.
 - Repeated prompt and terminal response events remain covered by the existing
-  MFA tests.
+  MFA tests; the terminal decision now lands on a NimbusID destination and the
+  user controls when the reveal begins.
+
+## Destination and completion boundary
+
+The normal successful-action path now records `destination_reached` while the
+attack/session remains active. Primary and compatibility website, MFA, QR,
+email, and SMS handoffs render a complete local product destination with a
+contextual `End simulation` form. Only that explicit POST (or operator
+abandonment) records `attack_completed` and `scenario_completed` and opens the
+standalone reveal. Lab status exposes the intermediate
+`AWAITING_MANUAL_END` phase.
+
+The destination matrix covers UniSecure, Amazaun, CloudBox, PayMate, Support,
+MAKExam, TechnoSphere, and NimbusID. Submitted values remain absent from the
+destination, state, events, and reveal.
 
 ## Additional application checks
 
@@ -184,6 +205,8 @@ labels, landmarks, and responsive reflow.
 
 ## Conclusion
 
-The application-specific UI pass is functionally verified across the requested
-flows. The remaining verification gap is visual screenshot/accessibility
+The application-specific UI and destination-state pass is functionally
+verified across the requested flows. Normal successful actions stop at a
+believable product destination, and only the explicit end control opens the
+reveal. The remaining verification gap is visual screenshot/accessibility
 inspection in a connected desktop browser, not a failing route or safety test.

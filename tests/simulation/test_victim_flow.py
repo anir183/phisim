@@ -171,9 +171,10 @@ def test_victim_email_link_site_and_safe_completion_are_one_session(
     assert processing.headers["location"].endswith("/result")
     result = client.get(processing.headers["location"])
     assert result.status_code == 200
-    assert "What happened?" in result.text
+    assert "Account access updated" in result.text
+    assert "What happened?" not in result.text
     assert "Checking your request" not in result.text
-    completed = client.post(processing.headers["location"])
+    completed = client.post(f"{site_path}/end")
     assert completed.status_code == 200
     assert "What happened?" in completed.text
     assert "fictional-secret" not in completed.text
@@ -201,6 +202,7 @@ def test_victim_email_link_site_and_safe_completion_are_one_session(
             "website_viewed",
             "credential_submission_attempted",
             "processing_started",
+            "destination_reached",
             "attack_completed",
             "scenario_completed",
         ]
@@ -218,6 +220,7 @@ def test_victim_email_link_site_and_safe_completion_are_one_session(
     timeline = analysis.json()["timeline"]
     assert "message_delivered" in [entry["event_type"] for entry in timeline]
     assert "processing_started" in [entry["event_type"] for entry in timeline]
+    assert "destination_reached" in [entry["event_type"] for entry in timeline]
     delivery_entry = next(
         entry
         for entry in timeline
@@ -291,7 +294,10 @@ def test_mfa_flow_repeats_prompts_before_completion(
             assert response.status_code == 303
         else:
             assert response.status_code == 200
-            assert "What happened?" in response.text
+            assert "Sign-in decision saved" in response.text
+            completed = client.post(f"/v/{token}/mfa/mfa-fatigue-001/end")
+            assert completed.status_code == 200
+            assert "What happened?" in completed.text
 
     with Session(test_engine) as database_session:
         attack = SimulationAttackRepository(database_session).get_by_attack_id(
@@ -306,6 +312,7 @@ def test_mfa_flow_repeats_prompts_before_completion(
         assert event_types.count("mfa_prompt_displayed") == 3
         assert event_types.count("mfa_prompt_responded") == 3
         assert event_types[-2:] == ["attack_completed", "scenario_completed"]
+        assert "destination_reached" in event_types
 
 
 def test_academic_portals_have_distinct_fictional_workflows(
@@ -543,7 +550,9 @@ def test_shopping_flow_uses_confirmation_instead_of_password(
     assert processing.status_code == 303
     result = client.get(processing.headers["location"])
     assert result.status_code == 200
-    completed = client.post(processing.headers["location"])
+    assert "Your order is confirmed" in result.text
+    assert "What happened?" not in result.text
+    completed = client.post(f"{site_path}/end")
     assert completed.status_code == 200
     assert "What happened?" in completed.text
 
@@ -557,6 +566,8 @@ def test_shopping_flow_uses_confirmation_instead_of_password(
         )
         event_types = [event.event_type for event in events]
         assert "victim_action_completed" in event_types
+        assert "destination_reached" in event_types
+        assert "attack_completed" in event_types
         assert "credential_submission_attempted" not in event_types
 
 

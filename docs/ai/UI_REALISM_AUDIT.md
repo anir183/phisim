@@ -482,3 +482,17 @@ the universal application body with product-specific information architecture,
 starting with Gemail and QuickChat, followed by Amazaun and CloudBox. Backend
 contracts and safety guarantees should remain stable while the presentation
 layer becomes genuinely application-specific.
+
+---
+
+## Follow-up implementation note (destination state)
+
+The implementation pass following this audit replaced the generic result page
+with a product destination boundary. Normal successful actions now remain in an
+active `destination_reached` state and render a complete, scenario-specific
+product/home document (`web/templates/victim_destination.html` and
+`web/templates/product_base.html`). The contextual `End simulation` control is
+the explicit transition to the standalone reveal. This preserves the audit's
+separation between victim applications, operator Lab, analyst Console, and
+training Reveal while preventing meaningful actions from ending in a generic
+completion screen.

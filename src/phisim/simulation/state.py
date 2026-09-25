@@ -24,12 +24,14 @@ _ALLOWED_STATE_KEYS = frozenset(
         "username_present",
         "attachment_opened",
         "mfa_step",
+        "mfa_decision",
         "last_action",
         "typing",
+        "completion_outcome",
     }
 )
 _ALLOWED_AUTH_STAGES = frozenset(
-    {"landing", "username", "password", "complete"}
+    {"landing", "username", "password", "destination", "complete"}
 )
 _ALLOWED_ACTIONS = frozenset(
     {
@@ -39,6 +41,7 @@ _ALLOWED_ACTIONS = frozenset(
         "credential_submitted",
         "credential_incomplete",
         "scenario_completed",
+        "destination_reached",
     }
 )
 
@@ -67,6 +70,13 @@ def _validate_state(state: dict[str, Any]) -> dict[str, Any]:
     if auth_stage is not None and auth_stage not in _ALLOWED_AUTH_STAGES:
         raise SimulationStateError("Invalid authentication stage.")
 
+    completion_outcome = safe_state.get("completion_outcome")
+    if completion_outcome is not None and completion_outcome not in {
+        "ended_by_user",
+        "training_complete",
+    }:
+        raise SimulationStateError("Invalid completion outcome.")
+
     for key in ("username_present", "attachment_opened", "typing"):
         value = safe_state.get(key)
         if value is not None and not isinstance(value, bool):
@@ -79,6 +89,10 @@ def _validate_state(state: dict[str, Any]) -> dict[str, Any]:
         or not 1 <= mfa_step <= 20
     ):
         raise SimulationStateError("Invalid MFA state.")
+
+    mfa_decision = safe_state.get("mfa_decision")
+    if mfa_decision is not None and mfa_decision not in {"approve", "deny"}:
+        raise SimulationStateError("Invalid MFA decision.")
 
     last_action = safe_state.get("last_action")
     if last_action is not None and last_action not in _ALLOWED_ACTIONS:

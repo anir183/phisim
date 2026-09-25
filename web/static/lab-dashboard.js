@@ -59,7 +59,8 @@ if (dashboard) {
     const channel = document.createElement("td");
     channel.appendChild(element("span", attack.channel, "operator-channel"));
     const status = document.createElement("td");
-    status.appendChild(element("span", attack.status, `badge ${attack.status === "COMPLETED" ? "badge-success" : "badge-warning"}`));
+    const phase = text(attack.phase || attack.status);
+    status.appendChild(element("span", phase, `badge ${attack.status === "COMPLETED" ? "badge-success" : "badge-warning"}`));
     row.append(identity, channel, status, element("td", attack.delivery_due_at), link(attack.victim_path, "Open context →"));
     return row;
   }

@@ -9,23 +9,25 @@
   </head>
   <body class="{% block body_class %}{% endblock %}">
     <div class="app-shell">
-      <header class="topbar">
-        <a class="brand-lockup" href="{{ url_for('scenario_lab') }}">
-          <span class="brand-mark" aria-hidden="true">PS</span>
-          <span>
-            PhiSim
-            <span class="brand-subtitle">Local security lab</span>
-          </span>
-        </a>
-        <nav class="primary-nav" aria-label="Primary navigation">
-          <a href="{{ url_for('scenario_lab') }}" {% if active_page == 'lab' %}aria-current="page"{% endif %}>Scenario Lab</a>
-          <a href="{{ url_for('console') }}" {% if active_page == 'console' %}aria-current="page"{% endif %}>Analyst Console</a>
-        </nav>
-      </header>
-      <div class="safety-strip">
-        <span aria-hidden="true">●</span>
-        Fictional local simulation · no credentials, delivery providers, or external targets
-      </div>
+      {% if not site_theme %}
+        <header class="topbar">
+          <a class="brand-lockup" href="{{ url_for('scenario_lab') }}">
+            <span class="brand-mark" aria-hidden="true">PS</span>
+            <span>
+              PhiSim
+              <span class="brand-subtitle">Local security lab</span>
+            </span>
+          </a>
+          <nav class="primary-nav" aria-label="Primary navigation">
+            <a href="{{ url_for('scenario_lab') }}" {% if active_page == 'lab' %}aria-current="page"{% endif %}>Scenario Lab</a>
+            <a href="{{ url_for('console') }}" {% if active_page == 'console' %}aria-current="page"{% endif %}>Analyst Console</a>
+          </nav>
+        </header>
+        <div class="safety-strip">
+          <span aria-hidden="true">●</span>
+          Fictional local simulation · no credentials, delivery providers, or external targets
+        </div>
+      {% endif %}
       {% block content %}{% endblock %}
     </div>
     {% block scripts %}{% endblock %}

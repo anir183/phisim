@@ -57,6 +57,7 @@ _ALLOWED_STATE_KEYS = frozenset(
         "website_viewed",
         "attachment_opened",
         "processing",
+        "destination_reached",
         "result_revealed",
     }
 )
@@ -75,6 +76,7 @@ _ALLOWED_ACTIONS = frozenset(
         "attack_completed",
         "attack_abandoned",
         "processing_started",
+        "destination_reached",
     }
 )
 
@@ -129,6 +131,7 @@ def _safe_state(state: dict[str, Any]) -> dict[str, Any]:
         "website_viewed",
         "attachment_opened",
         "processing",
+        "destination_reached",
         "result_revealed",
     ):
         value = safe_state.get(key)

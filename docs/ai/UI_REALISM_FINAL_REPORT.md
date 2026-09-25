@@ -24,9 +24,11 @@ The pass covers:
   course workspace;
 - UniSecure Support case management, PayMate invoice review, NimbusID MFA
   approval, and QR destination preview;
-- a distinct operator Lab, analyst Console, and training Reveal.
+- a distinct operator Lab, analyst Console, and training Reveal;
+- product-specific destination pages after meaningful actions, with an explicit
+  `End simulation` transition to the training reveal.
 
-The final automated check passes with **190 tests**. One existing Starlette/
+The final automated check passes with **201 tests**. One existing Starlette/
 httpx test-client deprecation warning remains.
 
 ## Design architecture
@@ -60,7 +62,9 @@ through one universal landing funnel:
 - `web/templates/apps/qr/` — message/poster and destination scan flow;
 - `web/templates/lab.html` — operator run control plane;
 - `web/templates/console.html` — analyst evidence plane;
-- `web/templates/reveal_base.html` and `victim_reveal.html` — training debrief.
+- `web/templates/reveal_base.html` and `victim_reveal.html` — training debrief;
+- `web/templates/product_base.html` and `victim_destination.html` — complete
+  product destination documents used before the explicit debrief transition.
 
 The intermediate `sites/landing.html` and `sites/verification.html` remain as
 fallbacks for generic/unknown website targets, but all catalogued target
@@ -74,12 +78,12 @@ families now route to independent application compositions.
 | Session → delivery | Delivery remains deterministic and instance-scoped; repeated email/SMS deliveries remain separate. |
 | Gemail | Delivered messages appear in a realistic mailbox; read/search/star/archive state is derived from the attack instance. |
 | QuickChat | Delivered conversations appear in a split-pane messenger; unread/search/detail states are local and deterministic. |
-| Amazaun | Context begins in an order page and advances through delivery confirmation and checkout. |
-| CloudBox | Context begins in a file workspace and advances through shared-file verification. |
+| Amazaun | Context begins in an order page, advances through delivery confirmation, then lands on an order-confirmed product destination before manual reveal. |
+| CloudBox | Context begins in a file workspace, advances through shared-file verification, then lands on a workspace-ready product destination before manual reveal. |
 | University services | Student dashboard, exam schedule/registration, and faculty course workspace are separate compositions. |
 | Support/payment | Ticket timeline and invoice review expose domain-specific pending/verification states. |
-| QR | Message context and local destination are shown before simulated scan. |
-| MFA | Device, location, scope, expiry, and repeated prompt history are visible. |
+| QR | Message context and local destination are shown before simulated scan; the target then reaches its product destination before manual reveal. |
+| MFA | Device, location, scope, expiry, and repeated prompt history are visible; the terminal decision lands on a NimbusID destination before manual reveal. |
 | Telemetry → Console | Events remain safe, discoverable, and visible in the analyst evidence workspace. |
 | Reveal | Completion is rendered on a standalone debrief shell, not inside the victim application. |
 
@@ -98,7 +102,10 @@ Notable stateful behavior:
 - Amazaun/CloudBox two-step target workflows;
 - QR scan and MFA repeated-prompt transitions;
 - attachment inert-preview state;
-- safe end-simulation and completion reveal paths.
+- safe end-simulation and completion reveal paths;
+- `destination_reached` keeps the attack/session active after a successful
+  action, exposes `AWAITING_MANUAL_END` in Lab status, and is the only normal
+  precursor to `attack_completed`/`scenario_completed`.
 
 The QuickChat composer is intentionally read-only. It supplies a believable
 product affordance without creating a free-form exfiltration surface or
@@ -119,12 +126,14 @@ Result:
 ```text
 121 files already formatted
 0 errors, 0 warnings, 0 informations
-190 passed, 1 existing Starlette/httpx deprecation warning
+201 passed, 1 existing Starlette/httpx deprecation warning
 ```
 
 The dedicated route matrix is in
 `tests/simulation/test_ui_realism_flows.py`. It covers Gemail, QuickChat,
-Amazaun, CloudBox, QR, and MFA end to end. Full evidence is recorded in
+all seven website product destinations, SMS handoff, QR handoff, and MFA end to
+end; each meaningful-action path is asserted to reach a destination before its
+manual debrief transition. Full evidence is recorded in
 `docs/ai/UI_REALISM_TEST_REPORT.md`.
 
 ## Regression follow-up
@@ -181,8 +190,8 @@ contracts.
    Starred, Archive/Delete restoration, search, and read state.
 3. **Read-only composer:** QuickChat intentionally does not accept outgoing
    message text because that would add an unnecessary content-capture surface.
-4. **Legacy routes:** compatibility routes are visually aligned with the new
-   application families, but the primary `/v/{token}/...` routes are the
+4. **Legacy routes:** compatibility routes now use the same product destination
+   and manual-end boundary, while the primary `/v/{token}/...` routes remain the
    canonical delivery path.
 5. **Content breadth:** the next content pass can add more scenario-specific
    message threads, invoice variants, and university notices without changing
@@ -200,6 +209,7 @@ contracts.
 | Support and payment begin in domain context | PASS |
 | QR and MFA have distinct application models | PASS |
 | Phishing is embedded in believable workflows | PASS |
+| Meaningful actions land on product destinations before manual reveal | PASS |
 | Telemetry remains safe and connected to Console | PASS |
 | Lab, victim apps, Console, and Reveal are separate | PASS |
 | Six-flow route verification | PASS |
@@ -232,7 +242,9 @@ The work was split into atomic commits, in order:
 - `b916694` — regression report update;
 - `9358c9e` — Gmail toolbar hover contrast follow-up;
 - `68f39c0` — live Lab dashboard endpoint and refresh script;
-- `4ba9314` — resilient victim, Lab status, and Console polling.
+- `4ba9314` — resilient victim, Lab status, and Console polling;
+- destination-state follow-up — product destinations before explicit reveal,
+  expanded route coverage, and live Lab phase reporting.
 
 No push was performed.
 

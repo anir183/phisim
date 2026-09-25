@@ -1,38 +1,64 @@
-{% extends "simulation/base.html" %}
+{% extends "reveal_base.html" %}
 
-{% block title %}MFA outcome · {{ scenario.brand }}{% endblock %}
+{% block title %}MFA practice outcome · {{ scenario.brand }}{% endblock %}
 
-{% block simulation_content %}
-  <section class="surface outcome-card" aria-labelledby="mfa-outcome-title">
-    <div class="row-between">
+{% block reveal_content %}
+  <section class="training-reveal mock-reveal mock-reveal-{{ site_theme.key }}" aria-labelledby="mfa-outcome-title">
+    <header class="training-reveal-header">
       <div>
-        <p class="eyebrow">Simulation complete</p>
+        <p class="training-kicker">Training complete</p>
         <h1 id="mfa-outcome-title">MFA practice outcome</h1>
+        <p>This debrief records a fictional {{ scenario.brand }} security interaction.</p>
       </div>
-      <span class="badge badge-success">Safe local run</span>
-    </div>
-    {% if fatigued %}
-      <div class="notice notice-warning" style="margin-top: 1.25rem">
-        <strong>You approved every prompt.</strong> That models MFA fatigue:
-        repeated requests pressure a person into approving an unfamiliar sign-in.
-      </div>
-    {% else %}
-      <div class="notice notice-success" style="margin-top: 1.25rem">
-        <strong>You denied the prompt.</strong> Denying an unexpected approval
-        request is the safer response.
-      </div>
-    {% endif %}
-    <h2 style="margin-top: 1.5rem">What the analyst can observe</h2>
-    <ul class="evidence-list">
-      {% for code in scenario.indicators %}
-        <li><strong>{{ code|replace('_', ' ')|title }}</strong>{{ indicator_info.get(code, "An additional training observation.") }}</li>
-      {% endfor %}
-    </ul>
-    <div class="form-actions" style="margin-top: 1.5rem">
-      <a class="button" href="{{ url_for('scenario_lab') }}">Choose another scenario</a>
-      <a class="button button-secondary" href="{{ url_for('console') }}">Open analyst console</a>
+      <span class="training-complete-mark">✓</span>
+    </header>
+    <div class="training-reveal-grid">
+      <main>
+        <section class="training-story">
+          <span class="training-story-number">01</span>
+          <div>
+            <h2>What was kept safe</h2>
+            <p>No approval value or personal data was retained, sent, or added to an account.</p>
+          </div>
+        </section>
+        <section class="training-story">
+          <span class="training-story-number">02</span>
+          <div>
+            <h2>What the analyst can observe</h2>
+            <ul class="training-response-list">
+              {% for code in scenario.indicators %}
+                <li><strong>{{ code|replace('_', ' ')|title }}</strong><span>{{ indicator_info.get(code, "An additional training observation.") }}</span></li>
+              {% endfor %}
+            </ul>
+          </div>
+        </section>
+        <section class="training-story">
+          <span class="training-story-number">03</span>
+          <div>
+            <h2>Safer habits</h2>
+            <ul class="training-response-list">
+              <li><strong>Pause before approving.</strong><span>An unexpected prompt deserves a check through the official app.</span></li>
+              <li><strong>Deny and verify.</strong><span>Use the device, password manager, or official service to confirm the sign-in.</span></li>
+            </ul>
+          </div>
+        </section>
+      </main>
+      <aside class="training-evidence">
+        <p class="training-kicker">LOCAL RUN SUMMARY</p>
+        <h2>{% if fatigued %}Repeated approvals{% else %}Decision recorded{% endif %}</h2>
+        <div class="notice {% if fatigued %}notice-warning{% else %}notice-success{% endif %}">
+          {% if fatigued %}
+            <strong>Every prompt was approved.</strong> That models MFA fatigue: repeated requests pressure a person into approving an unfamiliar sign-in.
+          {% else %}
+            <strong>The unexpected request was denied.</strong> Denying an unexpected approval request is the safer response.
+          {% endif %}
+        </div>
+        <p class="training-evidence-note"><strong>Next step</strong><br />Return to the environment and review the recorded evidence.</p>
+        <div class="form-actions">
+          <a class="button" href="{{ url_for('scenario_lab') }}">Choose another scenario</a>
+          <a class="button button-secondary" href="{{ url_for('console') }}">Open analyst console</a>
+        </div>
+      </aside>
     </div>
   </section>
 {% endblock %}
-
-{% block simulation_footer %}{{ scenario.reminder }}{% endblock %}

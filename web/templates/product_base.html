@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}{{ site_theme.display_name|default("Fictional product") }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='phisim.css') }}" />
+  </head>
+  <body class="product-page product-{{ site_theme.key|default('generic') }}">
+    <div class="product-document"{% if attack %} data-victim-token="{{ attack.victim_token }}" data-attack-id="{{ attack.attack_id }}"{% endif %}>
+      {% block product_content %}{% endblock %}
+      <div class="product-local-marker">Fictional local training site · no external account or service is contacted</div>
+    </div>
+    {% block product_scripts %}{% endblock %}
+  </body>
+</html>

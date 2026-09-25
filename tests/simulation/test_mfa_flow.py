@@ -66,8 +66,13 @@ def test_approving_prompts_models_fatigue(
         data={"action": "approve"},
     )
     assert final.status_code == 200
-    assert "MFA practice outcome" in final.text
-    assert "MFA fatigue" in final.text
+    assert "Sign-in decision saved" in final.text
+    assert "MFA fatigue" not in final.text
+
+    completed = client.post(f"/mfa/{SCENARIO_ID}/end")
+    assert completed.status_code == 200
+    assert "MFA practice outcome" in completed.text
+    assert "MFA fatigue" in completed.text
 
     events = _list_events(test_engine, session_id)
     assert [event.event_type for event in events] == [
@@ -77,6 +82,8 @@ def test_approving_prompts_models_fatigue(
         "mfa_prompt_responded",
         "mfa_prompt_displayed",
         "mfa_prompt_responded",
+        "destination_reached",
+        "attack_completed",
         "scenario_completed",
     ]
     response_event = next(
@@ -103,8 +110,12 @@ def test_denying_prompt_stops_flow(
     response = client.post(f"/mfa/{SCENARIO_ID}/1", data={"action": "deny"})
 
     assert response.status_code == 200
-    assert "You denied the prompt." in response.text
+    assert "Sign-in decision saved" in response.text
     assert not response.history
+
+    completed = client.post(f"/mfa/{SCENARIO_ID}/end")
+    assert completed.status_code == 200
+    assert "MFA practice outcome" in completed.text
 
     events = _list_events(test_engine, session_id)
     response_event = next(

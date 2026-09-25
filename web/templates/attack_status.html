@@ -10,7 +10,7 @@
         <h1>Active attack</h1>
         <p class="hero-copy">The victim environment remains separate while this local incident develops.</p>
       </div>
-      <span id="attack-status" class="badge badge-warning">{{ attack.status }}</span>
+      <span id="attack-status" class="badge badge-warning">{{ payload.phase }}</span>
     </header>
 
     <section class="surface outcome-card" aria-labelledby="attack-name">
@@ -21,7 +21,7 @@
       <div class="grid grid-2" style="margin-top: 1.25rem">
         <div class="surface-soft" style="padding: 1rem">
           <div class="kicker">Lifecycle</div>
-          <p id="attack-lifecycle">{{ attack.status }}</p>
+          <p id="attack-lifecycle">{{ payload.phase }}</p>
         </div>
         <div class="surface-soft" style="padding: 1rem">
           <div class="kicker">Delivery due</div>

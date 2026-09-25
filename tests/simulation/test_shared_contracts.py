@@ -81,6 +81,12 @@ def test_website_submission_completes_shared_session(
     )
 
     assert submitted.status_code == 200
+    active_response = client.get(f"/api/sessions/{session_id}")
+    assert active_response.status_code == 200
+    assert active_response.json()["status"] == "active"
+
+    completed = client.post("/scenario/credential-basic-001/end")
+    assert completed.status_code == 200
     session_response = client.get(f"/api/sessions/{session_id}")
     assert session_response.status_code == 200
     assert session_response.json()["status"] == "completed"
@@ -98,9 +104,11 @@ def test_completed_session_is_not_reused_for_a_new_flow(
         data={"username": "student", "password": "not-stored"},
     )
     assert submitted.status_code == 200
+    completed = client.post("/scenario/credential-basic-001/end")
+    assert completed.status_code == 200
 
-    next_flow = client.get("/inbox/email-phish-001")
-    second_session_id = next_flow.cookies.get("phisim_session")
+    client.get("/inbox/email-phish-001")
+    second_session_id = client.cookies.get("phisim_session")
     assert second_session_id
     assert second_session_id != first_session_id
 
@@ -150,6 +158,12 @@ def test_terminal_mfa_response_completes_shared_session(
     )
 
     assert denied.status_code == 200
+    active_response = client.get(f"/api/sessions/{session_id}")
+    assert active_response.status_code == 200
+    assert active_response.json()["status"] == "active"
+
+    completed = client.post("/mfa/mfa-fatigue-001/end")
+    assert completed.status_code == 200
     session_response = client.get(f"/api/sessions/{session_id}")
     assert session_response.status_code == 200
     assert session_response.json()["status"] == "completed"

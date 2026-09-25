@@ -48,7 +48,12 @@ _DESCRIPTIONS = {
     "processing_started": (
         "The fictional service entered its local processing state."
     ),
+    "destination_reached": (
+        "Participant reached a product destination; the simulation remains "
+        "active until they explicitly end it."
+    ),
     "attack_abandoned": "Operator abandoned the local attack.",
+    "attack_completed": "Participant explicitly ended the local simulation.",
     "scenario_completed": "Participant completed the training scenario.",
     "scenario_opened": "Participant opened the simulated scenario.",
     "page_viewed": "Participant viewed the simulation page.",

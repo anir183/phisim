@@ -11,6 +11,8 @@ SITE_CASES = [
     ("credential-cloud-001", "CloudBox"),
     ("credential-payment-001", "PayMate"),
     ("support-portal-001", "UniSecure Support"),
+    ("mak-exam-001", "MAKExam"),
+    ("technosphere-001", "TechnoSphere"),
 ]
 
 
@@ -54,13 +56,16 @@ def test_each_parody_site_can_complete_two_step_training(
     with Session(test_engine) as database_session:
         events = [
             event
-            for session_id in session_ids
+            for session_id in set(session_ids)
             for event in EventRepository(database_session).list_by_session(
                 session_id
             )
         ]
         assert [event.event_type for event in events].count(
             "credential_submission_attempted"
+        ) == len(SITE_CASES)
+        assert [event.event_type for event in events].count(
+            "destination_reached"
         ) == len(SITE_CASES)
         assert all(
             "fictional-secret" not in str(event.metadata_) for event in events

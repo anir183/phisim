@@ -99,6 +99,7 @@ def test_legacy_end_simulation_is_safe_and_idempotent(
     events = _list_events(test_engine, session_id)
     assert [event.event_type for event in events] == [
         "scenario_opened",
+        "attack_completed",
         "scenario_completed",
     ]
     assert events[1].metadata_["outcome"] == "ended_by_user"
@@ -125,18 +126,26 @@ def test_two_step_website_flow_keeps_credentials_out_of_state(
     assert 'name="password"' in password_page.text
 
     secret = "two-step-secret"
-    completed = client.post(
+    destination = client.post(
         f"/scenario/{SCENARIO_ID}/password",
         data={"password": secret},
     )
+    assert destination.status_code == 200
+    assert secret not in destination.text
+    assert "Account access updated" in destination.text
+    assert "What happened?" not in destination.text
+
+    completed = client.post(f"/scenario/{SCENARIO_ID}/end")
     assert completed.status_code == 200
+    assert "What happened?" in completed.text
     assert secret not in completed.text
-    assert "training outcome" in completed.text
 
     events = _list_events(test_engine, session_id)
     assert [event.event_type for event in events] == [
         "scenario_opened",
         "credential_submission_attempted",
+        "destination_reached",
+        "attack_completed",
         "scenario_completed",
     ]
     submission = events[1]
@@ -188,14 +197,21 @@ def test_credential_submission_emits_safe_event(
     )
 
     assert response.status_code == 200
-    assert "training outcome" in response.text
+    assert "Account access updated" in response.text
+    assert "What happened?" not in response.text
     assert "hunter2" not in response.text
     assert "student-42" not in response.text
+
+    completed = client.post(f"/scenario/{SCENARIO_ID}/end")
+    assert completed.status_code == 200
+    assert "What happened?" in completed.text
 
     events = _list_events(test_engine, session_id)
     assert [event.event_type for event in events] == [
         "scenario_opened",
         "credential_submission_attempted",
+        "destination_reached",
+        "attack_completed",
         "scenario_completed",
     ]
 

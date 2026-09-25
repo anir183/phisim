@@ -131,11 +131,21 @@ def _event_payload(event) -> dict[str, object]:
     }
 
 
+def _attack_phase(attack) -> str:
+    return (
+        "AWAITING_MANUAL_END"
+        if attack.state.get("destination_reached")
+        and attack.status == "ENGAGED"
+        else attack.status
+    )
+
+
 def _attack_payload(
     attack,
     event_count: int | None = None,
     events: list[dict[str, object]] | None = None,
 ) -> dict[str, object]:
+    phase = _attack_phase(attack)
     return {
         "attack_id": attack.attack_id,
         "delivery_id": attack.attack_id,
@@ -144,6 +154,7 @@ def _attack_payload(
         "scenario_id": attack.scenario_id,
         "channel": attack.channel,
         "status": attack.status,
+        "phase": phase,
         "delivery_due_at": serialize_utc_datetime(attack.delivery_due_at),
         "delivered_at": (
             serialize_utc_datetime(attack.delivered_at)
@@ -435,6 +446,9 @@ async def scenario_lab(
         )
         for attack in active_attacks
     }
+    active_attack_phases = {
+        attack.attack_id: _attack_phase(attack) for attack in active_attacks
+    }
     return templates.TemplateResponse(
         request=request,
         name="lab.html",
@@ -446,6 +460,7 @@ async def scenario_lab(
             "recent_sessions": recent_sessions,
             "active_attacks": active_attacks,
             "active_attack_paths": active_attack_paths,
+            "active_attack_phases": active_attack_phases,
             "active_page": "lab",
         },
     )

@@ -756,6 +756,10 @@ def url_for_victim_site(attack, scenario_id: str) -> str:
 def victim_return_path(attack) -> str:
     if attack.channel == "sms":
         return f"/v/{attack.victim_token}/messages"
+    if attack.channel == "mfa":
+        return f"/v/{attack.victim_token}/mfa/{attack.scenario_id}/1"
+    if attack.channel == "qr":
+        return f"/v/{attack.victim_token}/qr/{attack.scenario_id}"
     return f"/v/{attack.victim_token}/mail"
 
 
@@ -769,6 +773,59 @@ def _site_theme_for_scenario(scenario):
 
 def _site_end_path(attack, scenario_id: str) -> str:
     return f"/v/{attack.victim_token}/site/{scenario_id}/end"
+
+
+async def _mark_destination(
+    database_session: OrmSession,
+    attack,
+    scenario,
+    *,
+    action: str,
+) -> None:
+    _attack_service(database_session).update_state(
+        attack,
+        {
+            "processing": False,
+            "destination_reached": True,
+            "current_step": 4,
+            "last_action": "destination_reached",
+        },
+    )
+    await emit_simulation_event(
+        database_session,
+        attack.operator_session_id,
+        scenario_id=attack.scenario_id,
+        event_type="destination_reached",
+        source="victim",
+        metadata={
+            "channel": attack.channel,
+            "attack_type": scenario.attack_type,
+            "action": action,
+            "attack_id": attack.attack_id,
+        },
+    )
+
+
+def _destination_response(
+    request: Request,
+    attack,
+    scenario,
+    *,
+    end_url: str,
+    mfa_action: str | None = None,
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="victim_destination.html",
+        context={
+            "attack": attack,
+            "scenario": scenario,
+            "site_theme": _site_theme_for_scenario(scenario),
+            "end_url": end_url,
+            "mfa_action": mfa_action,
+            "active_page": "victim",
+        },
+    )
 
 
 async def _complete_attack(
@@ -818,7 +875,7 @@ async def _complete_attack(
         event_type="scenario_completed",
         source="victim",
         metadata={
-            "channel": "website",
+            "channel": attack.channel,
             "attack_type": scenario.attack_type,
             "attack_id": attack.attack_id,
             "delivery_id": attack.attack_id,
@@ -1009,6 +1066,13 @@ async def victim_site(
         raise HTTPException(status_code=404, detail="Website not found.")
     _require_context(attack)
     _require_target(attack, scenario_id)
+    if attack.state.get("destination_reached"):
+        return _destination_response(
+            request,
+            attack,
+            scenario,
+            end_url=_site_end_path(attack, scenario.scenario_id),
+        )
     await _record_website_viewed(database_session, attack, scenario)
     return templates.TemplateResponse(
         request=request,
@@ -1040,6 +1104,13 @@ async def victim_site_continue(
         _engage(database_session, attack)
     _require_context(attack)
     _require_target(attack, scenario_id)
+    if attack.status == "COMPLETED":
+        raise HTTPException(status_code=410, detail="Victim context is closed.")
+    if attack.state.get("destination_reached"):
+        return RedirectResponse(
+            f"/v/{token}/site/{scenario_id}/result",
+            status_code=303,
+        )
     await _record_website_viewed(database_session, attack, scenario)
     form = await request.form()
     identifier = form.get("identifier", "")
@@ -1075,7 +1146,14 @@ async def victim_site_finish(
         _engage(database_session, attack)
     _require_context(attack)
     _require_target(attack, scenario_id)
-    if attack.status not in {"ENGAGED", "COMPLETED"}:
+    if attack.status == "COMPLETED":
+        raise HTTPException(status_code=410, detail="Victim context is closed.")
+    if attack.state.get("destination_reached"):
+        return RedirectResponse(
+            f"/v/{token}/site/{scenario_id}/result",
+            status_code=303,
+        )
+    if attack.status != "ENGAGED":
         raise HTTPException(
             status_code=404, detail="Website context is not ready."
         )
@@ -1138,6 +1216,14 @@ async def victim_site_finish(
             "workflow": list(scenario.workflow),
         },
     )
+    await _mark_destination(
+        database_session,
+        attack,
+        scenario,
+        action="credential_submission_attempted"
+        if credential_flow
+        else "confirmation_submitted",
+    )
     return RedirectResponse(
         f"/v/{attack.victim_token}/site/{scenario_id}/result",
         status_code=303,
@@ -1171,14 +1257,21 @@ async def victim_result(
                 "active_page": "victim",
             },
         )
-    if not attack.state.get("processing"):
-        raise HTTPException(status_code=404, detail="No pending result.")
-    return await _complete_attack(
+    if not attack.state.get("destination_reached"):
+        if attack.state.get("processing"):
+            await _mark_destination(
+                database_session,
+                attack,
+                scenario,
+                action="result_submitted",
+            )
+        else:
+            raise HTTPException(status_code=404, detail="No pending result.")
+    return _destination_response(
         request,
-        database_session,
         attack,
         scenario,
-        outcome="training_complete",
+        end_url=_site_end_path(attack, scenario.scenario_id),
     )
 
 
@@ -1211,14 +1304,21 @@ async def victim_result_submit(
                 "active_page": "victim",
             },
         )
-    if not attack.state.get("processing"):
-        raise HTTPException(status_code=404, detail="No pending result.")
-    return await _complete_attack(
+    if not attack.state.get("destination_reached"):
+        if attack.state.get("processing"):
+            await _mark_destination(
+                database_session,
+                attack,
+                scenario,
+                action="result_submitted",
+            )
+        else:
+            raise HTTPException(status_code=404, detail="No pending result.")
+    return _destination_response(
         request,
-        database_session,
         attack,
         scenario,
-        outcome="training_complete",
+        end_url=_site_end_path(attack, scenario.scenario_id),
     )
 
 
@@ -1306,7 +1406,7 @@ async def victim_qr_scan(
     scenario = get_scenario(scenario_id)
     if scenario is None or scenario.channel != "qr":
         raise HTTPException(status_code=404, detail="QR scenario not found.")
-    _require_context(attack)
+    _require_artifact_context(attack)
     if scenario_id != attack.scenario_id:
         raise HTTPException(status_code=404, detail="QR scenario not found.")
     _engage(database_session, attack)
@@ -1331,7 +1431,9 @@ async def victim_qr_scan(
     )
 
 
-@router.get("/v/{token}/mfa/{scenario_id}/{step}", response_class=HTMLResponse)
+@router.get(
+    "/v/{token}/mfa/{scenario_id}/{step:int}", response_class=HTMLResponse
+)
 async def victim_mfa(
     request: Request,
     token: str,
@@ -1350,6 +1452,27 @@ async def victim_mfa(
     _require_context(attack)
     if scenario_id != attack.scenario_id:
         raise HTTPException(status_code=404, detail="MFA prompt not found.")
+    if attack.status == "COMPLETED":
+        return templates.TemplateResponse(
+            request=request,
+            name="victim_reveal.html",
+            context={
+                "attack": attack,
+                "scenario": scenario,
+                "site_theme": get_site_theme(scenario.scenario_id, "mfa"),
+                "indicator_info": INDICATOR_INFO,
+                "return_path": victim_return_path(attack),
+                "ended_early": False,
+                "active_page": "victim",
+            },
+        )
+    if attack.state.get("destination_reached"):
+        return _destination_response(
+            request,
+            attack,
+            scenario,
+            end_url=f"/v/{token}/mfa/{scenario_id}/end",
+        )
     if attack.status == "DELIVERED":
         _engage(database_session, attack)
     await emit_simulation_event(
@@ -1374,7 +1497,7 @@ async def victim_mfa(
 
 
 @router.post(
-    "/v/{token}/mfa/{scenario_id}/{step}",
+    "/v/{token}/mfa/{scenario_id}/{step:int}",
     response_model=None,
 )
 async def victim_mfa_respond(
@@ -1395,6 +1518,15 @@ async def victim_mfa_respond(
     _require_context(attack)
     if scenario_id != attack.scenario_id:
         raise HTTPException(status_code=404, detail="MFA prompt not found.")
+    if attack.status == "COMPLETED":
+        raise HTTPException(status_code=410, detail="Victim context is closed.")
+    if attack.state.get("destination_reached"):
+        return _destination_response(
+            request,
+            attack,
+            scenario,
+            end_url=f"/v/{token}/mfa/{scenario_id}/end",
+        )
     form = await request.form()
     action = form.get("action", "")
     if not isinstance(action, str) or action not in {"approve", "deny"}:
@@ -1415,45 +1547,58 @@ async def victim_mfa_respond(
             f"/v/{token}/mfa/{scenario_id}/{step + 1}",
             status_code=303,
         )
-    service = _attack_service(database_session)
-    if attack.status == "ENGAGED":
-        service.transition(attack, "COMPLETED")
-    await emit_simulation_event(
+    await _mark_destination(
         database_session,
-        attack.operator_session_id,
-        scenario_id=attack.scenario_id,
-        event_type="attack_completed",
-        source="victim",
-        metadata={"channel": "mfa", "attack_id": attack.attack_id},
+        attack,
+        scenario,
+        action=action,
     )
-    await emit_simulation_event(
+    return _destination_response(
+        request,
+        attack,
+        scenario,
+        end_url=f"/v/{token}/mfa/{scenario_id}/end",
+        mfa_action=action,
+    )
+
+
+@router.post("/v/{token}/mfa/{scenario_id}/end", response_class=HTMLResponse)
+async def victim_mfa_end(
+    request: Request,
+    token: str,
+    scenario_id: str,
+    database_session: Annotated[OrmSession, Depends(get_session)],
+) -> HTMLResponse:
+    attack = _get_attack(database_session, token)
+    scenario = next(
+        (item for item in MFA_SCENARIOS if item.scenario_id == scenario_id),
+        None,
+    )
+    if scenario is None:
+        raise HTTPException(status_code=404, detail="MFA scenario not found.")
+    _require_context(attack)
+    if attack.status == "COMPLETED":
+        return templates.TemplateResponse(
+            request=request,
+            name="victim_reveal.html",
+            context={
+                "attack": attack,
+                "scenario": scenario,
+                "site_theme": get_site_theme(scenario.scenario_id, "mfa"),
+                "indicator_info": INDICATOR_INFO,
+                "return_path": victim_return_path(attack),
+                "ended_early": False,
+                "active_page": "victim",
+            },
+        )
+    if not attack.state.get("destination_reached"):
+        raise HTTPException(
+            status_code=409, detail="MFA destination is not ready."
+        )
+    return await _complete_attack(
+        request,
         database_session,
-        attack.operator_session_id,
-        scenario_id=attack.scenario_id,
-        event_type="scenario_completed",
-        source="victim",
-        metadata={
-            "channel": "mfa",
-            "attack_type": scenario.attack_type,
-            "attack_id": attack.attack_id,
-            "outcome": "training_complete",
-        },
-    )
-    complete_simulation_session(database_session, attack.operator_session_id)
-    try:
-        complete_simulation_session(database_session, attack.victim_session_id)
-    except SessionNotFoundError:
-        pass
-    return templates.TemplateResponse(
-        request=request,
-        name="victim_reveal.html",
-        context={
-            "attack": attack,
-            "scenario": scenario,
-            "site_theme": get_site_theme(scenario.scenario_id, "mfa"),
-            "indicator_info": INDICATOR_INFO,
-            "return_path": victim_return_path(attack),
-            "ended_early": False,
-            "active_page": "victim",
-        },
+        attack,
+        scenario,
+        outcome="training_complete",
     )
