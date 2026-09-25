@@ -190,3 +190,11 @@ def test_layout_regressions_keep_portal_chrome_and_light_lab_separate(
     console = client.get("/console")
     assert 'class="lab-body console-body"' in console.text
     assert ".console-body .operator-console-panel" in stylesheet.text
+    assert "minmax(460px, 0.95fr)" in stylesheet.text
+    assert ".console-detail-content" in stylesheet.text
+    assert "overflow-x: auto" in stylesheet.text
+    assert ".payment-destination-overview > header" in stylesheet.text
+    assert (
+        "grid-template-columns: 32px minmax(0, 1fr) auto 52px"
+        in stylesheet.text
+    )
