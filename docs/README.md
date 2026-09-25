@@ -45,6 +45,18 @@ phishing platform.
   [ai/](ai/)                           AI-agent planning and workstream
                                        files; these are the only project
                                        docs AI agents may edit
+
+  [ai/UI_REALISM_AUDIT.md](ai/UI_REALISM_AUDIT.md)
+                                       Required first-pass UI realism audit
+                                       and application-boundary map
+
+  [ai/UI_REALISM_TEST_REPORT.md](ai/UI_REALISM_TEST_REPORT.md)
+                                       Route-level and automated UI flow
+                                       verification evidence
+
+  [ai/UI_REALISM_FINAL_REPORT.md](ai/UI_REALISM_FINAL_REPORT.md)
+                                       Final implementation summary,
+                                       limitations, and acceptance status
   -----------------------------------------------------------------------
 
 ## Priority
@@ -69,9 +81,10 @@ incrementally:
 -   business email compromise simulation
 -   MFA-fatigue simulation
 
-These scenarios should reuse common simulation, telemetry, analysis, and
-presentation primitives rather than becoming independent
-mini-applications.
+These scenarios reuse common simulation, delivery, telemetry, analysis, and
+safety primitives. Their presentation is intentionally application-specific:
+mailbox, messenger, marketplace, file storage, academic, support, payment,
+MFA, and QR experiences do not share one generic dashboard structure.
 
 ## Current implementation
 
@@ -88,9 +101,13 @@ The repository already contains:
     type checking
 -   a `src/phisim` namespace-package layout
 -   shared web templates/static directories
+-   application-specific Gemail, QuickChat, Amazaun, CloudBox, university,
+    support, payment, MFA, and QR experiences
+-   separate operator Lab, analyst Console, and training Reveal surfaces
+-   UI realism audit, route verification, and final implementation reports
 
-The documentation describes the intended next architecture without
-pretending that planned modules already exist.
+The UI realism reports document both the implemented architecture and the
+remaining connected-browser verification gap.
 
 ## Development principle
 
