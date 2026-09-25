@@ -5,7 +5,7 @@ from io import BytesIO
 from typing import Annotated, Any
 
 import qrcode
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session as OrmSession
 
@@ -231,8 +231,14 @@ def _attack_history(database_session: OrmSession, token: str) -> list:
     )
 
 
-def _email_messages_for_history(attacks: list) -> list[dict[str, object]]:
+def _email_messages_for_history(
+    attacks: list,
+    *,
+    folder: str = "inbox",
+    query: str = "",
+) -> list[dict[str, object]]:
     messages: list[dict[str, object]] = []
+    normalized_query = query.casefold().strip()
     for attack in attacks:
         if attack.channel != "email":
             continue
@@ -240,10 +246,39 @@ def _email_messages_for_history(attacks: list) -> list[dict[str, object]]:
             attack_message = get_email_message(message_id)
             if attack_message is None:
                 continue
+            starred = message_id in attack.state.get("starred_message_ids", [])
+            archived = message_id in attack.state.get(
+                "archived_message_ids", []
+            )
+            deleted = message_id in attack.state.get("deleted_message_ids", [])
+            if folder == "inbox" and (archived or deleted):
+                continue
+            if folder == "starred" and (not starred or deleted):
+                continue
+            if folder == "trash" and not deleted:
+                continue
+            if folder not in {"inbox", "starred", "trash"}:
+                continue
+            if (
+                normalized_query
+                and normalized_query
+                not in " ".join(
+                    (
+                        attack_message.sender_label,
+                        attack_message.subject,
+                        attack_message.preview,
+                        attack_message.body,
+                    )
+                ).casefold()
+            ):
+                continue
             message = _message_payload(attack_message, attack=True)
             delivered_at = attack.delivered_at or attack.updated_at
             message["delivery_id"] = attack.attack_id
             message["timestamp"] = serialize_utc_datetime(delivered_at)
+            message["starred"] = starred
+            message["archived"] = archived
+            message["deleted"] = deleted
             message["unread"] = message_id not in attack.state.get(
                 "read_message_ids", []
             )
@@ -294,6 +329,8 @@ def _set_environment_cookie(response, environment) -> None:
 async def baseline_mail(
     request: Request,
     database_session: Annotated[OrmSession, Depends(get_session)],
+    q: str | None = Query(default=None, max_length=64),
+    folder: str = Query(default="inbox", max_length=16),
 ) -> HTMLResponse:
     cookie_response = Response()
     environment = get_or_create_victim_environment(
@@ -314,7 +351,13 @@ async def baseline_mail(
             context={
                 "attack": display_attack,
                 "site_theme": get_site_theme(None, "email"),
-                "messages": _email_messages_for_history(history),
+                "messages": _email_messages_for_history(
+                    history,
+                    folder=folder,
+                    query=q or "",
+                ),
+                "folder": folder,
+                "search_query": q or "",
                 "active_page": "victim",
             },
         )
@@ -395,6 +438,8 @@ async def victim_mail(
     request: Request,
     token: str,
     database_session: Annotated[OrmSession, Depends(get_session)],
+    q: str | None = Query(default=None, max_length=64),
+    folder: str = Query(default="inbox", max_length=16),
 ) -> HTMLResponse:
     _get_environment(database_session, token)
     history = await _refresh_attack_history(database_session, token)
@@ -416,7 +461,13 @@ async def victim_mail(
         context={
             "attack": display_attack,
             "site_theme": get_site_theme(None, "email"),
-            "messages": _email_messages_for_history(history),
+            "messages": _email_messages_for_history(
+                history,
+                folder=folder,
+                query=q or "",
+            ),
+            "folder": folder,
+            "search_query": q or "",
             "active_page": "victim",
         },
     )
@@ -429,6 +480,7 @@ async def victim_email(
     message_id: str,
     database_session: Annotated[OrmSession, Depends(get_session)],
     delivery_id: str | None = None,
+    folder: str = Query(default="inbox", max_length=16),
 ) -> HTMLResponse:
     _get_environment(database_session, token)
     history = await _refresh_attack_history(database_session, token)
@@ -479,8 +531,84 @@ async def victim_email(
             "attack": attack,
             "site_theme": _site_theme_for_attack(attack),
             "message": message,
+            "folder": folder,
             "active_page": "victim",
         },
+    )
+
+
+@router.post("/v/{token}/mail/{message_id}/state")
+async def victim_email_state(
+    request: Request,
+    token: str,
+    message_id: str,
+    database_session: Annotated[OrmSession, Depends(get_session)],
+    action: str = Form(...),
+    delivery_id: str | None = None,
+    folder: str = Query(default="inbox", max_length=16),
+) -> RedirectResponse:
+    history = await _refresh_attack_history(database_session, token)
+    attack = next(
+        (
+            item
+            for item in history
+            if item.channel == "email"
+            and message_id in item.state.get("delivered_message_ids", [])
+            and (delivery_id is None or item.attack_id == delivery_id)
+        ),
+        None,
+    )
+    if attack is None:
+        raise HTTPException(status_code=404, detail="Message not found.")
+    _require_context(attack)
+    if action not in {
+        "star",
+        "unstar",
+        "archive",
+        "unarchive",
+        "delete",
+        "restore",
+    }:
+        raise HTTPException(status_code=400, detail="Invalid message action.")
+    state = attack.state
+    starred = set(state.get("starred_message_ids", []))
+    archived = set(state.get("archived_message_ids", []))
+    deleted = set(state.get("deleted_message_ids", []))
+    if action == "star":
+        starred.add(message_id)
+    elif action == "unstar":
+        starred.discard(message_id)
+    elif action == "archive":
+        archived.add(message_id)
+    elif action == "unarchive":
+        archived.discard(message_id)
+    elif action == "delete":
+        deleted.add(message_id)
+    else:
+        deleted.discard(message_id)
+        archived.discard(message_id)
+    service = _attack_service(database_session)
+    service.update_state(
+        attack,
+        {
+            "starred_message_ids": sorted(starred),
+            "archived_message_ids": sorted(archived),
+            "deleted_message_ids": sorted(deleted),
+            "last_action": "message_state_changed",
+        },
+    )
+    await emit_simulation_event(
+        database_session,
+        attack.operator_session_id,
+        scenario_id=attack.scenario_id,
+        event_type="message_state_changed",
+        source="victim",
+        metadata={"action": action, "folder": folder}
+        | _delivery_metadata(attack),
+    )
+    return RedirectResponse(
+        f"/v/{token}/mail?folder={folder}",
+        status_code=303,
     )
 
 

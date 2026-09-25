@@ -1,42 +1,66 @@
 {% extends "victim_base.html" %}
 
-{% block title %}Gemail · Inbox{% endblock %}
+{% block title %}Gemail · {{ folder|title }}{% endblock %}
 {% block app_name %}Gemail{% endblock %}
 
 {% block victim_content %}
-  <section class="surface fake-app-layout" aria-labelledby="victim-gemail-title">
-    <aside class="fake-sidebar" aria-label="Gemail folders">
-      <h2>Mailbox</h2>
-      <a href="{{ url_for('victim_mail', token=attack.victim_token) }}" aria-current="page">Inbox <span class="badge badge-accent" id="victim-unread-count">{{ messages|selectattr('unread')|list|length }}</span></a>
-      <a href="#starred">Starred</a>
-      <a href="#sent">Sent</a>
-      <a href="#drafts">Drafts</a>
-      <a href="#spam">Spam</a>
-      <a href="#trash">Trash</a>
-    </aside>
-    <div class="fake-content">
-      <div class="gmail-category-bar" aria-label="Gemail categories">
-        <span class="active">Primary</span><span>Social</span><span>Promotions</span><span>Updates</span>
-      </div>
-      <div class="fake-toolbar">
-        <div>
-          <h1 id="victim-gemail-title">Inbox</h1>
-          <p class="help-text">Northstar University · personal mailbox</p>
+  <section class="gmail-shell" aria-labelledby="gmail-inbox-title">
+    <header class="gmail-topbar">
+      <a class="gmail-wordmark" href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=inbox' }}"><span class="gmail-mark" aria-hidden="true">M</span><span>Gemail</span></a>
+      <form class="gmail-search" method="get" action="{{ url_for('victim_mail', token=attack.victim_token) }}" role="search">
+        <input type="hidden" name="folder" value="{{ folder }}" />
+        <input type="search" name="q" value="{{ search_query }}" placeholder="Search mail" aria-label="Search Gemail" />
+        <button type="submit" aria-label="Search">⌕</button>
+      </form>
+      <div class="gmail-account"><span class="gmail-account-avatar">NS</span><span>northstar student</span></div>
+    </header>
+
+    <div class="gmail-layout">
+      <aside class="gmail-rail" aria-label="Gemail folders">
+        <button class="gmail-compose" type="button">Compose</button>
+        <nav class="gmail-folders">
+          <a class="{% if folder == 'inbox' %}active{% endif %}" href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=inbox' }}">Inbox <span>{{ messages|selectattr('unread')|list|length }}</span></a>
+          <a class="{% if folder == 'starred' %}active{% endif %}" href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=starred' }}">Starred</a>
+          <a href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=drafts' }}">Drafts</a>
+          <a href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=sent' }}">Sent</a>
+          <a href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=spam' }}">Spam</a>
+          <a class="{% if folder == 'trash' %}active{% endif %}" href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=trash' }}">Trash</a>
+        </nav>
+        <div class="gmail-labels">
+          <strong>Labels</strong>
+          <span><i class="label-dot label-dot-blue"></i>Northstar</span>
+          <span><i class="label-dot label-dot-green"></i>Updates</span>
+          <span><i class="label-dot label-dot-orange"></i>Receipts</span>
         </div>
-        <input class="search-box" type="search" placeholder="Search mail" aria-label="Search mail" />
-      </div>
-      <div id="victim-message-list" class="message-list">
-        {% for message in messages %}
-          <a class="message-row {% if message.unread %}unread{% endif %}" data-message-id="{{ message.message_id }}" data-delivery-id="{{ message.delivery_id }}" href="{{ url_for('victim_email', token=attack.victim_token, message_id=message.message_id) }}?delivery_id={{ message.delivery_id }}">
-            <span class="message-sender">{{ message.sender_label }}</span>
-            <span class="message-subject">{{ message.subject }}</span>
-            <span class="message-preview">{{ message.preview }}</span>
-            <span class="message-time">{{ message.timestamp[11:19] }}</span>
-          </a>
-        {% else %}
-          <div class="empty-state"><div><strong>Inbox zero</strong><p>New messages will appear here after delivery.</p></div></div>
-        {% endfor %}
-      </div>
+        <div class="gmail-storage"><span>Storage</span><strong>1.2 GB of 15 GB</strong><div><i></i></div></div>
+      </aside>
+
+      <main class="gmail-main">
+        <div class="gmail-category-tabs" aria-label="Gemail categories">
+          <span class="active">Primary</span><span>Social</span><span>Promotions</span><span>Updates</span>
+        </div>
+        <div class="gmail-toolbar">
+          <div><h1 id="gmail-inbox-title">{{ folder|title }}</h1><span class="gmail-result-count">{{ messages|length }} messages</span></div>
+          <div class="gmail-toolbar-actions"><button type="button" aria-label="Refresh">↻</button><button type="button" aria-label="More">•••</button></div>
+        </div>
+        <div id="victim-message-list" class="gmail-message-list">
+          {% for message in messages %}
+            <article class="gmail-message-row {% if message.unread %}unread{% endif %}" data-message-id="{{ message.message_id }}" data-delivery-id="{{ message.delivery_id }}">
+              <form class="gmail-star-action" method="post" action="{{ url_for('victim_email_state', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}">
+                <input type="hidden" name="action" value="{% if message.starred %}unstar{% else %}star{% endif %}" />
+                <button type="submit" aria-label="{% if message.starred %}Unstar{% else %}Star{% endif %} message">{% if message.starred %}★{% else %}☆{% endif %}</button>
+              </form>
+              <span class="gmail-select" aria-hidden="true"></span>
+              <a class="gmail-sender" href="{{ url_for('victim_email', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}">{{ message.sender_label }}</a>
+              <a class="gmail-subject-line" href="{{ url_for('victim_email', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}"><strong>{{ message.subject }}</strong><span>{{ message.preview }}</span></a>
+              <span class="gmail-attachment" aria-label="{% if message.attachment_name %}Attachment{% else %}No attachment{% endif %}">{% if message.attachment_name %}⌕{% endif %}</span>
+              <time class="gmail-time">{{ message.timestamp[11:16] }}</time>
+            </article>
+          {% else %}
+            <div class="gmail-empty"><div class="gmail-empty-icon">✉</div><strong>{% if folder == 'inbox' %}Inbox zero{% else %}No messages in {{ folder|title }}{% endif %}</strong><p>Delivered training messages will appear here.</p></div>
+          {% endfor %}
+        </div>
+      </main>
     </div>
   </section>
 {% endblock %}

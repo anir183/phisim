@@ -387,6 +387,70 @@ def test_each_website_has_a_distinct_branded_landing_page(
     assert "Checking your request" not in page.text
 
 
+def test_gemail_supports_mailbox_folders_search_and_message_actions(
+    client: TestClient,
+    test_engine: Engine,
+) -> None:
+    launch = _launch(client, "email-phish-001", "student")
+    token = launch["victim_path"].split("/")[2]
+    _set_due(test_engine, launch["attack_id"], datetime.now(UTC))
+    mailbox = client.get(f"/v/{token}/mail")
+    assert mailbox.status_code == 200
+    assert "gmail-message-row" in mailbox.text
+
+    starred = client.post(
+        f"/v/{token}/mail/email-phish-001/state",
+        params={"delivery_id": launch["attack_id"], "folder": "inbox"},
+        data={"action": "star"},
+        follow_redirects=False,
+    )
+    assert starred.status_code == 303
+    starred_page = client.get(
+        f"/v/{token}/mail",
+        params={"folder": "starred"},
+    )
+    assert "email-phish-001" in starred_page.text
+
+    search = client.get(
+        f"/v/{token}/mail",
+        params={"q": "mailbox"},
+    )
+    assert "email-phish-001" in search.text
+    no_results = client.get(
+        f"/v/{token}/mail",
+        params={"q": "not-a-real-search-term"},
+    )
+    assert "email-phish-001" not in no_results.text
+
+    archived = client.post(
+        f"/v/{token}/mail/email-phish-001/state",
+        params={"delivery_id": launch["attack_id"], "folder": "starred"},
+        data={"action": "archive"},
+        follow_redirects=False,
+    )
+    assert archived.status_code == 303
+    inbox = client.get(f"/v/{token}/mail")
+    assert "email-phish-001" not in inbox.text
+
+    with Session(test_engine) as database_session:
+        attack = SimulationAttackRepository(database_session).get_by_attack_id(
+            launch["attack_id"]
+        )
+        assert attack is not None
+        events = EventRepository(database_session).list_by_session(
+            attack.operator_session_id
+        )
+        state_events = [
+            event
+            for event in events
+            if event.event_type == "message_state_changed"
+        ]
+        assert [event.metadata_["action"] for event in state_events] == [
+            "star",
+            "archive",
+        ]
+
+
 def test_end_simulation_completes_without_credentials(
     client: TestClient,
     test_engine: Engine,

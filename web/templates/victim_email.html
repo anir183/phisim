@@ -4,43 +4,36 @@
 {% block app_name %}Gemail{% endblock %}
 
 {% block victim_content %}
-  <div class="fake-app-bar">
-    <a class="button button-quiet" href="{{ url_for('victim_mail', token=attack.victim_token) }}">← Back to inbox</a>
-    <span class="badge badge-success">Mailbox</span>
-  </div>
-  <article class="message-detail" style="margin-top: 1.25rem" aria-labelledby="victim-email-subject">
-    <header class="message-detail-header">
-      <div class="row-between">
-        <span class="badge {% if message.is_attack %}badge-warning{% else %}badge-accent{% endif %}">{% if message.is_attack %}New message{% else %}Mailbox{% endif %}</span>
-        <span class="kicker">{{ message.timestamp }}</span>
-      </div>
-      <h1 id="victim-email-subject">{{ message.subject }}</h1>
-      <div class="message-meta">
-        <span><strong>From</strong> {{ message.sender_label }} &lt;{{ message.sender_address }}&gt;</span>
-        <span><strong>To</strong> you@northstar.example</span>
-      </div>
+  <section class="gmail-message-shell" aria-labelledby="gmail-message-subject">
+    <header class="gmail-topbar gmail-message-topbar">
+      <a class="gmail-wordmark" href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=' ~ folder }}"><span class="gmail-mark" aria-hidden="true">M</span><span>Gemail</span></a>
+      <a class="gmail-back" href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=' ~ folder }}">← Back to {{ folder|title }}</a>
+      <div class="gmail-account"><span class="gmail-account-avatar">NS</span><span>northstar student</span></div>
     </header>
-    <div class="message-body">{{ message.body }}</div>
-    {% if message.spoofed_url %}
-      <div class="notice notice-warning"><strong>Link preview:</strong> {{ message.spoofed_url }} · local destination {{ message.target_scenario_id }}</div>
-    {% endif %}
-    {% if message.is_attack %}
-      {% if message.attachment_name %}
-        <div class="attachment-card">
-          <div class="row"><span class="attachment-icon" aria-hidden="true">DOC</span><div><div class="attachment-name">{{ message.attachment_name }}</div><div class="help-text">Inert attachment preview</div></div></div>
-          <a class="button button-secondary" href="{{ url_for('victim_attachment', token=attack.victim_token, message_id=message.message_id) }}?delivery_id={{ message.delivery_id }}">Preview attachment</a>
-        </div>
+    <div class="gmail-message-toolbar">
+      <a href="{{ url_for('victim_mail', token=attack.victim_token) ~ '?folder=' ~ folder }}">←</a>
+      <form method="post" action="{{ url_for('victim_email_state', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}"><input type="hidden" name="action" value="{% if message.starred %}unstar{% else %}star{% endif %}" /><button type="submit">{% if message.starred %}★ Starred{% else %}☆ Star{% endif %}</button></form>
+      <form method="post" action="{{ url_for('victim_email_state', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}"><input type="hidden" name="action" value="{% if message.archived %}unarchive{% else %}archive{% endif %}" /><button type="submit">{% if message.archived %}Unarchive{% else %}Archive{% endif %}</button></form>
+      <form method="post" action="{{ url_for('victim_email_state', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id ~ '&amp;folder=' ~ folder }}"><input type="hidden" name="action" value="{% if message.deleted %}restore{% else %}delete{% endif %}" /><button type="submit">{% if message.deleted %}Restore{% else %}Delete{% endif %}</button></form>
+      <span class="gmail-toolbar-spacer"></span>
+      <button type="button">Reply</button><button type="button">Forward</button>
+    </div>
+    <article class="gmail-message-view">
+      <header class="gmail-message-header">
+        <h1 id="gmail-message-subject">{{ message.subject }}</h1>
+        <div class="gmail-sender-line"><span class="gmail-avatar">{{ message.sender_label[:1] }}</span><div><strong>{{ message.sender_label }}</strong><span>{{ message.sender_address }} · to {{ message.recipient }}</span></div><time>{{ message.timestamp }}</time></div>
+      </header>
+      <div class="gmail-message-body">{{ message.body }}</div>
+      {% if message.spoofed_url %}
+        <div class="gmail-link-warning"><strong>Link preview</strong><span>{{ message.spoofed_url }} · local destination {{ message.target_scenario_id }}</span></div>
       {% endif %}
-      <div class="message-actions">
-        <a class="button" href="{{ url_for('victim_email_link', token=attack.victim_token, message_id=message.message_id) }}?delivery_id={{ message.delivery_id }}">Open message link</a>
-        <button class="button button-secondary" type="button">Reply</button>
-        <button class="button button-secondary" type="button">Forward</button>
-      </div>
-    {% else %}
-      <div class="message-actions">
-        <button class="button button-secondary" type="button">Reply</button>
-        <button class="button button-secondary" type="button">Forward</button>
-      </div>
-    {% endif %}
-  </article>
+      {% if message.attachment_name %}
+        <section class="gmail-attachment-row"><span class="gmail-attachment-icon">▧</span><div><strong>{{ message.attachment_name }}</strong><span>{{ message.attachment_preview }}</span></div><a class="button button-secondary" href="{{ url_for('victim_attachment', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id }}">Preview attachment</a></section>
+      {% endif %}
+      <div class="gmail-signature">Northstar University · fictional local mailbox<br />This message was not delivered to a real inbox.</div>
+      {% if message.is_attack %}
+        <div class="gmail-message-actions"><a class="button" href="{{ url_for('victim_email_link', token=attack.victim_token, message_id=message.message_id) ~ '?delivery_id=' ~ message.delivery_id }}">Open message link</a><button class="button button-secondary" type="button">Reply</button><button class="button button-secondary" type="button">Forward</button></div>
+      {% endif %}
+    </article>
+  </section>
 {% endblock %}

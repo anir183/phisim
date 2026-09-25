@@ -46,6 +46,9 @@ _ALLOWED_STATE_KEYS = frozenset(
     {
         "delivered_message_ids",
         "read_message_ids",
+        "starred_message_ids",
+        "archived_message_ids",
+        "deleted_message_ids",
         "delivered_thread_ids",
         "read_thread_ids",
         "current_step",
@@ -62,6 +65,7 @@ _ALLOWED_ACTIONS = frozenset(
         "attack_armed",
         "message_delivered",
         "message_opened",
+        "message_state_changed",
         "link_clicked",
         "website_viewed",
         "attachment_opened",
@@ -97,6 +101,9 @@ def _safe_state(state: dict[str, Any]) -> dict[str, Any]:
     for key in (
         "delivered_message_ids",
         "read_message_ids",
+        "starred_message_ids",
+        "archived_message_ids",
+        "deleted_message_ids",
         "delivered_thread_ids",
         "read_thread_ids",
     ):
