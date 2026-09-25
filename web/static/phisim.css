@@ -7615,8 +7615,152 @@ body.mock-nimbusid,
   transform: none;
 }
 
+.gmail-read-only-state,
+.gmail-read-only-footer {
+  color: #6b7280;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.gmail-read-only-footer {
+  margin-top: 1.2rem;
+  border-top: 1px solid #e4eaf2;
+  padding-top: 0.8rem;
+}
+
 @media (max-width: 520px) {
   .university-alert-steps {
     margin-left: 0;
   }
+}
+
+/* The analyst Console shares the light operator workspace palette. */
+.console-body {
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+.console-body .app-shell {
+  background: var(--canvas);
+}
+
+.console-body .topbar {
+  border-bottom-color: var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.console-body .brand-lockup {
+  color: var(--ink);
+}
+
+.console-body .brand-mark {
+  background: var(--accent);
+}
+
+.console-body .brand-subtitle,
+.console-body .primary-nav a {
+  color: var(--muted);
+}
+
+.console-body .primary-nav a:hover,
+.console-body .primary-nav a[aria-current="page"] {
+  color: var(--accent-dark);
+}
+
+.console-body .safety-strip {
+  border-bottom-color: var(--line);
+  background: var(--surface-soft);
+  color: var(--ink-soft);
+}
+
+.console-body .console-safety-strip {
+  border-color: #c6daf8;
+  background: #f5faff;
+}
+
+.console-body .console-safety-icon {
+  background: #e8f0fe;
+  color: var(--accent);
+}
+
+.console-body .console-safety-strip strong {
+  color: var(--accent-dark);
+}
+
+.console-body .console-safety-strip div span {
+  color: var(--ink-soft);
+}
+
+.console-body .console-boundary {
+  color: var(--accent-dark);
+}
+
+.console-body .operator-console-panel {
+  border-color: var(--line);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.console-body .console-panel-heading {
+  border-bottom-color: var(--line);
+}
+
+.console-body .console-panel-heading h2 {
+  color: var(--ink);
+}
+
+.console-body .console-loading,
+.console-body .console-empty {
+  border-color: var(--line-strong);
+  color: var(--muted);
+}
+
+.console-body .session-item,
+.console-body .timeline-item {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.console-body .session-item:hover,
+.console-body .session-item[aria-current="true"],
+.console-body .timeline-item:hover,
+.console-body .timeline-item[aria-current="true"] {
+  border-color: #aab8e8;
+  background: var(--accent-soft);
+}
+
+.console-body .session-item span,
+.console-body .timeline-item span,
+.console-body .timeline-meta {
+  color: var(--ink-soft);
+}
+
+.console-body .timeline-item strong {
+  color: var(--ink);
+}
+
+.console-body .indicator-chip {
+  border-color: #efd99c;
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.console-body .console-detail-content h3 {
+  color: var(--ink);
+}
+
+.console-body .console-detail-content p {
+  color: var(--ink-soft);
+}
+
+.console-body .console-detail-content pre {
+  border-color: var(--line);
+  background: var(--surface-soft);
+  color: var(--ink-soft);
+}
+
+.console-body .evidence-list {
+  border-color: var(--line);
 }
