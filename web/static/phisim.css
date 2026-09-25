@@ -8126,6 +8126,28 @@ body.mock-nimbusid,
   color: var(--ink-soft);
 }
 
+.console-body .console-session-list {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.console-body .session-item {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.console-body .session-item strong,
+.console-body .session-item span {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.console-body .session-item span:last-child {
+  line-height: 1.35;
+}
+
 .console-body .timeline-item strong {
   color: var(--ink);
 }

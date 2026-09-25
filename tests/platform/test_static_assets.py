@@ -44,6 +44,8 @@ def test_shared_static_assets_are_local_and_mounted(
     assert ".console-body .sandbox-console-record dd" in css.text
     assert ".training-reveal-grid > main" in css.text
     assert "align-items: stretch" in css.text
+    assert ".console-body .console-session-list" in css.text
+    assert "overflow-wrap: anywhere" in css.text
     assert "https://" not in capture_script.text
     assert 'cache: "no-store"' in lab_dashboard_script.text
     assert "quickchat-thread-list" in victim_script.text
