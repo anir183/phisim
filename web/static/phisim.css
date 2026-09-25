@@ -6111,6 +6111,253 @@ body.mock-nimbusid,
   }
 }
 
+/* Document preview used by attachment-lure flows. */
+.document-viewer {
+  overflow: hidden;
+  border: 1px solid #d6dde8;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.document-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  border-bottom: 1px solid #dfe4ec;
+  padding: 0.75rem 1rem;
+  color: #52617a;
+  font-size: 0.7rem;
+}
+
+.document-viewer-toolbar > a {
+  color: #3857c8;
+  font-weight: 700;
+}
+
+.document-viewer-toolbar > span:nth-child(2) {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.document-viewer-toolbar strong {
+  overflow: hidden;
+  color: #26334d;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.document-viewer-toolbar small {
+  color: #8a95a8;
+  font-size: 0.61rem;
+}
+
+.document-safe-pill {
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem;
+  background: #fff5dc;
+  color: #9a6410;
+  font-size: 0.62rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.document-viewer-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  min-height: 570px;
+  background: #eef1f5;
+}
+
+.document-canvas {
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: #e7ebf0;
+}
+
+.document-page {
+  width: min(480px, 100%);
+  min-height: 510px;
+  border: 1px solid #d6dbe3;
+  padding: 1.4rem;
+  background: #fff;
+  box-shadow: 0 12px 25px rgb(38 51 77 / 12%);
+}
+
+.document-page > header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border-bottom: 1px solid #edf0f4;
+  padding-bottom: 0.9rem;
+}
+
+.document-page-mark {
+  display: grid;
+  width: 32px;
+  height: 36px;
+  place-items: center;
+  border-radius: 4px;
+  background: #f8d8d5;
+  color: #ae3e4d;
+  font-size: 0.55rem;
+  font-weight: 850;
+}
+
+.document-page > header div {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.document-page > header strong {
+  color: #26334d;
+  font-size: 0.75rem;
+}
+
+.document-page > header small {
+  color: #8a95a8;
+  font-size: 0.61rem;
+}
+
+.document-page-title {
+  margin-top: 2rem;
+  color: #394963;
+  font-size: 1.15rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.document-lines {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+}
+
+.document-lines i {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border-radius: 2px;
+  background: #e5e9ef;
+}
+
+.document-lines i:nth-child(3n) { width: 78%; }
+.document-lines i:nth-child(4n) { width: 91%; }
+.document-lines i:nth-child(7n) { width: 62%; }
+
+.document-page-footer {
+  margin-top: 4rem;
+  border-top: 1px solid #edf0f4;
+  padding-top: 0.7rem;
+  color: #a0a9b7;
+  font-size: 0.6rem;
+}
+
+.document-inspector {
+  padding: 1.2rem;
+  background: #fff;
+}
+
+.document-overline {
+  margin: 0;
+  color: #8a95a8;
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.document-inspector h1 {
+  margin: 0.35rem 0;
+  color: #26334d;
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
+}
+
+.document-inspector > p:not(.document-overline) {
+  color: #718097;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.document-metadata {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1.1rem;
+  border-top: 1px solid #edf0f4;
+  border-bottom: 1px solid #edf0f4;
+  padding: 0.85rem 0;
+}
+
+.document-metadata div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.document-metadata span {
+  color: #8a95a8;
+  font-size: 0.61rem;
+}
+
+.document-metadata strong {
+  overflow: hidden;
+  color: #465a78;
+  font-size: 0.69rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.document-metadata strong.document-safe {
+  color: #19734a;
+}
+
+.document-warning {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 1rem;
+  border-left: 3px solid #e4b44e;
+  padding: 0.7rem;
+  background: #fffaf0;
+}
+
+.document-warning strong {
+  color: #6b4a00;
+  font-size: 0.7rem;
+}
+
+.document-warning span {
+  color: #806d38;
+  font-size: 0.65rem;
+  line-height: 1.5;
+}
+
+.document-actions {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 1rem;
+}
+
+.document-viewer-footer {
+  border-top: 1px solid #dfe4ec;
+  padding: 0.7rem 1rem;
+  color: #8a95a8;
+  font-size: 0.62rem;
+}
+
+@media (max-width: 760px) {
+  .document-viewer-layout { grid-template-columns: 1fr; }
+  .document-canvas { min-height: 420px; }
+  .document-inspector { border-top: 1px solid #dfe4ec; }
+}
+
+@media (max-width: 520px) {
+  .document-viewer-toolbar { align-items: flex-start; flex-wrap: wrap; }
+  .document-safe-pill { margin-left: auto; }
+  .document-page { min-height: 420px; padding: 1rem; }
+}
+
 /* Operator-only control plane. This intentionally does not share victim app chrome. */
 .operator-body {
   min-height: 100vh;

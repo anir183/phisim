@@ -1,30 +1,9 @@
 {% extends "simulation/base.html" %}
 
-{% block title %}QuickChat · Conversations{% endblock %}
+{% block title %}QuickChat · Chats{% endblock %}
 
 {% block simulation_content %}
-  <section class="surface conversation-layout" aria-labelledby="quickchat-title">
-    <aside class="conversation-list" aria-label="QuickChat conversations">
-      <div class="quickchat-app-bar"><span class="quickchat-mark" aria-hidden="true">Q</span><span>QuickChat</span><span class="quickchat-secure">Private</span></div>
-      <div class="conversation-list-header">
-        <div class="row-between"><h1 id="quickchat-title">QuickChat</h1><span class="badge badge-accent">{{ threads|length }}</span></div>
-        <p class="help-text">Fictional conversations</p>
-      </div>
-      {% for thread in threads %}
-        <a class="conversation-item" data-thread-id="{{ thread.thread_id }}" href="{{ url_for('sms_view', thread_id=thread.thread_id) }}">
-          <div class="row-between"><strong>{{ thread.sender_label }}</strong><span class="kicker">{{ thread.timestamp[11:16] }}</span></div>
-          <span>{{ thread.sender_number }}</span>
-          <span>{{ thread.messages[-1] }}</span>
-          {% if thread.unread %}<span class="badge badge-accent">UNREAD</span>{% endif %}
-        </a>
-      {% else %}
-        <div class="empty-state">No conversations.</div>
-      {% endfor %}
-    </aside>
-    <div class="fake-content">
-      <div class="empty-state"><div><strong>Select a conversation</strong><p>Choose a fictional sender to view the local message history.</p></div></div>
-    </div>
-  </section>
+  <section class="quickchat-app mock-quickchat" aria-labelledby="quickchat-title"><header class="quickchat-topbar"><a class="quickchat-brand" href="{{ url_for('sms_inbox') }}"><span class="quickchat-brand-mark" aria-hidden="true">Q</span><span>QuickChat</span></a><div class="quickchat-search"><input type="search" placeholder="Search conversations" aria-label="Search conversations" /><button type="button">⌕</button></div><div class="quickchat-top-actions"><button type="button">?</button><span class="quickchat-profile">NS</span></div></header><div class="quickchat-layout"><aside class="quickchat-rail"><a class="active" href="{{ url_for('sms_inbox') }}"><span>◉</span>Chats</a><a href="#status"><span>◌</span>Status</a><a href="#calls"><span>⌕</span>Calls</a><a href="#saved"><span>☆</span>Saved</a></aside><section class="quickchat-list"><header class="quickchat-list-header"><div><h1 id="quickchat-title">Chats</h1><span>{{ threads|length }} conversations</span></div><button type="button">＋</button></header><div class="quickchat-filter-row"><span class="active">All</span><span>Unread</span><span>Recent</span></div><div class="quickchat-thread-list">{% for thread in threads %}<a class="quickchat-thread {% if thread.unread %}unread{% endif %}" data-thread-id="{{ thread.thread_id }}" href="{{ url_for('sms_view', thread_id=thread.thread_id) }}"><span class="quickchat-thread-avatar">{{ thread.sender_label[:1] }}</span><span class="quickchat-thread-copy"><strong>{{ thread.sender_label }}</strong><span>{{ thread.messages[-1] }}</span></span><time>{{ thread.timestamp[11:16] }}</time>{% if thread.unread %}<i class="quickchat-unread-dot" aria-label="Unread"><span class="sr-only">UNREAD</span></i>{% endif %}</a>{% else %}<div class="quickchat-empty-list"><span class="quickchat-empty-icon">⌕</span><strong>No conversations found</strong><p>Delivered local chats will appear here.</p></div>{% endfor %}</div></section><section class="quickchat-placeholder"><div class="quickchat-placeholder-mark">Q</div><h2>Select a conversation</h2><p>Choose a local chat to see its message history.</p></section></div></section>
 {% endblock %}
 
 {% block simulation_footer %}Fictional QuickChat training workspace · no phone number is contacted.{% endblock %}

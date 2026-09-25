@@ -3,33 +3,7 @@
 {% block title %}Safe attachment preview · {{ message.attachment_name }}{% endblock %}
 
 {% block simulation_content %}
-  <section class="surface outcome-card" aria-labelledby="attachment-preview-title">
-    <div class="row-between">
-      <div>
-        <p class="eyebrow">Gemail safe preview</p>
-        <h1 id="attachment-preview-title">Attachment review</h1>
-      </div>
-      <span class="badge badge-warning">No file downloaded</span>
-    </div>
-    <div class="attachment-card" style="margin-top: 1.25rem">
-      <div class="row">
-        <span class="attachment-icon" aria-hidden="true">DOC</span>
-        <div>
-          <div class="attachment-name">{{ message.attachment_name }}</div>
-          <div class="help-text">{{ message.attachment_preview }}</div>
-        </div>
-      </div>
-      <span class="badge badge-success">Inert</span>
-    </div>
-    <div class="notice notice-warning" style="margin-top: 1rem">
-      PhiSim displays metadata and a harmless preview only. It never creates,
-      downloads, opens, or executes an attachment.
-    </div>
-    <div class="form-actions" style="margin-top: 1.25rem">
-      <a class="button" href="{{ url_for('email_link', message_id=message.message_id) }}">{{ message.link_label }}</a>
-      <a class="button button-secondary" href="{{ url_for('email_view', message_id=message.message_id) }}">Back to message</a>
-    </div>
-  </section>
+  <section class="document-viewer" aria-labelledby="attachment-preview-title"><header class="document-viewer-toolbar"><a href="{{ url_for('email_view', message_id=message.message_id) }}">← Back to message</a><span><strong>{{ message.attachment_name }}</strong><small>Gemail safe preview</small></span><span class="document-safe-pill">No file downloaded</span></header><div class="document-viewer-layout"><main class="document-canvas"><div class="document-page"><header><span class="document-page-mark">PDF</span><div><strong>{{ message.attachment_name }}</strong><small>Fictional document representation</small></div></header><div class="document-page-title">{{ message.attachment_preview }}</div><div class="document-lines"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="document-page-footer">Local preview · page 1 of 1</div></div></main><aside class="document-inspector"><p class="document-overline">GEMAIL SAFE PREVIEW</p><h1 id="attachment-preview-title">Attachment review</h1><p>PhiSim displays metadata and a harmless preview only. It never creates, downloads, opens, or executes an attachment.</p><div class="document-metadata"><div><span>File name</span><strong>{{ message.attachment_name }}</strong></div><div><span>Type</span><strong>Local preview</strong></div><div><span>Status</span><strong class="document-safe">Inert</strong></div></div><div class="document-warning"><strong>Training observation</strong><span>Review the sender, context, and requested action before opening any attachment.</span></div><div class="document-actions"><a class="button" href="{{ url_for('email_link', message_id=message.message_id) }}">{{ message.link_label }}</a><a class="button button-secondary" href="{{ url_for('email_view', message_id=message.message_id) }}">Back to message</a></div></aside></div><footer class="document-viewer-footer">Fictional Gemail · contained document preview · no external file service</footer></section>
 {% endblock %}
 
 {% block simulation_footer %}{{ message.reminder }}{% endblock %}

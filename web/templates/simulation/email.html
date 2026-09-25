@@ -3,57 +3,7 @@
 {% block title %}{{ message.subject }} · Gemail{% endblock %}
 
 {% block simulation_content %}
-  <div class="fake-app-bar">
-    <div class="fake-app-brand"><span class="brand-mark" aria-hidden="true">G</span><span>Gemail</span></div>
-    <div class="inline-actions"><span class="badge badge-success">Local simulation</span><a class="button button-secondary" href="{{ url_for('inbox') }}">Back to inbox</a></div>
-  </div>
-  <article class="message-detail" style="margin-top: 1.25rem" aria-labelledby="email-subject">
-    <header class="message-detail-header">
-      <div class="row-between">
-        <span class="badge badge-accent">{{ message.attack_type|replace('_', ' ') }}</span>
-        <span class="kicker">{{ message.timestamp }}</span>
-      </div>
-      <h1 id="email-subject">{{ message.subject }}</h1>
-      <div class="message-meta">
-        <span><strong>From</strong> {{ message.sender_label }} &lt;{{ message.sender_address }}&gt;</span>
-        <span><strong>To</strong> {{ message.recipient }}</span>
-        <span><strong>Folder</strong> {{ message.folder }}</span>
-      </div>
-    </header>
-
-    {% if message.spoofed_url %}
-      <div class="notice notice-warning">
-        <strong>Link identity check:</strong>
-        the message displays <span class="host-display">{{ message.spoofed_url }}</span>,
-        but this training link resolves to a local {{ message.target_scenario_id }} route.
-      </div>
-    {% endif %}
-
-    <div class="message-body">{{ message.body }}</div>
-
-    {% if message.attachment_name %}
-      <section class="attachment-card" aria-labelledby="attachment-title">
-        <div class="row">
-          <span class="attachment-icon" aria-hidden="true">DOC</span>
-          <div>
-            <div id="attachment-title" class="attachment-name">{{ message.attachment_name }}</div>
-            <div class="help-text">{{ message.attachment_preview }}</div>
-          </div>
-        </div>
-        <a class="button button-secondary" href="{{ url_for('email_attachment_preview', message_id=message.message_id) }}">Preview safely</a>
-      </section>
-    {% endif %}
-
-    <div class="message-actions">
-      <a class="button" href="{{ url_for('email_link', message_id=message.message_id) }}">{{ message.link_label }}</a>
-      <a class="button button-secondary" href="{{ url_for('inbox') }}">Return to inbox</a>
-    </div>
-
-    <div class="notice">
-      This message is part of a fictional Gemail training workspace. The link
-      above remains on this local application and no account is contacted.
-    </div>
-  </article>
+  <section class="gmail-message-shell mock-gmail" aria-labelledby="email-subject"><header class="gmail-topbar gmail-message-topbar"><a class="gmail-wordmark" href="{{ url_for('inbox') }}"><span class="gmail-mark" aria-hidden="true">M</span><span>Gemail</span></a><a class="gmail-back" href="{{ url_for('inbox') }}">← Back to Inbox</a><div class="gmail-account"><span class="gmail-account-avatar">NS</span><span>northstar student</span></div></header><div class="gmail-message-toolbar"><a href="{{ url_for('inbox') }}">←</a><button type="button">☆ Star</button><button type="button">Archive</button><button type="button">Delete</button><span class="gmail-toolbar-spacer"></span><button type="button">Reply</button><button type="button">Forward</button></div><article class="gmail-message-view"><header class="gmail-message-header"><h1 id="email-subject">{{ message.subject }}</h1><div class="gmail-sender-line"><span class="gmail-avatar">{{ message.sender_label[:1] }}</span><div><strong>{{ message.sender_label }}</strong><span>{{ message.sender_address }} · to {{ message.recipient }}</span></div><time>{{ message.timestamp }}</time></div></header><div class="gmail-message-body">{{ message.body }}</div>{% if message.spoofed_url %}<div class="gmail-link-warning"><strong>Link identity check</strong><span>{{ message.spoofed_url }} · local destination {{ message.target_scenario_id }}</span></div>{% endif %}{% if message.attachment_name %}<section class="gmail-attachment-row"><span class="gmail-attachment-icon">▧</span><div><strong>{{ message.attachment_name }}</strong><span>{{ message.attachment_preview }}</span></div><a class="button button-secondary" href="{{ url_for('email_attachment_preview', message_id=message.message_id) }}">Preview attachment</a></section>{% endif %}<div class="gmail-signature">Northstar University · fictional local mailbox<br />This message was not delivered to a real inbox.</div><div class="gmail-message-actions"><a class="button" href="{{ url_for('email_link', message_id=message.message_id) }}">{{ message.link_label }}</a><a class="button button-secondary" href="{{ url_for('inbox') }}">Back to inbox</a></div></article></section>
 {% endblock %}
 
 {% block simulation_footer %}{{ message.reminder }}{% endblock %}

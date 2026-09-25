@@ -1,45 +1,10 @@
 {% extends "simulation/base.html" %}
 
 {% block title %}Gemail · Inbox{% endblock %}
-
 {% block page_class %}page-frame{% endblock %}
 
 {% block simulation_content %}
-  <section class="surface fake-app-layout" aria-labelledby="gemail-title">
-    <aside class="fake-sidebar" aria-label="Gemail folders">
-      <h2>Mailbox</h2>
-      <a href="{{ url_for('inbox') }}" aria-current="page">Inbox <span class="badge badge-accent">{{ messages|selectattr('unread')|list|length }}</span></a>
-      <a href="# starred">Starred</a>
-      <a href="# drafts">Drafts</a>
-      <a href="# archive">Archive</a>
-    </aside>
-    <div class="fake-content">
-      <div class="gmail-category-bar" aria-label="Gemail categories">
-        <span class="active">Primary</span><span>Social</span><span>Promotions</span><span>Updates</span>
-      </div>
-      <div class="fake-toolbar">
-        <div>
-          <h1 id="gemail-title">Inbox</h1>
-          <p class="help-text">Northstar University · fictional Gemail workspace</p>
-        </div>
-        <form method="get" action="{{ url_for('inbox') }}" role="search">
-          <input class="search-box" type="search" name="q" value="{{ search_query }}" placeholder="Search mail" aria-label="Search fictional mail" />
-        </form>
-      </div>
-      <div class="message-list">
-        {% for message in messages %}
-          <a class="message-row {% if message.unread %}unread{% endif %}" data-message-id="{{ message.message_id }}" href="{{ url_for('email_view', message_id=message.message_id) }}">
-            <span class="message-sender">{{ message.sender_label }}</span>
-            <span class="message-subject">{{ message.subject }}</span>
-            <span class="message-preview">{{ message.preview }}</span>
-            <span class="message-time">{{ message.timestamp[11:16] }} UTC</span>
-          </a>
-        {% else %}
-          <div class="empty-state"><div><strong>Inbox zero</strong><p>No fictional messages are available.</p></div></div>
-        {% endfor %}
-      </div>
-    </div>
-  </section>
+  <section class="gmail-shell mock-gmail" aria-labelledby="gmail-title"><header class="gmail-topbar"><a class="gmail-wordmark" href="{{ url_for('inbox') }}"><span class="gmail-mark" aria-hidden="true">M</span><span>Gemail</span></a><form class="gmail-search" method="get" action="{{ url_for('inbox') }}" role="search"><input type="search" name="q" value="{{ search_query }}" placeholder="Search mail" aria-label="Search Gemail" /><button type="submit">⌕</button></form><div class="gmail-account"><span class="gmail-account-avatar">NS</span><span>northstar student</span></div></header><div class="gmail-layout"><aside class="gmail-rail"><button class="gmail-compose" type="button">Compose</button><nav class="gmail-folders"><a class="active" href="{{ url_for('inbox') }}">Inbox <span>{{ messages|selectattr('unread')|list|length }}</span></a><a href="#starred">Starred</a><a href="#sent">Sent</a><a href="#drafts">Drafts</a><a href="#spam">Spam</a><a href="#trash">Trash</a></nav><div class="gmail-labels"><strong>Labels</strong><span><i class="label-dot label-dot-blue"></i>Northstar</span><span><i class="label-dot label-dot-green"></i>Updates</span></div><div class="gmail-storage"><span>Storage</span><strong>1.2 GB of 15 GB</strong><div><i></i></div></div></aside><main class="gmail-main"><div class="gmail-category-tabs"><span class="active">Primary</span><span>Social</span><span>Promotions</span><span>Updates</span></div><div class="gmail-toolbar"><div><h1 id="gmail-title">Inbox</h1><span class="gmail-result-count">{{ messages|length }} messages</span></div><div class="gmail-toolbar-actions"><button type="button">↻</button><button type="button">•••</button></div></div><div class="gmail-message-list">{% for message in messages %}<article class="gmail-message-row {% if message.unread %}unread{% endif %}" data-message-id="{{ message.message_id }}"><span class="gmail-select" aria-hidden="true"></span><a class="gmail-sender" href="{{ url_for('email_view', message_id=message.message_id) }}">{{ message.sender_label }}</a><a class="gmail-subject-line" href="{{ url_for('email_view', message_id=message.message_id) }}"><strong>{{ message.subject }}</strong><span>{{ message.preview }}</span></a><span class="gmail-attachment">{% if message.attachment_name %}⌕{% endif %}</span><time class="gmail-time">{{ message.timestamp[11:16] }}</time></article>{% else %}<div class="gmail-empty"><div class="gmail-empty-icon">✉</div><strong>Inbox zero</strong><p>No fictional messages match this search.</p></div>{% endfor %}</div></main></div></section>
 {% endblock %}
 
 {% block simulation_footer %}Fictional Gemail training workspace · messages are rendered locally and delivered nowhere.{% endblock %}
